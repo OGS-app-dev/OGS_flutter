@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "872926734963",
+    "project_id": "ogs-new-app",
+    "storage_bucket": "ogs-new-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872926734963:android:3e25c6ec906d8f78151806",
+        "android_client_info": {
+          "package_name": "com.ogs.app.ogs"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeQX0sJ01lU3-TTaLGKQukY4UjF4RHdR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

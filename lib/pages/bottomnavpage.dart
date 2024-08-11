@@ -1,0 +1,105 @@
+import 'package:flutter/cupertino.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:line_icons/line_icons.dart';
+import 'package:ogs/constants.dart';
+import 'package:ogs/pages/homepage.dart';
+import 'package:ogs/pages/mappage.dart';
+import 'package:ogs/pages/profilepage.dart';
+import 'package:ogs/pages/trackbuspage.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:flutter/material.dart';
+
+class MainPage extends StatefulWidget {
+  const MainPage({super.key});
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  List<Widget> screens() {
+    return [
+      const HomePage(),
+      const TrackBusPage(),
+      const MapPage(),
+      const Profilepage(),
+    ];
+  }
+
+  List<PersistentBottomNavBarItem> navbaritems() {
+    return [
+      PersistentBottomNavBarItem(
+          icon: const Icon(
+            CupertinoIcons.home,
+          ),
+          title: 'Home',
+          textStyle: GoogleFonts.outfit(
+              color: pricol,
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              letterSpacing: 1),
+          activeColorPrimary: Colors.white,
+          activeColorSecondary: yel),
+      PersistentBottomNavBarItem(
+          icon: const Icon(LineIcons.bus),
+          title: 'Friends',
+          textStyle: GoogleFonts.outfit(
+              color: pricol,
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              letterSpacing: 1),
+          activeColorPrimary: Colors.white,
+          activeColorSecondary: yel),
+      PersistentBottomNavBarItem(
+          icon: const Icon(
+            LineIcons.mapMarker,
+            size: 30,
+          ),
+          title: 'location',
+          textStyle: GoogleFonts.outfit(
+              color: pricol,
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              letterSpacing: 1),
+          activeColorPrimary: Colors.white,
+          activeColorSecondary: yel),
+      PersistentBottomNavBarItem(
+          icon: const Icon(
+            Icons.person,
+            size: 35,
+          ),
+          title: 'Account',
+          textStyle: GoogleFonts.outfit(
+              color: pricol,
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              letterSpacing: 1),
+          activeColorPrimary: Colors.white,
+          activeColorSecondary: yel),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: PersistentTabView(
+        context,
+        screens: screens(),
+        items: navbaritems(),
+        navBarStyle: NavBarStyle.style12,
+        resizeToAvoidBottomInset: true,
+        navBarHeight: 75,
+        padding: const EdgeInsets.only(top: 12, left: 8, right: 8, bottom: 6),
+        decoration: const NavBarDecoration(
+            colorBehindNavBar: Colors.transparent,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(35),
+              topRight: Radius.circular(35),
+            )),
+        handleAndroidBackButtonPress: true,
+        backgroundColor: pricol,
+        stateManagement: true,
+      ),
+    );
+  }
+}
