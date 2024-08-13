@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class GpsLocation {
+
   final _auth = FirebaseAuth.instance;
   final _cloud = FirebaseFirestore.instance;
   User? _currentUser;
@@ -18,6 +18,10 @@ class GpsLocation {
   dynamic longitude;
   dynamic latitude;
   StreamController<Position?> controller = StreamController<Position?>();
+
+  static double getDist(LatLng dist1,LatLng dist2){
+    return Geolocator.distanceBetween(dist1.latitude, dist1.longitude, dist2.latitude, dist2.longitude);
+  }
 
   Future<void> requestPermission() async {
     permission = await Geolocator.requestPermission();
