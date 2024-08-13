@@ -8,9 +8,13 @@ import 'package:line_icons/line_icons.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/firebase/dbservices.dart';
+import 'package:ogs/form_response/form_response.dart';
+import 'package:ogs/pages/comingsoon.dart';
+import 'package:ogs/pages/loading_screen.dart';
 import 'package:ogs/pages/notificationpage.dart';
 import 'package:ogs/widgets/horizontalscrolltile.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -24,10 +28,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _fireDb = FireDb();
 
+  PersistentTabController? tabController;
+
   User? currentUser;
   @override
   void initState() {
     super.initState();
+    tabController =
+        Provider.of<FormResponse>(context, listen: false).tabController;
     currentUser = _fireDb.getCurrentUser();
   }
 
@@ -99,7 +107,6 @@ class _HomePageState extends State<HomePage> {
                 //print(data!['username']);
                 return Text(
                   data!['username'],
-                  
                   style: GoogleFonts.outfit(
                     color: const Color.fromARGB(255, 16, 34, 112),
                     fontSize: 23,
@@ -208,7 +215,7 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Container(
-                      width: 298,
+                      width: MediaQuery.of(context).size.width * .8,
                       height: 44,
                       decoration: ShapeDecoration(
                         color: const Color(0xFFF5F5F5),
@@ -318,12 +325,23 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Column(
                       children: [
-                        SizedBox(
-                            height: 40,
-                            child: Image.asset(
-                              'lib/assets/icons/petrol.png',
-                              color: pricol,
-                            )),
+                        GestureDetector(
+                          onTap: () {
+                            PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: const ComingSoon(),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.cupertino,
+                            );
+                          },
+                          child: SizedBox(
+                              height: 40,
+                              child: Image.asset(
+                                'lib/assets/icons/petrol.png',
+                                color: pricol,
+                              )),
+                        ),
                         const SizedBox(
                           height: 5,
                         ),
@@ -339,12 +357,23 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Column(
                       children: [
-                        SizedBox(
-                            height: 40,
-                            child: Image.asset(
-                              'lib/assets/icons/res.png',
-                              color: pricol,
-                            )),
+                        GestureDetector(
+                          onTap: () {
+                            PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: const ComingSoon(),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.cupertino,
+                            );
+                          },
+                          child: SizedBox(
+                              height: 40,
+                              child: Image.asset(
+                                'lib/assets/icons/res.png',
+                                color: pricol,
+                              )),
+                        ),
                         const SizedBox(
                           height: 5,
                         ),
@@ -356,12 +385,23 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Column(
                       children: [
-                        SizedBox(
-                            height: 40,
-                            child: Image.asset(
-                              'lib/assets/icons/hotel.png',
-                              color: pricol,
-                            )),
+                        GestureDetector(
+                          onTap: () {
+                            PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: const ComingSoon(),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.cupertino,
+                            );
+                          },
+                          child: SizedBox(
+                              height: 40,
+                              child: Image.asset(
+                                'lib/assets/icons/hotel.png',
+                                color: pricol,
+                              )),
+                        ),
                         const SizedBox(
                           height: 5,
                         ),
@@ -375,12 +415,23 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Column(
                       children: [
-                        SizedBox(
-                            height: 40,
-                            child: Image.asset(
-                              'lib/assets/icons/hospital.png',
-                              color: pricol,
-                            )),
+                        GestureDetector(
+                          onTap: () {
+                            PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: const ComingSoon(),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.cupertino,
+                            );
+                          },
+                          child: SizedBox(
+                              height: 40,
+                              child: Image.asset(
+                                'lib/assets/icons/hospital.png',
+                                color: pricol,
+                              )),
+                        ),
                         const SizedBox(
                           height: 5,
                         ),
@@ -395,29 +446,34 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 20,
                 ),
-                Container(
-                  width: MediaQuery.of(context).size.width * .88,
-                  height: 112,
-                  padding: const EdgeInsets.symmetric(vertical: 32),
-                  clipBehavior: Clip.antiAlias,
-                  decoration: ShapeDecoration(
-                    color: const Color.fromARGB(255, 245, 245, 245),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                GestureDetector(
+                  onTap: () {
+                    tabController?.jumpToTab(2);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * .88,
+                    height: 112,
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ShapeDecoration(
+                      color: const Color.fromARGB(255, 245, 245, 245),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      shadows: const [
+                        BoxShadow(
+                          color: Color(0x0A000000),
+                          blurRadius: 4,
+                          offset: Offset(0, 4),
+                          spreadRadius: 0,
+                        )
+                      ],
                     ),
-                    shadows: const [
-                      BoxShadow(
-                        color: Color(0x0A000000),
-                        blurRadius: 4,
-                        offset: Offset(0, 4),
-                        spreadRadius: 0,
-                      )
-                    ],
-                  ),
-                  child: const Icon(
-                    LineIcons.mapMarker,
-                    size: 50,
-                    color: yel,
+                    child: const Icon(
+                      LineIcons.mapMarker,
+                      size: 50,
+                      color: yel,
+                    ),
                   ),
                 ),
                 const SizedBox(

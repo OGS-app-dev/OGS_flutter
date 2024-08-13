@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Networking/gps_location.dart';
@@ -31,6 +32,9 @@ class FormResponse extends ChangeNotifier {
   String busNo = "";
   bool showDistance = false;
   late GpsLocation gpsLocation;
+
+  PersistentTabController? tabController = PersistentTabController();
+  
 
 
 

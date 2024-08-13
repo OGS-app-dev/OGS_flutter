@@ -94,11 +94,12 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
   Future<void> getLocation() async {
     gpsLocation.getLocation().listen((currentPosition) {
       //dont need it now since not taking other location
-      gpsLocation.addFirstLocation(currentPosition,role,busNo,busNo,reqFilter);
+      gpsLocation.addFirstLocation(
+          currentPosition, role, busNo, busNo, reqFilter);
       Provider.of<FormResponse>(context, listen: false)
           .addCurrentUserPosition(currentPosition!);
       //dont need it now since not taking all other users location
-      if(mounted) {
+      if (mounted) {
         setState(() {
           locationCoordinate = gpsLocation.locationCoordinate;
         });
@@ -119,7 +120,7 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
 
   Future<void> rotateUserIcon() async {
     FlutterCompass.events?.listen((event) async {
-      if(mounted) {
+      if (mounted) {
         newHeading = event.heading!;
         _updateUserMarkerRotation(newHeading);
       }
@@ -128,7 +129,7 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
 
   void _updateUserMarkerRotation(double newHeading) {
     userMarkerIcon[0] = userMarker(newHeading);
-    if(context.mounted) {
+    if (context.mounted) {
       setState(() {
         userMarkerIcon;
       });
@@ -149,158 +150,164 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FormResponse>(
-      builder: (context, FormResponse, child) {
-        return Scaffold(
-          body: Column(
-            children: [
-              Expanded(
-                flex: 10,
-                child: Stack(
-                  children: [
-                    GoogleMap(
-                      compassEnabled: true,
-                      zoomControlsEnabled: false,
-                      initialCameraPosition: CameraPosition(
-                          target: _currentCoordinates!, zoom: 19),
-                      onMapCreated: (controller) => _onMapCreated(controller),
-                      markers: role.toLowerCase() == "student" ? (Set.from(locationCoordinate)
-                        ..addAll(userMarkerIcon)) : userMarkerIcon.toSet(),
-                      mapType: mapType,
-                      // cameraTargetBounds: CameraTargetBounds(
-                      //   LatLngBounds(
-                      //       southwest: LatLng(11, 75), northeast: LatLng(11.59, 77)),
-                      // ),
-                    ),
-                    const Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          height: 20,
-                        ),
-                        // SingleChildScrollView(
-                        //   scrollDirection: Axis.horizontal,
-                        //   child: Row(
-                        //     children: [
-                        //       FilterButton(
-                        //         title: "Bus No: 1",
-                        //         onPressed: () async {
-                        //           if(selector == "1"){
-                        //             reqFilter = false;
-                        //             selector = "";
-                        //           }else {
-                        //             selector = "1";
-                        //             reqFilter = true;
-                        //           }
-                        //
-                        //         },
-                        //       ),
-                        //       FilterButton(
-                        //         title: "Bus No: 2",
-                        //         onPressed: () {
-                        //           if(selector == "2"){
-                        //             reqFilter = false;
-                        //             selector = "";
-                        //           }else {
-                        //             selector = "2";
-                        //             reqFilter = true;
-                        //           }
-                        //         },
-                        //       ),
-                        //       FilterButton(
-                        //         title: "Bus No: 3",
-                        //         onPressed: () {
-                        //           if(selector == "3"){
-                        //             reqFilter = false;
-                        //             selector = "";
-                        //           }else {
-                        //             selector = "3";
-                        //             reqFilter = true;
-                        //           }
-                        //         },
-                        //       ),
-                        //       FilterButton(
-                        //         title: "Bus No: 4",
-                        //         onPressed: () {
-                        //           if(selector == "4"){
-                        //             reqFilter = false;
-                        //             selector = "";
-                        //           }else {
-                        //             selector = "4";
-                        //             reqFilter = true;
-                        //           }
-                        //         },
-                        //       ),
-                        //       FilterButton(
-                        //         title: "Bus No: 5",
-                        //         onPressed: () {
-                        //           if(selector == "5"){
-                        //             reqFilter = false;
-                        //             selector = "";
-                        //           }else {
-                        //             selector = "5";
-                        //             reqFilter = true;
-                        //           }
-                        //         },
-                        //       ),
-                        //       FilterButton(
-                        //         title: "Bus No: 6",
-                        //         onPressed: () {
-                        //           if(selector == "6"){
-                        //             reqFilter = false;
-                        //             selector = "";
-                        //           }else {
-                        //             selector = "6";
-                        //             reqFilter = true;
-                        //           }
-                        //         },
-                        //       ),
-                        //     ],
-                        //   ),
+    return PopScope(
+      canPop: false,
+      child: Consumer<FormResponse>(
+        builder: (context, FormResponse, child) {
+          return Scaffold(
+            body: Column(
+              children: [
+                Expanded(
+                  flex: 10,
+                  child: Stack(
+                    children: [
+                      GoogleMap(
+                        compassEnabled: true,
+                        zoomControlsEnabled: false,
+                        initialCameraPosition: CameraPosition(
+                            target: _currentCoordinates!, zoom: 19),
+                        onMapCreated: (controller) => _onMapCreated(controller),
+                        markers: role.toLowerCase() == "student"
+                            ? (Set.from(locationCoordinate)
+                              ..addAll(userMarkerIcon))
+                            : userMarkerIcon.toSet(),
+                        mapType: mapType,
+                        // cameraTargetBounds: CameraTargetBounds(
+                        //   LatLngBounds(
+                        //       southwest: LatLng(11, 75), northeast: LatLng(11.59, 77)),
                         // ),
-                        Expanded(
-                          child: SizedBox(),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Column(
-                                children: [
-                                  // FAB1(
-                                  //   onPressed: () {
-                                  //     //to get back to our current location
-                                  //     myController?.animateCamera(
-                                  //       CameraUpdate.newCameraPosition(
-                                  //         CameraPosition(
-                                  //             target: FormResponse
-                                  //                 .currentUserPosition!,
-                                  //             zoom: 19),
-                                  //       ),
-                                  //     );
-                                  //   },
-                                  // ),
-                                ],
-                              ),
-                            ],
+                      ),
+                      const Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            height: 20,
                           ),
-                        ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                      ],
-                    ),
-                  ],
+                          // SingleChildScrollView(
+                          //   scrollDirection: Axis.horizontal,
+                          //   child: Row(
+                          //     children: [
+                          //       FilterButton(
+                          //         title: "Bus No: 1",
+                          //         onPressed: () async {
+                          //           if(selector == "1"){
+                          //             reqFilter = false;
+                          //             selector = "";
+                          //           }else {
+                          //             selector = "1";
+                          //             reqFilter = true;
+                          //           }
+                          //
+                          //         },
+                          //       ),
+                          //       FilterButton(
+                          //         title: "Bus No: 2",
+                          //         onPressed: () {
+                          //           if(selector == "2"){
+                          //             reqFilter = false;
+                          //             selector = "";
+                          //           }else {
+                          //             selector = "2";
+                          //             reqFilter = true;
+                          //           }
+                          //         },
+                          //       ),
+                          //       FilterButton(
+                          //         title: "Bus No: 3",
+                          //         onPressed: () {
+                          //           if(selector == "3"){
+                          //             reqFilter = false;
+                          //             selector = "";
+                          //           }else {
+                          //             selector = "3";
+                          //             reqFilter = true;
+                          //           }
+                          //         },
+                          //       ),
+                          //       FilterButton(
+                          //         title: "Bus No: 4",
+                          //         onPressed: () {
+                          //           if(selector == "4"){
+                          //             reqFilter = false;
+                          //             selector = "";
+                          //           }else {
+                          //             selector = "4";
+                          //             reqFilter = true;
+                          //           }
+                          //         },
+                          //       ),
+                          //       FilterButton(
+                          //         title: "Bus No: 5",
+                          //         onPressed: () {
+                          //           if(selector == "5"){
+                          //             reqFilter = false;
+                          //             selector = "";
+                          //           }else {
+                          //             selector = "5";
+                          //             reqFilter = true;
+                          //           }
+                          //         },
+                          //       ),
+                          //       FilterButton(
+                          //         title: "Bus No: 6",
+                          //         onPressed: () {
+                          //           if(selector == "6"){
+                          //             reqFilter = false;
+                          //             selector = "";
+                          //           }else {
+                          //             selector = "6";
+                          //             reqFilter = true;
+                          //           }
+                          //         },
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
+                          Expanded(
+                            child: SizedBox(),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Column(
+                                  children: [
+                                    // FAB1(
+                                    //   onPressed: () {
+                                    //     //to get back to our current location
+                                    //     myController?.animateCamera(
+                                    //       CameraUpdate.newCameraPosition(
+                                    //         CameraPosition(
+                                    //             target: FormResponse
+                                    //                 .currentUserPosition!,
+                                    //             zoom: 19),
+                                    //       ),
+                                    //     );
+                                    //   },
+                                    // ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
+
   @override
   void dispose() {
     // TODO: implement dispose
