@@ -9,6 +9,9 @@ import 'package:ogs/pages/loginpage.dart';
 // ignore: unused_import
 import 'package:ogs/pages/signup_page.dart';
 import 'package:ogs/services/landingservice/landingservice.dart';
+import 'package:provider/provider.dart';
+
+import 'form_response/form_response.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,10 +24,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return ChangeNotifierProvider<FormResponse>(
+        create: (context) => FormResponse(),
+    child: const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Landing(),
       //home: HomePage(location: 'Palakkad'),
+    ),
     );
   }
 }

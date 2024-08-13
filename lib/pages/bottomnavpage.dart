@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ogs/constants.dart';
+import 'package:ogs/pages/gmapscreen.dart';
 import 'package:ogs/pages/homepage.dart';
 import 'package:ogs/pages/mappage.dart';
 import 'package:ogs/pages/profilepage.dart';
@@ -21,7 +23,7 @@ class _MainPageState extends State<MainPage> {
     return [
       const HomePage(),
       const TrackBusPage(),
-      const MapPage(),
+      GpsScreen(),
       const Profilepage(),
     ];
   }
