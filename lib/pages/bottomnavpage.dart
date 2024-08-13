@@ -1,16 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import 'package:line_icons/line_icons.dart';
 import 'package:ogs/constants.dart';
+import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/bus_position.dart';
 import 'package:ogs/pages/gmapscreen.dart';
 import 'package:ogs/pages/homepage.dart';
-import 'package:ogs/pages/mappage.dart';
+import 'package:ogs/pages/loading_screen.dart';
 import 'package:ogs/pages/profilepage.dart';
 import 'package:ogs/pages/trackbuspage.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -20,11 +22,13 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  PersistentTabController? tabController;
+
   List<Widget> screens() {
     return [
       const HomePage(),
       const BusPosition(),
-      GpsScreen(),
+      LoadingScreen(),
       const Profilepage(),
     ];
   }
@@ -83,9 +87,21 @@ class _MainPageState extends State<MainPage> {
   }
 
   @override
+  void initState() {
+    tabController =
+        Provider.of<FormResponse>(context, listen: false).tabController;
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: PersistentTabView(
+        controller: tabController,
+        onWillPop: (context) async {
+          return false;
+        },
+        handleAndroidBackButtonPress: false,
         context,
         screens: screens(),
         items: navbaritems(),
@@ -99,7 +115,7 @@ class _MainPageState extends State<MainPage> {
               topLeft: Radius.circular(35),
               topRight: Radius.circular(35),
             )),
-        handleAndroidBackButtonPress: true,
+        //handleAndroidBackButtonPress: true,
         backgroundColor: pricol,
         stateManagement: true,
       ),
