@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ogs/constants.dart';
+import 'package:ogs/pages/bus_position.dart';
 import 'package:ogs/pages/gmapscreen.dart';
 import 'package:ogs/pages/homepage.dart';
 import 'package:ogs/pages/mappage.dart';
@@ -22,7 +23,7 @@ class _MainPageState extends State<MainPage> {
   List<Widget> screens() {
     return [
       const HomePage(),
-      const TrackBusPage(),
+      const BusPosition(),
       GpsScreen(),
       const Profilepage(),
     ];
