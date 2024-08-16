@@ -1,7 +1,7 @@
+// ignore_for_file: unused_field
+
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Networking/gps_location.dart';
@@ -19,6 +19,7 @@ import '../form_response/form_response.dart';
 // import '../widgets/filter_buttons.dart';
 // import '../widgets/loader.dart';
 
+// ignore: must_be_immutable
 class GpsScreen extends StatefulWidget {
   static const String id = "GpsScreen";
   GpsLocation? gpsLocation;

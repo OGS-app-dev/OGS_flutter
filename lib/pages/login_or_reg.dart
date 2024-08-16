@@ -1,5 +1,6 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/constants.dart';
 
 class ComingSoon extends StatelessWidget {
@@ -17,9 +18,9 @@ class ComingSoon extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
                 color: pricol
               ),
-              child: Text("REGISTER"),
+              child:const Text("REGISTER"),
             ),
-            SizedBox(height: 30,),
+            const SizedBox(height: 30,),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),

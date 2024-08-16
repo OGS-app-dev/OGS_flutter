@@ -4,8 +4,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/pages/bottomnavpage.dart';
-import 'package:ogs/pages/gmapscreen.dart';
-import 'package:ogs/pages/loading_screen.dart';
 import 'package:ogs/pages/signup_page.dart';
 import 'package:ogs/widgets/mytextfield.dart';
 
@@ -47,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => LoadingScreen(),
+              builder: (context) => const MainPage(),
             ));
       }
     } on FirebaseAuthException catch (e) {
