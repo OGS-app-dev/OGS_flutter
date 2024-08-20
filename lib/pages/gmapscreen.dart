@@ -67,6 +67,7 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
   String busNo = "";
   String selector = "";
   bool reqFilter = false;
+  FormResponse? formResponse;
 
   @override
   void setState(VoidCallback fn) {
@@ -93,10 +94,15 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
   }
 
   Future<void> getLocation() async {
-    gpsLocation.getLocation().listen((currentPosition) {
+    gpsLocation.getLocation().listen((currentPosition) async {
       //dont need it now since not taking other location
-      gpsLocation.addFirstLocation(
-          currentPosition, role, busNo, busNo, reqFilter);
+      
+      List<LatLng> res =
+          await gpsLocation.addFirstLocation(currentPosition, "staff", busNo);
+          formResponse?.busLoc.clear();
+      print(res);
+      formResponse?.busLoc.addAll(res);
+
       Provider.of<FormResponse>(context, listen: false)
           .addCurrentUserPosition(currentPosition!);
       //dont need it now since not taking all other users location
@@ -109,6 +115,7 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
   }
 
   void initializer() async {
+    formResponse = Provider.of<FormResponse>(context, listen: false);
     _prefs = Provider.of<FormResponse>(context, listen: false).prefs!;
     role = Provider.of<FormResponse>(context, listen: false).role;
     email = Provider.of<FormResponse>(context, listen: false).email;

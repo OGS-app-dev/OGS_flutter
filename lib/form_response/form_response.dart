@@ -15,7 +15,7 @@ class FormResponse extends ChangeNotifier {
   var markerIconSmall;
   var markerIconBig;
   String searchBarTitle = "Search Here";
-  String role = "";
+  String role = "staff";
   String email = "";
   String userName = "";
   IconData icon = Icons.search;
@@ -32,6 +32,7 @@ class FormResponse extends ChangeNotifier {
   String busNo = "";
   bool showDistance = false;
   late GpsLocation gpsLocation;
+  List<LatLng> busLoc=[LatLng(1,1),LatLng(1,1),LatLng(1,1),LatLng(1,1),];
 
   PersistentTabController? tabController = PersistentTabController();
   

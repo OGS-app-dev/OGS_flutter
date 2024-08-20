@@ -5,7 +5,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class GpsLocation {
-
   final _auth = FirebaseAuth.instance;
   final _cloud = FirebaseFirestore.instance;
   User? _currentUser;
@@ -13,14 +12,16 @@ class GpsLocation {
   Position? currentPosition;
   List<double> geoLocationLatitude = [];
   List<double> geoLocationLongitude = [];
+  List<LatLng> busLocs = [LatLng(1,1)];
   Set<Marker> locationCoordinate = {};
   List<String> userId = [];
   dynamic longitude;
   dynamic latitude;
   StreamController<Position?> controller = StreamController<Position?>();
 
-  static double getDist(LatLng dist1,LatLng dist2){
-    return Geolocator.distanceBetween(dist1.latitude, dist1.longitude, dist2.latitude, dist2.longitude);
+  static double getDist(LatLng dist1, LatLng dist2) {
+    return Geolocator.distanceBetween(
+        dist1.latitude, dist1.longitude, dist2.latitude, dist2.longitude);
   }
 
   Future<void> requestPermission() async {
@@ -65,24 +66,24 @@ class GpsLocation {
     }
   }
 
-  Future<void> addFirstLocation(currentPosition,String role,String userDisplayName,String selector,bool reqFilter) async {
-
+  Future<List<LatLng>> addFirstLocation(
+      Position? currentPosition, String role, String userDisplayName) async {
     if (role.toLowerCase() == "staff") {
       try {
-        await _cloud.collection("Location").doc(userDisplayName).set({
+        await _cloud.collection("Location").doc("1").set({
           "latitude": currentPosition?.latitude,
           "longitude": currentPosition?.longitude,
-          "role":role,
         });
       } catch (e) {
         print(e.toString());
-        await _cloud.collection("Location").doc(userDisplayName).update({
+        await _cloud.collection("Location").doc("1").update({
           "latitude": currentPosition?.latitude,
           "longitude": currentPosition?.longitude,
         });
       }
     }
-    await locator(selector,reqFilter);
+    await locator();
+    return busLocs;
   }
 
   void coordinates() {
@@ -104,23 +105,24 @@ class GpsLocation {
     }
   }
 
-  Future<void> locator(String selector,bool reqFilter) async {
+  Future<void> locator() async {
     await _cloud.collection("Location").get().then((value) {
       geoLocationLongitude.clear();
       geoLocationLatitude.clear();
       locationCoordinate.clear();
+      busLocs.clear();
       userId.clear();
       for (var data in value.docs) {
-        if (data.data()["role"].toLowerCase() == "staff") {
-          if(reqFilter && data.id.toString() != selector) continue;
-          userId.add(data.id.toString());
-          geoLocationLatitude
-              .add(double.parse(data.data()["latitude"].toString()));
-          geoLocationLongitude
-              .add(double.parse(data.data()["longitude"].toString()));
-        }
+        userId.add(data.id.toString());
+        geoLocationLatitude
+            .add(double.parse(data.data()["latitude"].toString()));
+        geoLocationLongitude
+            .add(double.parse(data.data()["longitude"].toString()));
+        busLocs.add(LatLng(data.data()["latitude"], data.data()["longitude"]));
       }
-      coordinates();
+      print("-------------------------------");
+      print(busLocs);
+      // coordinates();
     }, onError: (e) => print(e));
   }
 }

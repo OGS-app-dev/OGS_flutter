@@ -2,13 +2,17 @@
 
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:ogs/constants.dart';
 
 import 'package:ogs/constants/coordinates.dart';
 import 'package:ogs/form_response/form_response.dart';
+import 'package:ogs/networking/gps_location.dart';
 import 'package:provider/provider.dart';
 
 class BusPosition extends StatefulWidget {
@@ -32,7 +36,7 @@ class _BusPositionState extends State<BusPosition> {
 
   void startTimer() {
     _timer = Timer?.periodic(const Duration(seconds: 5), (timer) {
-      getNewLoc();
+      getNewLoc(formResponse!.busLoc[0]);
       setState(() {
         currLocName;
         prevLocName;
@@ -40,8 +44,8 @@ class _BusPositionState extends State<BusPosition> {
     });
   }
 
-  void getNewLoc() {
-    String newLocName = getNextIdx(formResponse!.currentUserPosition!, true);
+  void getNewLoc(LatLng newPos) {
+    String newLocName = getNextIdx(newPos, true);
 
     if (currLocName != newLocName) {
       prevLocName = currLocName;
@@ -76,6 +80,7 @@ class _BusPositionState extends State<BusPosition> {
   @override
   void initState() {
     formResponse = Provider.of<FormResponse>(context, listen: false);
+
     startTimer();
     super.initState();
   }
@@ -167,12 +172,12 @@ class _BusPositionState extends State<BusPosition> {
                               ),
                             ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                     Expanded(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Text(
                           "Main Building",
@@ -181,24 +186,25 @@ class _BusPositionState extends State<BusPosition> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 1,),
+                        const SizedBox(
+                          height: 1,
+                        ),
                         Text(
                           "Chemical Gate",
                           style: GoogleFonts.outfit(
                             fontSize: 22,
                             fontWeight: FontWeight.w500,
                           ),
-                          
                         ),
-                        const SizedBox(height: 1,),
-
+                        const SizedBox(
+                          height: 1,
+                        ),
                         Text(
                           "Mega Hostel",
                           style: GoogleFonts.outfit(
                             fontSize: 22,
                             fontWeight: FontWeight.w500,
                           ),
-                          
                         ),
                       ],
                     )),

@@ -29,6 +29,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
     if (context.mounted) {
       Provider.of<FormResponse>(context, listen: false).createOriginalSet();
     }
+    Provider.of<FormResponse>(context, listen: false).gpsLocation = gpsLocation;
     if (context.mounted) {
       Navigator.pushReplacement(
         context,
