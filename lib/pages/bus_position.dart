@@ -92,124 +92,175 @@ class _BusPositionState extends State<BusPosition> {
         body: SafeArea(
             child: Center(
           child: buspos == -1
-              ? const Text("Wait while tracking the bus")
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+              ? const SpinKitThreeBounce(
+                  size: 25,
+                  color: pricol,
+                )
+              : Stack(
                   children: [
-                    const SizedBox(
-                      width: 40,
+                    AnimatedPositioned(
+                      duration: Duration(seconds: 1),
+                      curve: Curves.easeIn,
+                      top: stepheight * buspos + 75,
+                      child: Container(
+                        height: 100,
+                        width: MediaQuery.of(context).size.width,
+                        color: pricol,
+                      ),
                     ),
-                    Stack(
-                      children: [
-                        Container(
-                          width: 80,
-                          height: MediaQuery.of(context).size.height * .7,
-                          decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(20)),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(6)),
-                              ),
-                              Container(
-                                width: 8,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(6)),
-                              ),
-                              Container(
-                                width: 8,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(6)),
-                              ),
-                              Container(
-                                width: 8,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(6)),
-                              ),
-                              Container(
-                                width: 8,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(6)),
-                              ),
-                            ],
-                          ),
-                        ),
-                        AnimatedPositioned(
-                          duration: Duration(seconds: 1),
-                          curve: Curves.easeIn,
-                          left: 10,
-                          right: 10,
-                          top: stepheight * buspos + 20,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                buspos = (buspos + 1) % 5;
-                              });
-                            },
-                            child: Container(
-                              //width: 60,
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(50)),
-                              child: const Icon(
-                                LineIcons.bus,
-                                size: 35,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                        child: Column(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Text(
-                          "Main Building",
-                          style: GoogleFonts.outfit(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
                         const SizedBox(
-                          height: 1,
+                          width: 40,
                         ),
-                        Text(
-                          "Chemical Gate",
-                          style: GoogleFonts.outfit(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        Stack(
+                          children: [
+                            Container(
+                              width: 80,
+                              height: MediaQuery.of(context).size.height * .7,
+                              decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(20)),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(6)),
+                                  ),
+                                  Container(
+                                    width: 8,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(6)),
+                                  ),
+                                  Container(
+                                    width: 8,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(6)),
+                                  ),
+                                  Container(
+                                    width: 8,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(6)),
+                                  ),
+                                  Container(
+                                    width: 8,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(6)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            AnimatedPositioned(
+                              duration: Duration(seconds: 1),
+                              curve: Curves.easeIn,
+                              left: 10,
+                              right: 10,
+                              top: stepheight * buspos + 20,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    buspos = (buspos + 1) % 5;
+                                  });
+                                },
+                                child: Container(
+                                  //width: 60,
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(50)),
+                                  child: const Icon(
+                                    LineIcons.bus,
+                                    size: 35,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                        Expanded(
+                            child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            const SizedBox(
+                              height: 35,
+                            ),
+                            Text(
+                              "Main Building",
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                                color: buspos==0?Colors.white:pricol
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            Text(
+                              "Auditorium",
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                                color: buspos==1?Colors.white:pricol
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Text(
+                              "Chemical Gate",
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                                color: buspos==2?Colors.white:pricol
+
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Text(
+                              "Kattangal",
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                                color: buspos==3?Colors.white:pricol
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Text(
+                              "Mega Hostel",
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                                color: buspos==4?Colors.white:pricol
+
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 40,
+                            )
+                          ],
+                        )),
                         const SizedBox(
-                          height: 1,
-                        ),
-                        Text(
-                          "Mega Hostel",
-                          style: GoogleFonts.outfit(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          width: 40,
                         ),
                       ],
-                    )),
-                    const SizedBox(
-                      width: 40,
                     ),
                   ],
                 ),

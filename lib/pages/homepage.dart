@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/firebase/dbservices.dart';
 import 'package:ogs/form_response/form_response.dart';
@@ -38,22 +37,9 @@ class _HomePageState extends State<HomePage> {
     currentUser = _fireDb.getCurrentUser();
   }
 
-  List images = [
-    "lib/assets/images/img1.jpg",
-    "lib/assets/images/img2.jpg",
-    "lib/assets/images/img3.jpg",
-    "lib/assets/images/img4.jpg",
-    "lib/assets/images/img5.jpg",
-    "lib/assets/images/img6.jpg"
-  ];
+  
 
-  List placeNames = [
-    "Lions Park",
-    "square",
-    "sm street",
-    "waterfalls",
-    "beach"
-  ];
+  
 
   @override
   Widget build(BuildContext context) {
@@ -576,25 +562,6 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 20,
                 ),
-                SizedBox(
-                  height: 1000,
-                  child: MasonryGridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: placeNames.length,
-                    gridDelegate:
-                        const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2),
-                    itemBuilder: (context, index) => Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Center(
-                          child: ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
-                              child: Image.asset(
-                                images[index],
-                              ))),
-                    ),
-                  ),
-                )
               ],
             ),
           ),
