@@ -98,7 +98,7 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
       //dont need it now since not taking other location
       
       List<LatLng> res =
-          await gpsLocation.addFirstLocation(currentPosition, "staff", busNo);
+          await gpsLocation.addFirstLocation(currentPosition, formResponse!.role, busNo);
           formResponse?.busLoc.clear();
       print(res);
       formResponse?.busLoc.addAll(res);

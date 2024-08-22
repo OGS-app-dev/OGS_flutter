@@ -12,7 +12,7 @@ import 'package:ogs/constants.dart';
 
 import 'package:ogs/constants/coordinates.dart';
 import 'package:ogs/form_response/form_response.dart';
-import 'package:ogs/networking/gps_location.dart';
+import 'package:ogs/Networking/gps_location.dart';
 import 'package:provider/provider.dart';
 
 class BusPosition extends StatefulWidget {
