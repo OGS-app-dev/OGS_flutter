@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/constants.dart';
+import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/loginpage.dart';
 import 'package:ogs/widgets/mytextfield.dart';
+import 'package:provider/provider.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -19,6 +21,8 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController usernamecontroller = TextEditingController();
   TextEditingController confirmpasscontroller = TextEditingController();
 
+  String role = "";
+
   void onTap() {
     Navigator.pushReplacement(
         context,
@@ -28,12 +32,13 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void signup() async {
+  
     showDialog(
         context: context,
         builder: (context) => const Center(
               child: CircularProgressIndicator(),
             ));
-    if (passcontroller.text != confirmpasscontroller.text) {
+    if (passcontroller.text != confirmpasscontroller.text && role != "") {
       Navigator.pop(context);
       showDialog(
         context: context,
@@ -85,7 +90,8 @@ class _SignUpPageState extends State<SignUpPage> {
             .set({
           'email': userCredential.user!.email,
           'username': usernamecontroller.text,
-          'uid': userCredential.user!.uid
+          'uid': userCredential.user!.uid,
+          "role": role
         });
       } catch (e) {
         if (mounted) {
@@ -143,6 +149,40 @@ class _SignUpPageState extends State<SignUpPage> {
                 obsctext: true,
               ),
             ),
+            Row(
+                children: [
+                  //two Textbutton to slect a role called staff or student
+                  TextButton(
+                    onPressed: () {
+                      role = "staff";
+                      Provider.of<FormResponse>(context, listen: false).role =
+                          "staff";
+                    },
+                    child: Text(
+                      'Staff',
+                      style: GoogleFonts.poppins(
+                          color: bgcol,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      role = "student";
+                      Provider.of<FormResponse>(context, listen: false).role =
+                          "student";
+                    },
+                    child: Text(
+                      'Student',
+                      style: GoogleFonts.poppins(
+                          color: bgcol,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+
+                ],
+              ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(

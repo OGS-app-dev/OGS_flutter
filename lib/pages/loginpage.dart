@@ -1,11 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/constants.dart';
+import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/bottomnavpage.dart';
 import 'package:ogs/pages/signup_page.dart';
 import 'package:ogs/widgets/mytextfield.dart';
+import 'package:provider/provider.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -19,6 +22,8 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController emailcontroller = TextEditingController();
   TextEditingController passcontroller = TextEditingController();
 
+  FormResponse? formResponse;
+
   void onTap() {
     Navigator.pushReplacement(
         context,
@@ -26,6 +31,7 @@ class _LoginPageState extends State<LoginPage> {
           builder: (context) => const SignUpPage(),
         ));
   }
+
 
   void login() async {
     showDialog(
@@ -41,6 +47,13 @@ class _LoginPageState extends State<LoginPage> {
       );
       if (mounted) {
         Navigator.pop(context);
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .get()
+            .then((value) {
+          formResponse?.role = value['role'];
+        });
 
         Navigator.pushReplacement(
             context,
@@ -61,6 +74,11 @@ class _LoginPageState extends State<LoginPage> {
       );
     }
   }
+  @override
+  void initState() {
+    formResponse = Provider.of<FormResponse>(context, listen: false);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +88,7 @@ class _LoginPageState extends State<LoginPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              
               const SizedBox(
                 height: 280,
               ),
