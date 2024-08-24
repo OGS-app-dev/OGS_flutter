@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/form_response/form_response.dart';
-import 'package:ogs/pages/bus_position.dart';
 import 'package:ogs/pages/homepage.dart';
 import 'package:ogs/pages/loading_screen.dart';
 import 'package:ogs/pages/profilepage.dart';
@@ -104,6 +103,7 @@ class _MainPageState extends State<MainPage> {
         handleAndroidBackButtonPress: false,
         context,
         screens: screens(),
+        
         items: navbaritems(),
         navBarStyle: NavBarStyle.style12,
         resizeToAvoidBottomInset: true,

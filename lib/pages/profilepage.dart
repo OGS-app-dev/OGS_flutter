@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/pages/loginpage.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class Profilepage extends StatelessWidget {
   const Profilepage({super.key});
@@ -28,13 +27,21 @@ class Profilepage extends StatelessWidget {
                 onPressed: () async {
                   await FirebaseAuth.instance.signOut();
                   if (context.mounted) {
-                    
-                    Navigator.of(context).pushAndRemoveUntil(
+                    /*Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
                             builder: (context) => const LoginPage())
                             ,(Route<dynamic> route) => false
-                        );
-                    
+                        );*/
+
+                    Navigator.of(context, rootNavigator: true)
+                        .pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (BuildContext context) {
+                          return const LoginPage();
+                        },
+                      ),
+                      (_) => false,
+                    );
                   }
                 },
                 icon: const Icon(

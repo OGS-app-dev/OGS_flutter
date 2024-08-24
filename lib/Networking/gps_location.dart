@@ -12,7 +12,7 @@ class GpsLocation {
   Position? currentPosition;
   List<double> geoLocationLatitude = [];
   List<double> geoLocationLongitude = [];
-  List<LatLng> busLocs = [LatLng(1,1)];
+  List<LatLng> busLocs = [LatLng(1, 1)];
   Set<Marker> locationCoordinate = {};
   List<String> userId = [];
   dynamic longitude;
@@ -106,7 +106,7 @@ class GpsLocation {
   }
 
   Future<void> locator() async {
-    await _cloud.collection("Location").get().then((value) {
+    await _cloud.collection("Location").orderBy(FieldPath.documentId,descending: false).get().then((value) {
       geoLocationLongitude.clear();
       geoLocationLatitude.clear();
       locationCoordinate.clear();
@@ -118,7 +118,8 @@ class GpsLocation {
             .add(double.parse(data.data()["latitude"].toString()));
         geoLocationLongitude
             .add(double.parse(data.data()["longitude"].toString()));
-        busLocs.add(LatLng(data.data()["latitude"], data.data()["longitude"]));
+        busLocs.add(LatLng(double.parse(data.data()["latitude"].toString()),
+            double.parse(data.data()["longitude"].toString())));
       }
       print("-------------------------------");
       print(busLocs);

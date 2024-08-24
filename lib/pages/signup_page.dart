@@ -3,10 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/constants.dart';
-import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/loginpage.dart';
 import 'package:ogs/widgets/mytextfield.dart';
-import 'package:provider/provider.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});

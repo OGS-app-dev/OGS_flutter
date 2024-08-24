@@ -15,8 +15,7 @@ import 'package:provider/provider.dart';
 
 class BusPosition extends StatefulWidget {
   final int index;
-  const BusPosition({super.key,
-  required this.index});
+  const BusPosition({super.key, required this.index});
 
   @override
   State<BusPosition> createState() => _BusPositionState();
@@ -25,55 +24,76 @@ class BusPosition extends StatefulWidget {
 class _BusPositionState extends State<BusPosition> {
   String prevLocName = "";
   String currLocName = "";
-  LatLng prevLoc = LatLng(0, 0);
+  LatLng prevLoc =const LatLng(0, 0);
   Timer? _timer;
 
   FormResponse? formResponse;
 
-  double stepheight = 130;
+  double stepheight = 112;
   int buspos = -1;
   bool towardsMBH = true;
 
+  Map<int, bool> busmap = {0: false, 1: false, 2: true, 3: true};
+
   void startTimer() {
     _timer = Timer?.periodic(const Duration(seconds: 5), (timer) {
-      
       getNewLoc(formResponse!.busLoc[widget.index]);
+      // print("busloc----------------");
+      // print(formResponse?.busLoc);
+      if(mounted){
       setState(() {
         currLocName;
         prevLocName;
-      });
+      });}
     });
   }
 
   void getNewLoc(LatLng newPos) {
-    String newLocName = getNextIdx(newPos, true);
-
+    String newLocName = getNextIdx(newPos, busmap[widget.index]!);
+    // print("newpos------$newPos-----next-----$newLocName");
+    // print("curr-----------new");
+    // print(currLocName + "  " + newLocName);
     if (currLocName != newLocName) {
       prevLocName = currLocName;
       currLocName = newLocName;
-
-      if (currLocName == "CENTER_CIRCLE") {
-        towardsMBH = true;
-        buspos = 0;
-      } else if (currLocName == "MEGA_HOSTEL") {
-        towardsMBH = false;
-        buspos = 4;
-      } else if (currLocName == "CHEM_GATE" || currLocName == "MAIN_GATE") {
-        buspos = 2;
-      } else if (currLocName == "NOT_A_PLACE") {
-        if (prevLocName == "MEGA_HOSTEL") {
-          buspos = 3;
-        } else if (prevLocName == "CENTER_CIRCLE") {
-          buspos = 1;
-        } else if (prevLocName == "CHEM_GATE" || prevLocName == "MAIN_GATE") {
-          if (towardsMBH) {
+      if (busmap[widget.index] == true) {
+        if (currLocName == "CENTER_CIRCLE") {
+          towardsMBH = true;
+          buspos = 0;
+        } else if (currLocName == "MEGA_HOSTEL") {
+          towardsMBH = false;
+          buspos = 4;
+        } else if (currLocName == "CHEM_GATE" || currLocName == "MAIN_GATE") {
+          buspos = 2;
+        } else if (currLocName == "NOT_A_PLACE") {
+          if (prevLocName == "MEGA_HOSTEL") {
             buspos = 3;
-          } else {
+          } else if (prevLocName == "CENTER_CIRCLE") {
             buspos = 1;
+          } else if (prevLocName == "CHEM_GATE" || prevLocName == "MAIN_GATE") {
+            if (towardsMBH) {
+              buspos = 3;
+            } else {
+              buspos = 1;
+            }
           }
+        } else {
+          buspos = -1;
         }
       } else {
-        buspos = -1;
+        if (currLocName == "CENTER_CIRCLE") {
+          buspos = 1;
+        } else if (currLocName == "LH_STOP") {
+          buspos = 3;
+        } else if (currLocName == "SOMS") {
+          towardsMBH = false;
+          buspos = 4;
+        } else if (currLocName == "CHEM_GATE") {
+          towardsMBH = true;
+          buspos = 0;
+        } else if (currLocName == "MAIN_GATE") {
+          buspos = 2;
+        }
       }
     }
   }
@@ -89,183 +109,363 @@ class _BusPositionState extends State<BusPosition> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-            child: Center(
-          child: buspos == -1
-              ? const SpinKitThreeBounce(
-                  size: 25,
-                  color: pricol,
-                )
-              : Stack(
-                  children: [
-                    AnimatedPositioned(
-                      duration: Duration(seconds: 1),
-                      curve: Curves.easeIn,
-                      top: stepheight * buspos + 75,
-                      child: Container(
-                        height: 100,
-                        width: MediaQuery.of(context).size.width,
+      backgroundColor: Colors.white,
+      body: busmap[widget.index] == true
+          ? SafeArea(
+              child: Center(
+                child: buspos == -1
+                    ? const SpinKitThreeBounce(
+                        size: 25,
                         color: pricol,
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        const SizedBox(
-                          width: 40,
-                        ),
-                        Stack(
-                          children: [
-                            Container(
-                              width: 80,
-                              height: MediaQuery.of(context).size.height * .7,
-                              decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(20)),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(6)),
-                                  ),
-                                  Container(
-                                    width: 8,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(6)),
-                                  ),
-                                  Container(
-                                    width: 8,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(6)),
-                                  ),
-                                  Container(
-                                    width: 8,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(6)),
-                                  ),
-                                  Container(
-                                    width: 8,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(6)),
-                                  ),
-                                ],
-                              ),
+                      )
+                    : Stack(
+                        children: [
+                          AnimatedPositioned(
+                            duration: const Duration(seconds: 1),
+                            curve: Curves.easeIn,
+                            top: stepheight * buspos,
+                            child: Container(
+                              height: 105,
+                              width: MediaQuery.of(context).size.width,
+                              color: yel,
                             ),
-                            AnimatedPositioned(
-                              duration: Duration(seconds: 1),
-                              curve: Curves.easeIn,
-                              left: 10,
-                              right: 10,
-                              top: stepheight * buspos + 20,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    buspos = (buspos + 1) % 5;
-                                  });
-                                },
-                                child: Container(
-                                  //width: 60,
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(50)),
-                                  child: const Icon(
-                                    LineIcons.bus,
-                                    size: 35,
-                                  ),
+                          ),
+                          SizedBox(
+                            height: 550,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                const SizedBox(
+                                  width: 40,
                                 ),
-                              ),
+                                Stack(
+                                  children: [
+                                    Container(
+                                      width: 80,
+                                      height: 550,
+                                      decoration: BoxDecoration(
+                                          color: Colors.black,
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          Container(
+                                            width: 8,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                          ),
+                                          Container(
+                                            width: 8,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                          ),
+                                          Container(
+                                            width: 8,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                          ),
+                                          Container(
+                                            width: 8,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                          ),
+                                          Container(
+                                            width: 8,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    AnimatedPositioned(
+                                      duration: const Duration(seconds: 1),
+                                      curve: Curves.easeIn,
+                                      left: 10,
+                                      right: 10,
+                                      top: stepheight * buspos + 30,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          /*setState(() {
+                                      buspos = (buspos + 1) % 5;
+                                    });*/
+                                        },
+                                        child: Container(
+                                          //width: 60,
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(50)),
+                                          child: const Icon(
+                                            LineIcons.bus,
+                                            size: 35,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Expanded(
+                                    child: SizedBox(
+                                  height: 550,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Text(
+                                        "Main Building",
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w500,
+                                            color: buspos == 0
+                                                ? Colors.white
+                                                : pricol),
+                                      ),
+                                      Text(
+                                        "Auditorium",
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w500,
+                                            color: buspos == 1
+                                                ? Colors.white
+                                                : pricol),
+                                      ),
+                                      Text(
+                                        "Chemical Gate",
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w500,
+                                            color: buspos == 2
+                                                ? Colors.white
+                                                : pricol),
+                                      ),
+                                      Text(
+                                        "Kattangal",
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w500,
+                                            color: buspos == 3
+                                                ? Colors.white
+                                                : pricol),
+                                      ),
+                                      Text(
+                                        "Mega Hostel",
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w500,
+                                          color: buspos == 4
+                                              ? Colors.white
+                                              : pricol,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )),
+                                const SizedBox(
+                                  width: 40,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        Expanded(
-                            child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            const SizedBox(
-                              height: 35,
+                          ),
+                        ],
+                      ),
+              ),
+            )
+          : SafeArea(
+              child: Center(
+                child: buspos == -1
+                    ? const SpinKitThreeBounce(
+                        size: 25,
+                        color: pricol,
+                      )
+                    : Stack(
+                        children: [
+                          AnimatedPositioned(
+                            duration: const Duration(seconds: 1),
+                            curve: Curves.easeIn,
+                            top: stepheight * buspos,
+                            child: Container(
+                              height: 105,
+                              width: MediaQuery.of(context).size.width,
+                              color: yel,
                             ),
-                            Text(
-                              "Main Building",
-                              style: GoogleFonts.outfit(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                                color: buspos==0?Colors.white:pricol
-                              ),
+                          ),
+                          SizedBox(
+                            height: 550,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                const SizedBox(
+                                  width: 40,
+                                ),
+                                Stack(
+                                  children: [
+                                    Container(
+                                      width: 80,
+                                      height: 550,
+                                      decoration: BoxDecoration(
+                                          color: Colors.black,
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          Container(
+                                            width: 8,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                          ),
+                                          Container(
+                                            width: 8,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                          ),
+                                          Container(
+                                            width: 8,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                          ),
+                                          Container(
+                                            width: 8,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                          ),
+                                          Container(
+                                            width: 8,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    AnimatedPositioned(
+                                      duration: const Duration(seconds: 1),
+                                      curve: Curves.easeIn,
+                                      left: 10,
+                                      right: 10,
+                                      top: stepheight * buspos + 30,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          /*setState(() {
+                                      buspos = (buspos + 1) % 5;
+                                    });*/
+                                        },
+                                        child: Container(
+                                          //width: 60,
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(50)),
+                                          child: const Icon(
+                                            LineIcons.bus,
+                                            size: 35,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Expanded(
+                                    child: SizedBox(
+                                  height: 550,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Text(
+                                        "Chemical Gate",
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w500,
+                                            color: buspos == 0
+                                                ? Colors.white
+                                                : pricol),
+                                      ),
+                                      Text(
+                                        "Center Circle",
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w500,
+                                            color: buspos == 1
+                                                ? Colors.white
+                                                : pricol),
+                                      ),
+                                      Text(
+                                        "Main Gate",
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w500,
+                                            color: buspos == 2
+                                                ? Colors.white
+                                                : pricol),
+                                      ),
+                                      Text(
+                                        "LH Stop",
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w500,
+                                            color: buspos == 3
+                                                ? Colors.white
+                                                : pricol),
+                                      ),
+                                      Text(
+                                        "SOMS",
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w500,
+                                          color: buspos == 4
+                                              ? Colors.white
+                                              : pricol,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )),
+                                const SizedBox(
+                                  width: 40,
+                                ),
+                              ],
                             ),
-                            const SizedBox(
-                              height: 6,
-                            ),
-                            Text(
-                              "Auditorium",
-                              style: GoogleFonts.outfit(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                                color: buspos==1?Colors.white:pricol
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              "Chemical Gate",
-                              style: GoogleFonts.outfit(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                                color: buspos==2?Colors.white:pricol
-
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              "Kattangal",
-                              style: GoogleFonts.outfit(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                                color: buspos==3?Colors.white:pricol
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 4,
-                            ),
-                            Text(
-                              "Mega Hostel",
-                              style: GoogleFonts.outfit(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                                color: buspos==4?Colors.white:pricol
-
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 40,
-                            )
-                          ],
-                        )),
-                        const SizedBox(
-                          width: 40,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-        )));
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+    );
   }
 }
 

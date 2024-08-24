@@ -101,11 +101,18 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
       User? curruser=FirebaseAuth.instance.currentUser;
       var userdata=await FirebaseFirestore.instance.collection('users').doc(curruser!.uid).get();
       String busname=userdata["username"];
+      String role=userdata["role"];
+      try{
       List<LatLng> res =
-          await gpsLocation.addFirstLocation(currentPosition, formResponse!.role, busname);
+          await gpsLocation.addFirstLocation(currentPosition, role, busname);
           formResponse?.busLoc.clear();
       print(res);
       formResponse?.busLoc.addAll(res);
+      }catch(e){
+        print("\n\n\nerror:  ");
+        print(e.toString());
+        print("\n\n\n");
+      }
 
       Provider.of<FormResponse>(context, listen: false)
           .addCurrentUserPosition(currentPosition!);
