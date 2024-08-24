@@ -1,100 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:ogs/constants.dart';
+import 'package:ogs/pages/bus_position.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
-class TrackBusPage extends StatefulWidget {
+class TrackBusPage extends StatelessWidget {
   const TrackBusPage({super.key});
-
-  @override
-  State<TrackBusPage> createState() => _TrackBusPageState();
-}
-
-class _TrackBusPageState extends State<TrackBusPage> {
-
-  double stepheight=130;
-  int buspos=0;
-  // @override
-  // void initState() {
-  //   stepheight=MediaQuery.of(context).size.height*.7/4;
-  //   super.initState();
-  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(child: Center(
-        child: Stack(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Container(
-              width: 80,
-              height: MediaQuery.of(context).size.height*.7,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(20)
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                Container(
-                  width: 8,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6)
-                  ),
-                ),
-                Container(
-                  width: 8,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6)
-                  ),
-                ),
-                Container(
-                  width: 8,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6)
-                  ),
-                ),
-                Container(
-                  width: 8,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6)
-                  ),
-                ),
-                Container(
-                  width: 8,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6)
-                  ),
-                ),
-              ],),
+          GestureDetector(
+            onTap: () {
+              PersistentNavBarNavigator.pushNewScreen(
+                context,
+                screen: const BusPosition(index: 1,),
+                withNavBar: true,
+                pageTransitionAnimation: PageTransitionAnimation.cupertino,
+              );
+            },
+            child: Container(
+              color: pricol,
+              height: 50,
+              width: 200,
+              child: Text("lh2"),
             ),
-            AnimatedPositioned(
-              duration: Duration(seconds: 1),
-              curve: Curves.easeIn,
-              left: 10,
-              right: 10,
-              top: stepheight*buspos+20,
-              child: Container(
-                //width: 60,
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(50)
-                ),
-                child:const Icon(LineIcons.bus,size: 35,),
-              ),
-            )
-          ],
-        ),
+          )
+        ],),
       ))
     );
   }

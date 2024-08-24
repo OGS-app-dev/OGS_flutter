@@ -2,7 +2,6 @@
 
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,11 +11,12 @@ import 'package:ogs/constants.dart';
 
 import 'package:ogs/constants/coordinates.dart';
 import 'package:ogs/form_response/form_response.dart';
-import 'package:ogs/Networking/gps_location.dart';
 import 'package:provider/provider.dart';
 
 class BusPosition extends StatefulWidget {
-  const BusPosition({super.key});
+  final int index;
+  const BusPosition({super.key,
+  required this.index});
 
   @override
   State<BusPosition> createState() => _BusPositionState();
@@ -36,7 +36,8 @@ class _BusPositionState extends State<BusPosition> {
 
   void startTimer() {
     _timer = Timer?.periodic(const Duration(seconds: 5), (timer) {
-      getNewLoc(formResponse!.busLoc[0]);
+      
+      getNewLoc(formResponse!.busLoc[widget.index]);
       setState(() {
         currLocName;
         prevLocName;

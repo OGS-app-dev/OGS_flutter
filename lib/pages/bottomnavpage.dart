@@ -26,8 +26,8 @@ class _MainPageState extends State<MainPage> {
   List<Widget> screens() {
     return [
       const HomePage(),
-      //const TrackBusPage(),
-      const BusPosition(),
+      const TrackBusPage(),
+      //const BusPosition(),
       LoadingScreen(),
       const Profilepage(),
     ];

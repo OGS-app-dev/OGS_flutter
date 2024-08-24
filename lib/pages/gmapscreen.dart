@@ -1,6 +1,8 @@
 // ignore_for_file: unused_field
 
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -96,9 +98,11 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
   Future<void> getLocation() async {
     gpsLocation.getLocation().listen((currentPosition) async {
       //dont need it now since not taking other location
-      
+      User? curruser=FirebaseAuth.instance.currentUser;
+      var userdata=await FirebaseFirestore.instance.collection('users').doc(curruser!.uid).get();
+      String busname=userdata["username"];
       List<LatLng> res =
-          await gpsLocation.addFirstLocation(currentPosition, formResponse!.role, busNo);
+          await gpsLocation.addFirstLocation(currentPosition, formResponse!.role, busname);
           formResponse?.busLoc.clear();
       print(res);
       formResponse?.busLoc.addAll(res);

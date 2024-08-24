@@ -91,7 +91,7 @@ class _SignUpPageState extends State<SignUpPage> {
           'email': userCredential.user!.email,
           'username': usernamecontroller.text,
           'uid': userCredential.user!.uid,
-          "role": role
+          "role": "student"
         });
       } catch (e) {
         if (mounted) {
@@ -149,40 +149,40 @@ class _SignUpPageState extends State<SignUpPage> {
                 obsctext: true,
               ),
             ),
-            Row(
-                children: [
-                  //two Textbutton to slect a role called staff or student
-                  TextButton(
-                    onPressed: () {
-                      role = "staff";
-                      Provider.of<FormResponse>(context, listen: false).role =
-                          "staff";
-                    },
-                    child: Text(
-                      'Staff',
-                      style: GoogleFonts.poppins(
-                          color: bgcol,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      role = "student";
-                      Provider.of<FormResponse>(context, listen: false).role =
-                          "student";
-                    },
-                    child: Text(
-                      'Student',
-                      style: GoogleFonts.poppins(
-                          color: bgcol,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500),
-                    ),
-                  ),
+            // Row(
+            //     children: [
+            //       //two Textbutton to slect a role called staff or student
+            //       TextButton(
+            //         onPressed: () {
+            //           role = "staff";
+            //           Provider.of<FormResponse>(context, listen: false).role =
+            //               "staff";
+            //         },
+            //         child: Text(
+            //           'Staff',
+            //           style: GoogleFonts.poppins(
+            //               color: bgcol,
+            //               fontSize: 20,
+            //               fontWeight: FontWeight.w500),
+            //         ),
+            //       ),
+            //       // TextButton(
+            //       //   onPressed: () {
+            //       //     role = "student";
+            //       //     Provider.of<FormResponse>(context, listen: false).role =
+            //       //         "student";
+            //       //   },
+            //       //   child: Text(
+            //       //     'Student',
+            //       //     style: GoogleFonts.poppins(
+            //       //         color: bgcol,
+            //       //         fontSize: 20,
+            //       //         fontWeight: FontWeight.w500),
+            //       //   ),
+            //       // ),
 
-                ],
-              ),
+            //     ],
+            //   ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(

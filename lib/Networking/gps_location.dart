@@ -70,13 +70,13 @@ class GpsLocation {
       Position? currentPosition, String role, String userDisplayName) async {
     if (role.toLowerCase() == "staff") {
       try {
-        await _cloud.collection("Location").doc("1").set({
+        await _cloud.collection("Location").doc(userDisplayName).set({
           "latitude": currentPosition?.latitude,
           "longitude": currentPosition?.longitude,
         });
       } catch (e) {
         print(e.toString());
-        await _cloud.collection("Location").doc("1").update({
+        await _cloud.collection("Location").doc(userDisplayName).update({
           "latitude": currentPosition?.latitude,
           "longitude": currentPosition?.longitude,
         });
