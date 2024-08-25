@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/constants.dart';
+import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/loginpage.dart';
+import 'package:provider/provider.dart';
 
 class Profilepage extends StatelessWidget {
   const Profilepage({super.key});
@@ -32,6 +34,8 @@ class Profilepage extends StatelessWidget {
                             builder: (context) => const LoginPage())
                             ,(Route<dynamic> route) => false
                         );*/
+                    Provider.of<FormResponse>(context, listen: false)
+                        .tabController!.jumpToTab(0);
 
                     Navigator.of(context, rootNavigator: true)
                         .pushAndRemoveUntil(

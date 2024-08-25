@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,6 +34,37 @@ class FormResponse extends ChangeNotifier {
   bool showDistance = false;
   late GpsLocation gpsLocation;
   List<LatLng> busLoc=[LatLng(1,1),LatLng(1,1),LatLng(1,1),LatLng(1,1),];
+
+  List<LatLng> newBusLoc = [
+    LatLng(1, 1),
+    LatLng(1, 1),
+    LatLng(1, 1),
+    LatLng(1, 1),
+  ];
+
+
+  Future<void> updateTempBusLoc() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("Location")
+          .orderBy(FieldPath.documentId, descending: false)
+          .get()
+          .then((value) {
+        newBusLoc.clear();
+
+        for (var data in value.docs) {
+          newBusLoc.add(LatLng(
+              double.parse(data.data()["latitude"].toString()),
+              double.parse(data.data()["longitude"].toString())));
+        }
+        notifyListeners();
+        // coordinates();
+      }, onError: (e) => print(e));
+    } catch (e) {
+      print(e.toString());
+      
+    }
+  }
 
   PersistentTabController? tabController = PersistentTabController();
   

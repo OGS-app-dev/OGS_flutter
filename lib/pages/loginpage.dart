@@ -10,7 +10,6 @@ import 'package:ogs/pages/signup_page.dart';
 import 'package:ogs/widgets/mytextfield.dart';
 import 'package:provider/provider.dart';
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -31,7 +30,6 @@ class _LoginPageState extends State<LoginPage> {
           builder: (context) => const SignUpPage(),
         ));
   }
-
 
   void login() async {
     showDialog(
@@ -54,12 +52,13 @@ class _LoginPageState extends State<LoginPage> {
             .then((value) {
           formResponse?.role = value['role'];
         });
-
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const MainPage(),
-            ));
+        if (mounted) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const MainPage(),
+              ));
+        }
       }
     } on FirebaseAuthException catch (e) {
       if (!mounted) {
@@ -74,6 +73,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     }
   }
+
   @override
   void initState() {
     formResponse = Provider.of<FormResponse>(context, listen: false);
@@ -88,7 +88,6 @@ class _LoginPageState extends State<LoginPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              
               const SizedBox(
                 height: 280,
               ),
@@ -136,12 +135,13 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              GestureDetector(
-                onTap: onTap,
-                child: const Text("Dont have an account? Sign Up Here",style: TextStyle(
-                  color: bgcol
-                ),),
-              )
+              // GestureDetector(
+              //   onTap: onTap,
+              //   child: const Text(
+              //     "Dont have an account? Sign Up Here",
+              //     style: TextStyle(color: bgcol),
+              //   ),
+              // )
             ],
           ),
         ),

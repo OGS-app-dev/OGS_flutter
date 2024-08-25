@@ -24,10 +24,16 @@ class BusPosition extends StatefulWidget {
 class _BusPositionState extends State<BusPosition> {
   String prevLocName = "";
   String currLocName = "";
-  LatLng prevLoc =const LatLng(0, 0);
+  LatLng prevLoc = const LatLng(0, 0);
   Timer? _timer;
 
   FormResponse? formResponse;
+  // List<LatLng> tempBusLoc = [
+  //   LatLng(1, 1),
+  //   LatLng(1, 1),
+  //   LatLng(1, 1),
+  //   LatLng(1, 1),
+  // ];
 
   double stepheight = 112;
   int buspos = -1;
@@ -35,16 +41,47 @@ class _BusPositionState extends State<BusPosition> {
 
   Map<int, bool> busmap = {0: false, 1: false, 2: true, 3: true};
 
+  // Future<void> getTempBusLoc() async {
+  //   try {
+  //     await FirebaseFirestore.instance
+  //         .collection("Location")
+  //         .orderBy(FieldPath.documentId, descending: false)
+  //         .get()
+  //         .then((value) {
+  //       tempBusLoc.clear();
+
+  //       for (var data in value.docs) {
+  //         tempBusLoc.add(LatLng(
+  //             double.parse(data.data()["latitude"].toString()),
+  //             double.parse(data.data()["longitude"].toString())));
+  //       }
+
+  //       // coordinates();
+  //     }, onError: (e) => print(e));
+  //   } catch (e) {
+  //     if (mounted) {
+  //       showDialog(
+  //         context: context,
+  //         builder: (context) => AlertDialog(
+  //           title: Text(e.toString()),
+  //         ),
+  //       );
+  //     }
+  //   }
+  // }
+
   void startTimer() {
     _timer = Timer?.periodic(const Duration(seconds: 5), (timer) {
-      getNewLoc(formResponse!.busLoc[widget.index]);
-      // print("busloc----------------");
-      // print(formResponse?.busLoc);
-      if(mounted){
-      setState(() {
-        currLocName;
-        prevLocName;
-      });}
+      //getTempBusLoc();
+      getNewLoc(formResponse!.newBusLoc[widget.index]);
+      //  print("buslochihi----------------${widget.index}");
+      //  print(formResponse?.busLoc);
+      if (mounted) {
+        setState(() {
+          currLocName;
+          prevLocName;
+        });
+      }
     });
   }
 

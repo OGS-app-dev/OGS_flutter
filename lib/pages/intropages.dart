@@ -1,4 +1,4 @@
-import 'package:ogs/pages/loginpage.dart';
+import 'package:ogs/pages/student_or_staff_login.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -157,7 +157,7 @@ class MyIntroPage extends StatelessWidget {
                 Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const LoginPage(),
+                      builder: (context) => const StudentOrStaff(),
                     ));
               },
               child: Container(
