@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ogs/constants.dart';
 import 'package:ogs/pages/bottomnavpage.dart';
 
 class GoogleSignInPage extends StatefulWidget {
@@ -14,10 +16,21 @@ class GoogleSignInPage extends StatefulWidget {
 
 class _GoogleSignInPageState extends State<GoogleSignInPage> {
   Future<void> signInWithGoogle() async {
+    showDialog(
+        context: context,
+        builder: (context) => const SpinKitThreeBounce(
+              color: pricol,
+              size: 30,
+            ));
     try {
       final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
 
-      if (gUser == null) return;
+      if (gUser == null) {
+        if (mounted) {
+          Navigator.pop(context);
+        }
+        return;
+      }
 
       final GoogleSignInAuthentication gAuth = await gUser.authentication;
 
@@ -52,6 +65,7 @@ class _GoogleSignInPageState extends State<GoogleSignInPage> {
         }
       }
       if (mounted) {
+        Navigator.pop(context);
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -60,6 +74,7 @@ class _GoogleSignInPageState extends State<GoogleSignInPage> {
       }
     } catch (e) {
       if (mounted) {
+        Navigator.pop(context);
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -80,22 +95,38 @@ class _GoogleSignInPageState extends State<GoogleSignInPage> {
             signInWithGoogle();
           },
           child: Container(
+            height: 65,
+            width: 250,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(19),
               color: const Color.fromARGB(255, 17, 23, 101),
             ),
             child: Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16), color: Colors.white),
-              padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 12),
-              child: Text(
-                'Google',
-                style: GoogleFonts.poppins(
-                    color: const Color.fromARGB(255, 17, 23, 101),
-                    fontSize: 23),
-              ),
-            ),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                        height: 30,
+                        child: Image.asset('lib/assets/icons/google.png')),
+                    const SizedBox(
+                      width: 15,
+                    ),
+                    Text(
+                      "Google",
+                      style: GoogleFonts.outfit(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w400,
+                        color: Color.fromARGB(255, 135, 148, 154)
+                      ),
+                    )
+                  ],
+                )),
           ),
         ),
       ),

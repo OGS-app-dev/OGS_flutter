@@ -28,12 +28,6 @@ class _BusPositionState extends State<BusPosition> {
   Timer? _timer;
 
   FormResponse? formResponse;
-  // List<LatLng> tempBusLoc = [
-  //   LatLng(1, 1),
-  //   LatLng(1, 1),
-  //   LatLng(1, 1),
-  //   LatLng(1, 1),
-  // ];
 
   double stepheight = 112;
   int buspos = -1;
@@ -41,38 +35,8 @@ class _BusPositionState extends State<BusPosition> {
 
   Map<int, bool> busmap = {0: false, 1: false, 2: true, 3: true};
 
-  // Future<void> getTempBusLoc() async {
-  //   try {
-  //     await FirebaseFirestore.instance
-  //         .collection("Location")
-  //         .orderBy(FieldPath.documentId, descending: false)
-  //         .get()
-  //         .then((value) {
-  //       tempBusLoc.clear();
-
-  //       for (var data in value.docs) {
-  //         tempBusLoc.add(LatLng(
-  //             double.parse(data.data()["latitude"].toString()),
-  //             double.parse(data.data()["longitude"].toString())));
-  //       }
-
-  //       // coordinates();
-  //     }, onError: (e) => print(e));
-  //   } catch (e) {
-  //     if (mounted) {
-  //       showDialog(
-  //         context: context,
-  //         builder: (context) => AlertDialog(
-  //           title: Text(e.toString()),
-  //         ),
-  //       );
-  //     }
-  //   }
-  // }
-
   void startTimer() {
     _timer = Timer?.periodic(const Duration(seconds: 5), (timer) {
-      //getTempBusLoc();
       getNewLoc(formResponse!.newBusLoc[widget.index]);
       //  print("buslochihi----------------${widget.index}");
       //  print(formResponse?.busLoc);
@@ -87,9 +51,6 @@ class _BusPositionState extends State<BusPosition> {
 
   void getNewLoc(LatLng newPos) {
     String newLocName = getNextIdx(newPos, busmap[widget.index]!);
-    // print("newpos------$newPos-----next-----$newLocName");
-    // print("curr-----------new");
-    // print(currLocName + "  " + newLocName);
     if (currLocName != newLocName) {
       prevLocName = currLocName;
       currLocName = newLocName;
@@ -237,23 +198,16 @@ class _BusPositionState extends State<BusPosition> {
                                       left: 10,
                                       right: 10,
                                       top: stepheight * buspos + 30,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          /*setState(() {
-                                      buspos = (buspos + 1) % 5;
-                                    });*/
-                                        },
-                                        child: Container(
-                                          //width: 60,
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(50)),
-                                          child: const Icon(
-                                            LineIcons.bus,
-                                            size: 35,
-                                          ),
+                                      child: Container(
+                                        //width: 60,
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(50)),
+                                        child: const Icon(
+                                          LineIcons.bus,
+                                          size: 35,
                                         ),
                                       ),
                                     ),
@@ -267,13 +221,14 @@ class _BusPositionState extends State<BusPosition> {
                                         MainAxisAlignment.spaceAround,
                                     children: [
                                       Text(
-                                        "Main Building",
+                                        "Center Circle",
                                         style: GoogleFonts.outfit(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.w500,
-                                            color: buspos == 0
-                                                ? Colors.white
-                                                : pricol),
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w500,
+                                          color: buspos == 0
+                                              ? pricol
+                                              : pricol,
+                                        ),
                                       ),
                                       Text(
                                         "Auditorium",
@@ -281,7 +236,7 @@ class _BusPositionState extends State<BusPosition> {
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
                                             color: buspos == 1
-                                                ? Colors.white
+                                                ? pricol
                                                 : pricol),
                                       ),
                                       Text(
@@ -290,7 +245,7 @@ class _BusPositionState extends State<BusPosition> {
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
                                             color: buspos == 2
-                                                ? Colors.white
+                                                ? pricol
                                                 : pricol),
                                       ),
                                       Text(
@@ -299,7 +254,7 @@ class _BusPositionState extends State<BusPosition> {
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
                                             color: buspos == 3
-                                                ? Colors.white
+                                                ? pricol
                                                 : pricol),
                                       ),
                                       Text(
@@ -308,7 +263,7 @@ class _BusPositionState extends State<BusPosition> {
                                           fontSize: 22,
                                           fontWeight: FontWeight.w500,
                                           color: buspos == 4
-                                              ? Colors.white
+                                              ? pricol
                                               : pricol,
                                         ),
                                       ),
@@ -414,23 +369,16 @@ class _BusPositionState extends State<BusPosition> {
                                       left: 10,
                                       right: 10,
                                       top: stepheight * buspos + 30,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          /*setState(() {
-                                      buspos = (buspos + 1) % 5;
-                                    });*/
-                                        },
-                                        child: Container(
-                                          //width: 60,
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(50)),
-                                          child: const Icon(
-                                            LineIcons.bus,
-                                            size: 35,
-                                          ),
+                                      child: Container(
+                                        //width: 60,
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(50)),
+                                        child: const Icon(
+                                          LineIcons.bus,
+                                          size: 35,
                                         ),
                                       ),
                                     ),
@@ -449,7 +397,7 @@ class _BusPositionState extends State<BusPosition> {
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
                                             color: buspos == 0
-                                                ? Colors.white
+                                                ? pricol
                                                 : pricol),
                                       ),
                                       Text(
@@ -458,7 +406,7 @@ class _BusPositionState extends State<BusPosition> {
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
                                             color: buspos == 1
-                                                ? Colors.white
+                                                ? pricol
                                                 : pricol),
                                       ),
                                       Text(
@@ -467,7 +415,7 @@ class _BusPositionState extends State<BusPosition> {
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
                                             color: buspos == 2
-                                                ? Colors.white
+                                                ? pricol
                                                 : pricol),
                                       ),
                                       Text(
@@ -476,7 +424,7 @@ class _BusPositionState extends State<BusPosition> {
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
                                             color: buspos == 3
-                                                ? Colors.white
+                                                ? pricol
                                                 : pricol),
                                       ),
                                       Text(
@@ -485,7 +433,7 @@ class _BusPositionState extends State<BusPosition> {
                                           fontSize: 22,
                                           fontWeight: FontWeight.w500,
                                           color: buspos == 4
-                                              ? Colors.white
+                                              ? pricol
                                               : pricol,
                                         ),
                                       ),

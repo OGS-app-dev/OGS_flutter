@@ -89,9 +89,9 @@ class _HomePageState extends State<HomePage> {
                 }
 
                 var data = snapshot.data;
-                //print(data!['username']);
+                String firstName= data!['username'].split(" ")[0];
                 return Text(
-                  data!['username'],
+                  firstName,
                   style: GoogleFonts.outfit(
                     color: const Color.fromARGB(255, 16, 34, 112),
                     fontSize: 23,
