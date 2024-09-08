@@ -41,9 +41,15 @@ class HorizontalScrollTile extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Container(
+                              height: height - 30,
+                              width: width - 30,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(18),
-                                color: Colors.grey[300],
+                                color: Colors.black,
+                              ),
+                              child: Image.asset(
+                                'lib/assets/images/tathva.png',
+                                fit: BoxFit.fitHeight,
                               ),
                             ),
                           ),
@@ -120,9 +126,15 @@ class HorizontalScrollTile extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Container(
+                              height: height - 30,
+                              width: width - 30,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(18),
-                                color: Colors.grey[300],
+                                color: Colors.black,
+                              ),
+                              child: Image.asset(
+                                'lib/assets/images/ragam.png',
+                                fit: BoxFit.fitHeight,
                               ),
                             ),
                           ),
@@ -200,7 +212,7 @@ class HorizontalScrollTile extends StatelessWidget {
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(18),
-                                color: Colors.grey[300],
+                                color: Colors.black,
                               ),
                             ),
                           ),

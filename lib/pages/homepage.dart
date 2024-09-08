@@ -1,3 +1,5 @@
+//import 'dart:nativewrappers/_internal/vm/lib/core_patch.dart';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -27,17 +29,30 @@ class _HomePageState extends State<HomePage> {
   final _fireDb = FireDb();
 
   PersistentTabController? tabController;
+  String time='Good morning,';
 
   User? currentUser;
   @override
   void initState() {
     super.initState();
+    time = getTime();
     tabController =
         Provider.of<FormResponse>(context, listen: false).tabController;
     currentUser = _fireDb.getCurrentUser();
   }
 
-  
+  String getTime() {
+  DateTime now = DateTime.now();
+  int hour = now.hour;
+
+  if (hour >= 0 && hour < 12) {
+    return 'Good morning,';  // Morning
+  } else if (hour >= 12 && hour < 15) {
+    return 'Good afternoon,';  // Afternoon
+  } else {
+    return 'Good Evening,';  // Evening/Night
+  }
+}
 
   
 
@@ -167,7 +182,7 @@ class _HomePageState extends State<HomePage> {
                             bottom: 10,
                             left: 0,
                             child: Text(
-                              'Good morning,',
+                              time,
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFFFCD01),
                                 fontSize: 32,
@@ -431,36 +446,36 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 20,
                 ),
-                GestureDetector(
-                  onTap: () {
-                    tabController?.jumpToTab(2);
-                  },
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * .88,
-                    height: 112,
-                    padding: const EdgeInsets.symmetric(vertical: 32),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: ShapeDecoration(
-                      color: const Color.fromARGB(255, 245, 245, 245),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      shadows: const [
-                        BoxShadow(
-                          color: Color(0x0A000000),
-                          blurRadius: 4,
-                          offset: Offset(0, 4),
-                          spreadRadius: 0,
-                        )
-                      ],
-                    ),
-                    child: const Icon(
-                      LineIcons.mapMarker,
-                      size: 50,
-                      color: yel,
-                    ),
-                  ),
-                ),
+                // GestureDetector(
+                //   onTap: () {
+                //     tabController?.jumpToTab(2);
+                //   },
+                //   child: Container(
+                //     width: MediaQuery.of(context).size.width * .88,
+                //     height: 112,
+                //     padding: const EdgeInsets.symmetric(vertical: 32),
+                //     clipBehavior: Clip.antiAlias,
+                //     decoration: ShapeDecoration(
+                //       color: const Color.fromARGB(255, 245, 245, 245),
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(14),
+                //       ),
+                //       shadows: const [
+                //         BoxShadow(
+                //           color: Color(0x0A000000),
+                //           blurRadius: 4,
+                //           offset: Offset(0, 4),
+                //           spreadRadius: 0,
+                //         )
+                //       ],
+                //     ),
+                //     child: const Icon(
+                //       LineIcons.mapMarker,
+                //       size: 50,
+                //       color: yel,
+                //     ),
+                //   ),
+                // ),
                 const SizedBox(
                   height: 20,
                 ),
@@ -557,11 +572,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(
-                  height: 18,
+                  height: 150,
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
+                
               ],
             ),
           ),
