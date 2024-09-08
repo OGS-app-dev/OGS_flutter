@@ -11,7 +11,7 @@ class StudentOrStaff extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: pricol,
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: Center(
             child: Column(
@@ -36,7 +36,7 @@ class StudentOrStaff extends StatelessWidget {
                     width: 230,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30),
-                      color: Colors.white,
+                      color: pricol,
                     ),
                     margin: const EdgeInsets.symmetric(vertical: 30),
                     padding:
@@ -45,7 +45,7 @@ class StudentOrStaff extends StatelessWidget {
                       child: Text(
                         'Student',
                         style: GoogleFonts.poppins(
-                            color: const Color.fromARGB(255, 17, 23, 101),
+                            color: Colors.white,
                             fontSize: 23,
                             fontWeight: FontWeight.w500),
                       ),
@@ -60,7 +60,7 @@ class StudentOrStaff extends StatelessWidget {
                     Text(
                       "or",
                       style: GoogleFonts.outfit(
-                        color: Colors.white,
+                        color: pricol,
                         fontSize: 20,
                       ),
                     ),
@@ -80,7 +80,7 @@ class StudentOrStaff extends StatelessWidget {
                     width: 230,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30),
-                      color: Colors.white,
+                      color: pricol,
                     ),
                     margin: const EdgeInsets.symmetric(vertical: 30),
                     padding: const EdgeInsets.symmetric(
@@ -89,7 +89,7 @@ class StudentOrStaff extends StatelessWidget {
                       child: Text(
                         'Staff',
                         style: GoogleFonts.poppins(
-                          color: const Color.fromARGB(255, 17, 23, 101),
+                          color: Colors.white,
                           fontSize: 23,
                           fontWeight: FontWeight.w500,
                         ),

@@ -1,0 +1,13 @@
+
+flutter_native_splash:
+  # Android, iOS, and Web configurations
+  color: "#FFFF00"  # Yellow background color in hex code
+  image: lib/assets/icons/logo.png  # Path to the image you want to display
+  #branding: assets/brand_logo.png  # (Optional) Add a branding logo or a secondary image
+  android: true  # Enable Android splash screen
+  ios: true      # Enable iOS splash screen
+  web: false     # Set to false if you don't want a splash screen on web
+  android_12:
+    image: lib/assets/icons/logo.png  # Separate image for Android 12+
+    icon_background_color: "#FFFF00"  # Yellow background for Android 12+ icon
+  fullscreen: true  # Optional: Fullscreen splash screen

@@ -1,3 +1,4 @@
+import 'package:ogs/constants.dart';
 import 'package:ogs/pages/student_or_staff_login.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter/material.dart';
@@ -28,16 +29,18 @@ class _IntroPagesState extends State<IntroPages> {
               });
             },
             children: const [
-              MyIntroPage(imgurl: 'im4'),
+              MyIntroPage(imgurl: 'im1',title: "Get Yourself\n    Updated",),
               MyIntroPage(
                 imgurl: 'im2',
-                titlecolor: Color.fromARGB(255, 233, 58, 116),
+                title: "Set Your\nLocation",
+                titlecolor: pricol,
               ),
-              MyIntroPage(imgurl: 'im1'),
+              MyIntroPage(imgurl: 'im3',
+              title: "  Complete\n  Guide For\nYour Travel",),
               MyIntroPage(
                 button: true,
-                imgurl: 'im3',
-                titlecolor: Color.fromARGB(255, 233, 58, 116),
+                imgurl: 'im4',
+                titlecolor: pricol,
               ),
             ],
           ),
@@ -123,7 +126,7 @@ class MyIntroPage extends StatelessWidget {
       this.button = false,
       this.bgcolor = Colors.white,
       this.textcolor = Colors.black,
-      this.titlecolor = Colors.greenAccent,
+      this.titlecolor = pricol,
       this.title = "Welcome",
       required this.imgurl});
 
@@ -136,19 +139,20 @@ class MyIntroPage extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Image.asset('lib/assets/landing ui/$imgurl.jpg'),
+            child: Image.asset('lib/assets/landing ui/$imgurl.png'),
           ),
+          if (!button)
           Column(
             children: [
-              Text('Welcome',
-                  style: GoogleFonts.aBeeZee(
+              Text(title,
+                  style: GoogleFonts.outfit(
                       color: titlecolor,
                       fontWeight: FontWeight.bold,
-                      fontSize: 40)),
-              Text(
-                "This is a complete travel app",
-                style: GoogleFonts.poppins(color: textcolor),
-              )
+                      fontSize: 35)),
+              // Text(
+              //   "This is a complete travel app",
+              //   style: GoogleFonts.poppins(color: textcolor),
+              // )
             ],
           ),
           if (button)
@@ -163,19 +167,19 @@ class MyIntroPage extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(34),
-                  color: const Color.fromARGB(255, 17, 23, 101),
+                  borderRadius: BorderRadius.circular(16),
+                  color: pricol,
                 ),
                 child: Container(
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30),
-                      color: Colors.yellow),
+                      color: pricol),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 45, vertical: 12),
                   child: Text(
                     'Get Started',
                     style: GoogleFonts.poppins(
-                        color: const Color.fromARGB(255, 17, 23, 101),
+                        color: Colors.white,
                         fontSize: 23),
                   ),
                 ),

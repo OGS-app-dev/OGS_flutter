@@ -225,46 +225,45 @@ class _BusPositionState extends State<BusPosition> {
                                         style: GoogleFonts.outfit(
                                           fontSize: 22,
                                           fontWeight: FontWeight.w500,
-                                          color: buspos == 0
-                                              ? pricol
-                                              : pricol,
+                                          color: buspos == 0 ? pricol : pricol,
                                         ),
                                       ),
                                       Text(
-                                        "Auditorium",
+                                        widget.index == 3
+                                            ? "- - - - - - - -"
+                                            : "Auditorium",
                                         style: GoogleFonts.outfit(
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
-                                            color: buspos == 1
-                                                ? pricol
-                                                : pricol),
+                                            color:
+                                                buspos == 1 ? pricol : pricol),
                                       ),
                                       Text(
-                                        "Chemical Gate",
+                                        widget.index == 3
+                                            ? "Main Gate"
+                                            : "Chemical Gate",
                                         style: GoogleFonts.outfit(
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
-                                            color: buspos == 2
-                                                ? pricol
-                                                : pricol),
+                                            color:
+                                                buspos == 2 ? pricol : pricol),
                                       ),
                                       Text(
-                                        "Kattangal",
+                                        widget.index == 3
+                                            ? "- - - - - - - -"
+                                            : "Kattangal",
                                         style: GoogleFonts.outfit(
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
-                                            color: buspos == 3
-                                                ? pricol
-                                                : pricol),
+                                            color:
+                                                buspos == 3 ? pricol : pricol),
                                       ),
                                       Text(
                                         "Mega Hostel",
                                         style: GoogleFonts.outfit(
                                           fontSize: 22,
                                           fontWeight: FontWeight.w500,
-                                          color: buspos == 4
-                                              ? pricol
-                                              : pricol,
+                                          color: buspos == 4 ? pricol : pricol,
                                         ),
                                       ),
                                     ],
@@ -396,45 +395,39 @@ class _BusPositionState extends State<BusPosition> {
                                         style: GoogleFonts.outfit(
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
-                                            color: buspos == 0
-                                                ? pricol
-                                                : pricol),
+                                            color:
+                                                buspos == 0 ? pricol : pricol),
                                       ),
                                       Text(
                                         "Center Circle",
                                         style: GoogleFonts.outfit(
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
-                                            color: buspos == 1
-                                                ? pricol
-                                                : pricol),
+                                            color:
+                                                buspos == 1 ? pricol : pricol),
                                       ),
                                       Text(
                                         "Main Gate",
                                         style: GoogleFonts.outfit(
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
-                                            color: buspos == 2
-                                                ? pricol
-                                                : pricol),
+                                            color:
+                                                buspos == 2 ? pricol : pricol),
                                       ),
                                       Text(
                                         "LH Stop",
                                         style: GoogleFonts.outfit(
                                             fontSize: 22,
                                             fontWeight: FontWeight.w500,
-                                            color: buspos == 3
-                                                ? pricol
-                                                : pricol),
+                                            color:
+                                                buspos == 3 ? pricol : pricol),
                                       ),
                                       Text(
                                         "SOMS",
                                         style: GoogleFonts.outfit(
                                           fontSize: 22,
                                           fontWeight: FontWeight.w500,
-                                          color: buspos == 4
-                                              ? pricol
-                                              : pricol,
+                                          color: buspos == 4 ? pricol : pricol,
                                         ),
                                       ),
                                     ],

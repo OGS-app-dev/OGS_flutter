@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 
 import 'form_response/form_response.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
@@ -23,14 +23,17 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
+  
+
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<FormResponse>(
-        create: (context) => FormResponse(),
-    child: const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Landing(),
-      //home: HomePage(location: 'Palakkad'),
-    ),
+      create: (context) => FormResponse(),
+      child: const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Landing(),
+        //home: HomePage(location: 'Palakkad'),
+      ),
     );
   }
 }
