@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -28,15 +25,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -50,19 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDeQX0sJ01lU3-TTaLGKQukY4UjF4RHdR0',
-    appId: '1:872926734963:android:3e25c6ec906d8f78151806',
-    messagingSenderId: '872926734963',
-    projectId: 'ogs-new-app',
-    storageBucket: 'ogs-new-app.appspot.com',
+    apiKey: 'AIzaSyCVONb1v3pr3PkOIy3RKm-Sg9B9ZwMXAls',
+    appId: '1:1067053335733:android:560735996a6e867d0d2afc',
+    messagingSenderId: '1067053335733',
+    projectId: 'ogs-dev-project',
+    storageBucket: 'ogs-dev-project.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyA0RKZVgS_N0WxjtHMMlcGq3oOFDoh6wKE',
-    appId: '1:872926734963:ios:cab7b832c5378263151806',
-    messagingSenderId: '872926734963',
-    projectId: 'ogs-new-app',
-    storageBucket: 'ogs-new-app.appspot.com',
+    apiKey: 'AIzaSyDwB1sdYaCkNN9dGtNEWzSCF_atR4Jj59Y',
+    appId: '1:1067053335733:ios:b53f4d632c55742a0d2afc',
+    messagingSenderId: '1067053335733',
+    projectId: 'ogs-dev-project',
+    storageBucket: 'ogs-dev-project.firebasestorage.app',
     iosBundleId: 'com.ogs.app.ogs',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCScMUTCzpiYkdMnN4FAgYulyWLvu1ghWY',
+    appId: '1:1067053335733:web:05a59c1cb86b12050d2afc',
+    messagingSenderId: '1067053335733',
+    projectId: 'ogs-dev-project',
+    authDomain: 'ogs-dev-project.firebaseapp.com',
+    storageBucket: 'ogs-dev-project.firebasestorage.app',
+    measurementId: 'G-958P40M3KC',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDwB1sdYaCkNN9dGtNEWzSCF_atR4Jj59Y',
+    appId: '1:1067053335733:ios:56f269cbd44ffb750d2afc',
+    messagingSenderId: '1067053335733',
+    projectId: 'ogs-dev-project',
+    storageBucket: 'ogs-dev-project.firebasestorage.app',
+    iosBundleId: 'com.example.app',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyCScMUTCzpiYkdMnN4FAgYulyWLvu1ghWY',
+    appId: '1:1067053335733:web:6eaf574af29f129a0d2afc',
+    messagingSenderId: '1067053335733',
+    projectId: 'ogs-dev-project',
+    authDomain: 'ogs-dev-project.firebaseapp.com',
+    storageBucket: 'ogs-dev-project.firebasestorage.app',
+    measurementId: 'G-XKHEKH5TQD',
+  );
+
 }

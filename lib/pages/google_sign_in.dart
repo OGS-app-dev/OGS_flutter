@@ -122,7 +122,7 @@ class _GoogleSignInPageState extends State<GoogleSignInPage> {
                       style: GoogleFonts.outfit(
                         fontSize: 30,
                         fontWeight: FontWeight.w400,
-                        color: Color.fromARGB(255, 135, 148, 154)
+                        color: const Color.fromARGB(255, 135, 148, 154)
                       ),
                     )
                   ],

@@ -12,7 +12,7 @@ class GpsLocation {
   Position? currentPosition;
   List<double> geoLocationLatitude = [];
   List<double> geoLocationLongitude = [];
-  List<LatLng> busLocs = [LatLng(1, 1)];
+  List<LatLng> busLocs = [const LatLng(1, 1)];
   Set<Marker> locationCoordinate = {};
   List<String> userId = [];
   dynamic longitude;

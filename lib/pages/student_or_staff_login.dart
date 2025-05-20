@@ -4,6 +4,8 @@ import 'package:line_icons/line_icons.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/pages/google_sign_in.dart';
 import 'package:ogs/pages/loginpage.dart';
+import 'loginpage_new.dart';
+import 'signup_page_new.dart';
 
 class StudentOrStaff extends StatelessWidget {
   const StudentOrStaff({super.key});
@@ -72,7 +74,7 @@ class StudentOrStaff extends StatelessWidget {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const LoginPage(),
+                          builder: (context) => const SignupPageNew(),
                         ));
                   },
                   child: Container(

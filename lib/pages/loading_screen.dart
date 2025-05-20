@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 class LoadingScreen extends StatefulWidget {
   static const String id = "LoadingScreen";
 
+  const LoadingScreen({super.key});
+
   @override
   State<LoadingScreen> createState() => _LoadingScreenState();
 }
@@ -49,7 +51,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -58,10 +60,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
             //   color: Colors.blue[700]!,
             //   waveColor: Colors.blue,
             // ),
-            const SizedBox(
+            SizedBox(
               height: 10,
             ),
-            const Text(
+            Text(
               "Fetching Data..Please be patient",
             ),
           ],

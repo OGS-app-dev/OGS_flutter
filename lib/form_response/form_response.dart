@@ -33,13 +33,13 @@ class FormResponse extends ChangeNotifier {
   String busNo = "";
   bool showDistance = false;
   late GpsLocation gpsLocation;
-  List<LatLng> busLoc=[LatLng(1,1),LatLng(1,1),LatLng(1,1),LatLng(1,1),];
+  List<LatLng> busLoc=[const LatLng(1,1),const LatLng(1,1),const LatLng(1,1),const LatLng(1,1),];
 
   List<LatLng> newBusLoc = [
-    LatLng(1, 1),
-    LatLng(1, 1),
-    LatLng(1, 1),
-    LatLng(1, 1),
+    const LatLng(1, 1),
+    const LatLng(1, 1),
+    const LatLng(1, 1),
+    const LatLng(1, 1),
   ];
 
 

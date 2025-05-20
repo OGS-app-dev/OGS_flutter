@@ -35,7 +35,7 @@ class _MainLoadingScreenState extends State<MainLoadingScreen> {
       // context.mounted ? Provider.of<FormResponse>(context,listen: false).email = email : null;
       // context.mounted ? Provider.of<FormResponse>(context,listen: false).userName = userName! : null;
     Navigator.push(context,
-    MaterialPageRoute(builder: (context) => LoginPage()),
+    MaterialPageRoute(builder: (context) => const LoginPage()),
     );
 
 

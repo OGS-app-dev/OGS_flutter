@@ -1,26 +1,51 @@
 {
   "project_info": {
-    "project_number": "872926734963",
-    "project_id": "ogs-new-app",
-    "storage_bucket": "ogs-new-app.appspot.com"
+    "project_number": "1067053335733",
+    "project_id": "ogs-dev-project",
+    "storage_bucket": "ogs-dev-project.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:872926734963:android:3e25c6ec906d8f78151806",
+        "mobilesdk_app_id": "1:1067053335733:android:560735996a6e867d0d2afc",
         "android_client_info": {
           "package_name": "com.ogs.app.ogs"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1067053335733-vk2ofhndmee1qhlkat1v77vjj80mmbhj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ogs.app.ogs",
+            "certificate_hash": "8dfd827a8081f4b72911f889b865c6cd88ec5f66"
+          }
+        },
+        {
+          "client_id": "1067053335733-bum1hs2fcppd6jbjkctm8l8todqdn2ij.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDeQX0sJ01lU3-TTaLGKQukY4UjF4RHdR0"
+          "current_key": "AIzaSyCVONb1v3pr3PkOIy3RKm-Sg9B9ZwMXAls"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1067053335733-bum1hs2fcppd6jbjkctm8l8todqdn2ij.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1067053335733-7hbbqq1s1v7rcemko9e48o7d4rlc98f9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ogs.app.ogs"
+              }
+            }
+          ]
         }
       }
     }

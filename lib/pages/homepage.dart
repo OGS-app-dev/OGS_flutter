@@ -1,6 +1,5 @@
 //import 'dart:nativewrappers/_internal/vm/lib/core_patch.dart';
 
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   final _fireDb = FireDb();
 
   PersistentTabController? tabController;
-  String time='Good morning,';
+  String time = 'Good morning,';
 
   User? currentUser;
   @override
@@ -42,19 +41,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   String getTime() {
-  DateTime now = DateTime.now();
-  int hour = now.hour;
+    DateTime now = DateTime.now();
+    int hour = now.hour;
 
-  if (hour >= 0 && hour < 12) {
-    return 'Good morning,';  // Morning
-  } else if (hour >= 12 && hour < 15) {
-    return 'Good afternoon,';  // Afternoon
-  } else {
-    return 'Good Evening,';  // Evening/Night
+    if (hour >= 0 && hour < 12) {
+      return 'Good morning,'; // Morning
+    } else if (hour >= 12 && hour < 15) {
+      return 'Good afternoon,'; // Afternoon
+    } else {
+      return 'Good Evening,'; // Evening/Night
+    }
   }
-}
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +101,7 @@ class _HomePageState extends State<HomePage> {
                 }
 
                 var data = snapshot.data;
-                String firstName= data!['username'].split(" ")[0];
+                String firstName = data!['username'].split(" ")[0];
                 return Text(
                   firstName,
                   style: GoogleFonts.outfit(
@@ -521,60 +518,10 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 25,
                 ),
-                CarouselSlider(
-                  items: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.amber,
-                      ),
-                      height: 200,
-                      width: 500,
-                      margin: const EdgeInsets.all(3),
-                      child: const Center(child: Text("#Ad1")),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.red,
-                      ),
-                      height: 200,
-                      width: 500,
-                      margin: const EdgeInsets.all(3),
-                      child: const Center(child: Text("#Ad2")),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.blue,
-                      ),
-                      height: 200,
-                      width: 450,
-                      margin: const EdgeInsets.all(3),
-                      child: const Center(child: Text("#Ad3")),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.green,
-                      ),
-                      height: 200,
-                      width: 500,
-                      margin: const EdgeInsets.all(3),
-                      child: const Center(child: Text("#Ad4")),
-                    ),
-                  ],
-                  options: CarouselOptions(
-                    height: 200,
-                    autoPlay: true,
-                    enlargeCenterPage: true,
-                    enlargeFactor: 0.16,
-                  ),
-                ),
+
                 const SizedBox(
                   height: 150,
                 ),
-                
               ],
             ),
           ),
@@ -583,3 +530,66 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+// CarouselSlider(
+//                   items: [
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         borderRadius: BorderRadius.circular(12),
+//                         color: Colors.amber,
+//                       ),
+//                       height: 200,
+//                       width: 500,
+//                       margin: const EdgeInsets.all(3),
+//                       child: const Center(child: Text("#Ad1")),
+//                     ),
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         borderRadius: BorderRadius.circular(12),
+//                         color: Colors.red,
+//                       ),
+//                       height: 200,
+//                       width: 500,
+//                       margin: const EdgeInsets.all(3),
+//                       child: const Center(child: Text("#Ad2")),
+//                     ),
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         borderRadius: BorderRadius.circular(12),
+//                         color: Colors.blue,
+//                       ),
+//                       height: 200,
+//                       width: 450,
+//                       margin: const EdgeInsets.all(3),
+//                       child: const Center(child: Text("#Ad3")),
+//                     ),
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         borderRadius: BorderRadius.circular(12),
+//                         color: Colors.green,
+//                       ),
+//                       height: 200,
+//                       width: 500,
+//                       margin: const EdgeInsets.all(3),
+//                       child: const Center(child: Text("#Ad4")),
+//                     ),
+//                   ],
+//                   options: CarouselOptions(
+//                     height: 200,
+//                     autoPlay: true,
+//                     enlargeCenterPage: true,
+//                     enlargeFactor: 0.16,
+//                   ),
+//                 ),

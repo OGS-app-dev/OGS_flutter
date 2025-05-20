@@ -49,7 +49,7 @@ class _GpsScreenState extends State<GpsScreen> with TickerProviderStateMixin {
   late var markerIcon;
   String searchBar = "Search Here";
   String title = "Search Here";
-  Set<Polyline> _polylinesResponse = {};
+  final Set<Polyline> _polylinesResponse = {};
   bool needGetDirection = true;
   List<Marker> markerList = [];
   Set<Marker> markers = {};
