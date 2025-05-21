@@ -3,9 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:intl/intl.dart'; // Corrected import
-
-// Assuming these are defined in your project
+import 'package:intl/intl.dart'; 
 import 'package:ogs/constants.dart';
 import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/bottomnavpage.dart';
@@ -29,7 +27,6 @@ class _SignupPageNewState extends State<SignupPageNew> {
   TextEditingController namecontroller = TextEditingController();
   TextEditingController dobcontroller = TextEditingController();
 
-  // Consider initializing this if always needed, otherwise, ensure it's handled.
   FormResponse? formResponse;
 
   @override

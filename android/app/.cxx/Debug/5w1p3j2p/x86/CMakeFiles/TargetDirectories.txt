@@ -1,0 +1,2 @@
+C:/downloads_d/OGS_app/OGS-app/android/app/.cxx/Debug/5w1p3j2p/x86/CMakeFiles/edit_cache.dir
+C:/downloads_d/OGS_app/OGS-app/android/app/.cxx/Debug/5w1p3j2p/x86/CMakeFiles/rebuild_cache.dir

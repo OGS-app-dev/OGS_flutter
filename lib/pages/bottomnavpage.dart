@@ -6,7 +6,7 @@ import 'package:ogs/constants.dart';
 import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/homepage.dart';
 import 'package:ogs/pages/loading_screen.dart';
-import 'package:ogs/pages/profilepage.dart';
+import 'package:ogs/pages/profilepage_new.dart';
 import 'package:ogs/pages/topnavpage.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
@@ -28,8 +28,8 @@ class _MainPageState extends State<MainPage> {
       const TopTabPage(),
       //TrackBusPage(),
       //const BusPosition(),
-      LoadingScreen(),
-      const Profilepage(),
+     const LoadingScreen(),
+      const UserProfilePage(),
     ];
   }
 
