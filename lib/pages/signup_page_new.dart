@@ -307,6 +307,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
               controller: namecontroller,
               style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
               decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 labelText: 'Name',
                 labelStyle: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
                 hintText: 'Enter your Full Name',
@@ -319,7 +320,9 @@ class _SignupPageNewState extends State<SignupPageNew> {
                   borderSide: const BorderSide(color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
                   borderRadius: BorderRadius.circular(20.0),
                 ),
+                
               ),
+              
             ),
             const SizedBox(height: 20.0),
             TextFormField(
@@ -327,6 +330,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
               style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
               readOnly: true, // Makes the field non-editable, relying on the picker
               decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 labelText: 'Date of Birth',
                 labelStyle: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
                 hintText: 'MM/DD/YYYY',
@@ -345,84 +349,79 @@ class _SignupPageNewState extends State<SignupPageNew> {
                 ),
               ),
             ),
-            const SizedBox(height: 20.0),
+            const SizedBox(height: 15.0),
+           const Padding(
+             padding:  EdgeInsets.only(left: 10),
+             child:  Text('Gender',style: TextStyle(color: Color.fromARGB(210, 4, 1, 23)),),
+           ),
+            const SizedBox(height: 10),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color.fromARGB(197, 11, 4, 66), width: 2),
-                      borderRadius: BorderRadius.circular(50.0),
-                      color: const Color.fromARGB(120, 180, 178, 197),
-                    ),
-                    child: RadioListTile<Gender>(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: const Text('Male', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                      value: Gender.male,
-                      groupValue: _selectedGender,
-                      onChanged: (Gender? value) {
-                        setState(() {
-                          _selectedGender = value;
-                        });
-                      },
-                    ),
-                  ),
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: Gender.values.map((gender) {
+    final isSelected = _selectedGender == gender;
+    final label = gender == Gender.male
+        ? 'Male'
+        : gender == Gender.female
+            ? 'Female'
+            : 'Others';
+
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 238, 241, 248),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: const Color.fromARGB(255, 11, 4, 66),
+            width: 1.5,
+          ),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(25),
+          onTap: () {
+            setState(() {
+              _selectedGender = gender;
+            });
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color.fromARGB(255, 11, 4, 66),
                 ),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color.fromARGB(197, 11, 4, 66), width: 2),
-                      borderRadius: BorderRadius.circular(25.0),
-                      color: const Color.fromARGB(120, 180, 178, 197),
-                    ),
-                    child: RadioListTile<Gender>(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: const Text('Female', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                      value: Gender.female,
-                      groupValue: _selectedGender,
-                      onChanged: (Gender? value) {
-                        setState(() {
-                          _selectedGender = value;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color.fromARGB(197, 11, 4, 66), width: 2),
-                      borderRadius: BorderRadius.circular(45.0),
-                      color: const Color.fromARGB(120, 180, 178, 197),
-                    ),
-                    child: RadioListTile<Gender>(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: const Text('Others', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                      value: Gender.others,
-                      groupValue: _selectedGender,
-                      onChanged: (Gender? value) {
-                        setState(() {
-                          _selectedGender = value;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              Radio<Gender>(
+                value: gender,
+                groupValue: _selectedGender,
+                onChanged: (Gender? value) {
+                  setState(() {
+                    _selectedGender = value;
+                  });
+                },
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }).toList(),
+),
+
             const SizedBox(height: 16.0),
             TextFormField(
               controller: emailcontroller,
               style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 labelText: 'Email',
                 labelStyle: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
                 hintText: 'Enter your Email Address',
@@ -443,6 +442,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
               obscureText: _obscureText, // Uses the state variable for visibility
               style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
               decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 labelText: 'Password',
                 labelStyle: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
                 hintText: 'Password',
@@ -474,6 +474,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
               child: ElevatedButton(
                 onPressed: signup, // Calls the signup function
                 style: ElevatedButton.styleFrom(
+                   padding: const EdgeInsets.symmetric(vertical: 5), 
                   fixedSize: const Size(350, 50), // You can make this dynamic if needed
                   backgroundColor: const Color.fromARGB(197, 11, 4, 66),
                   foregroundColor: Colors.white,
@@ -481,7 +482,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
                     borderRadius: BorderRadius.circular(24.0),
                   ),
                 ),
-                child: const Text('Sign Up'),
+                child: const Text('Sign Up',style: TextStyle(fontSize: 20)),
               ),
             ),
             const SizedBox(height: 20.0),

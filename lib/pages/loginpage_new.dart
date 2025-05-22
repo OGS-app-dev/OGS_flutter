@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'comingsoon.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ogs/pages/signup_page_new.dart';
 class LoginPageNew extends StatefulWidget {
   const LoginPageNew({super.key});
 
@@ -44,7 +45,7 @@ class _LoginPageNewState extends State<LoginPageNew> {
     Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => const ComingSoon() ,
+                builder: (context) => const SignupPageNew() ,
               ));
   }
 void login() async {
@@ -180,7 +181,7 @@ void login() async {
             ),
             const SizedBox(height: 24.0),
             TextFormField(controller: emailcontroller,
-              obscureText: true,
+              obscureText: false,
               style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
               decoration: InputDecoration(
                 labelText:
@@ -259,7 +260,7 @@ void login() async {
                     borderRadius: BorderRadius.circular(24.0),
                   ),
                 ),
-                child: const Text('Login'),
+                child: const Text('Login',style: TextStyle(fontSize: 20),),
               ),
             ),
             const SizedBox(height: 60.0),

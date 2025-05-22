@@ -14,7 +14,9 @@ import 'package:ogs/pages/notificationpage.dart';
 import 'package:ogs/widgets/horizontalscrolltile.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:ogs/widgets/myevents.dart';
 
+// ... (imports and other code)
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -23,6 +25,8 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
+
+// ... (imports and other code)
 
 class _HomePageState extends State<HomePage> {
   final _fireDb = FireDb();
@@ -80,46 +84,34 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               width: 10,
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 5.0),
-              child: Text(
-                "Hello, ",
-                style: GoogleFonts.outfit(
-                    color: const Color.fromARGB(255, 16, 34, 112),
-                    fontWeight: FontWeight.w400,
-                    fontSize: 15),
-              ),
-            ),
-            FutureBuilder(
-              future: _fireDb.getUserDetails(currentUser!.uid),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SpinKitThreeBounce(
-                    size: 18,
-                    color: pricol,
-                  );
-                }
+            // COMBINE THE TEXT WIDGETS HERE
+            Flexible( // Keep Flexible for the combined text
+              child: FutureBuilder(
+                future: _fireDb.getUserDetails(currentUser!.uid),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SpinKitThreeBounce(
+                      size: 10,
+                      color: pricol,
+                    );
+                  }
 
-                var data = snapshot.data;
-                String firstName = data!['username'].split(" ")[0];
-                return Text(
-                  firstName,
-                  style: GoogleFonts.outfit(
-                    color: const Color.fromARGB(255, 16, 34, 112),
-                    fontSize: 23,
-                    fontWeight: FontWeight.w400,
-                  ),
-                );
-              },
-            ),
-            /*Text(
-              "Niara!",
-              style: GoogleFonts.outfit(
-                color: const Color.fromARGB(255, 16, 34, 112),
-                fontSize: 23,
-                fontWeight: FontWeight.w400,
+                  var data = snapshot.data;
+                  String firstName = data!['name'].split(" ")[0];
+                  return Text(
+                    // Combine "Hello, " and the firstName here
+                    "Hello, $firstName!",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      color: const Color.fromARGB(255, 16, 34, 112),
+                      fontSize: 15, // Using a single font size for the whole line
+                      fontWeight: FontWeight.w400,
+                    ),
+                  );
+                },
               ),
-            ),*/
+            ),
           ],
         ),
         actions: [
@@ -198,7 +190,6 @@ class _HomePageState extends State<HomePage> {
                                 color: yel,
                               )
                               //Image.asset('lib/assets/icons/sun.png',height: 50,width: 80,),
-
                               ),
                         ],
                       ),
@@ -443,45 +434,12 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 20,
                 ),
-                // GestureDetector(
-                //   onTap: () {
-                //     tabController?.jumpToTab(2);
-                //   },
-                //   child: Container(
-                //     width: MediaQuery.of(context).size.width * .88,
-                //     height: 112,
-                //     padding: const EdgeInsets.symmetric(vertical: 32),
-                //     clipBehavior: Clip.antiAlias,
-                //     decoration: ShapeDecoration(
-                //       color: const Color.fromARGB(255, 245, 245, 245),
-                //       shape: RoundedRectangleBorder(
-                //         borderRadius: BorderRadius.circular(14),
-                //       ),
-                //       shadows: const [
-                //         BoxShadow(
-                //           color: Color(0x0A000000),
-                //           blurRadius: 4,
-                //           offset: Offset(0, 4),
-                //           spreadRadius: 0,
-                //         )
-                //       ],
-                //     ),
-                //     child: const Icon(
-                //       LineIcons.mapMarker,
-                //       size: 50,
-                //       color: yel,
-                //     ),
-                //   ),
-                // ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const HorizontalScrollTile(
-                  height: 254,
-                  width: 299,
-                  outBorderRadius: 26,
-                  hasChild: true,
-                ),
+                const EventsHorizontalScrollView(
+                    // height: 254,
+                    // width: 299,
+                    // outBorderRadius: 26,
+                    // hasChild: true,
+                    ),
                 const SizedBox(
                   height: 18,
                 ),
@@ -530,66 +488,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-// CarouselSlider(
-//                   items: [
-//                     Container(
-//                       decoration: BoxDecoration(
-//                         borderRadius: BorderRadius.circular(12),
-//                         color: Colors.amber,
-//                       ),
-//                       height: 200,
-//                       width: 500,
-//                       margin: const EdgeInsets.all(3),
-//                       child: const Center(child: Text("#Ad1")),
-//                     ),
-//                     Container(
-//                       decoration: BoxDecoration(
-//                         borderRadius: BorderRadius.circular(12),
-//                         color: Colors.red,
-//                       ),
-//                       height: 200,
-//                       width: 500,
-//                       margin: const EdgeInsets.all(3),
-//                       child: const Center(child: Text("#Ad2")),
-//                     ),
-//                     Container(
-//                       decoration: BoxDecoration(
-//                         borderRadius: BorderRadius.circular(12),
-//                         color: Colors.blue,
-//                       ),
-//                       height: 200,
-//                       width: 450,
-//                       margin: const EdgeInsets.all(3),
-//                       child: const Center(child: Text("#Ad3")),
-//                     ),
-//                     Container(
-//                       decoration: BoxDecoration(
-//                         borderRadius: BorderRadius.circular(12),
-//                         color: Colors.green,
-//                       ),
-//                       height: 200,
-//                       width: 500,
-//                       margin: const EdgeInsets.all(3),
-//                       child: const Center(child: Text("#Ad4")),
-//                     ),
-//                   ],
-//                   options: CarouselOptions(
-//                     height: 200,
-//                     autoPlay: true,
-//                     enlargeCenterPage: true,
-//                     enlargeFactor: 0.16,
-//                   ),
-//                 ),
