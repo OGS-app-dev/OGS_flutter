@@ -285,7 +285,7 @@ void login() async {
                 children: [
                   OutlinedButton.icon(
                     onPressed: () {
-                      // TODO: Implement Google login
+
                      signInWithGoogle();
                     },
                     style: OutlinedButton.styleFrom(
@@ -299,7 +299,7 @@ void login() async {
                     icon: Image.asset('lib/assets/icons/google.png',
                         height: 24.0,
                         width:
-                            24.0), // Replace with actual Google logo if available as asset
+                            24.0), 
                     label: const Text('Google',
                         style: TextStyle(
                             color: Color.fromARGB(120, 11, 4, 66),
@@ -320,7 +320,7 @@ void login() async {
                     ),
                     icon: const Icon(Icons.apple,
                         color: Color.fromARGB(197, 11, 4,
-                            66),size:35 ,), // Replace with actual Apple logo if available as asset
+                            66),size:35 ,), 
                     label: const Text('Apple',
                         style: TextStyle(
                             color: Color.fromARGB(120, 11, 4, 66),

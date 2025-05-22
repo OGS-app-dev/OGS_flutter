@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/bottomnavpage.dart';
@@ -86,7 +86,6 @@ class _SignupPageNewState extends State<SignupPageNew> {
         password: passcontroller.text.trim(),
       );
 
-      // Check if widget is still mounted before proceeding with UI updates/navigation
       if (!mounted) return;
 
       // 2. Store additional user info in Firestore
@@ -99,38 +98,35 @@ class _SignupPageNewState extends State<SignupPageNew> {
           'email': emailcontroller.text.trim(),
           'name': namecontroller.text.trim(),
           'dateOfBirth': dobcontroller.text.trim(),
-          'gender': _selectedGender?.name, // Store gender as a string (e.g., 'male', 'female')
-          'role': 'student', // Default role for new sign-ups
+          'gender': _selectedGender
+              ?.name, // Store gender as a string (e.g., 'male', 'female')
+          'role': 'student',
         });
       }
 
-      // Check if widget is still mounted after Firestore write
       if (!mounted) return;
 
-      // 3. Dismiss loading dialog
       Navigator.pop(context);
 
-      // 4. Navigate to the main page or a success page
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const MainPage(), // Assuming MainPage is your main app screen
+          builder: (context) => const MainPage(),
         ),
       );
     } on FirebaseAuthException catch (e) {
-      // Ensure dialog is popped even on FirebaseAuth errors
       if (mounted) {
-        Navigator.pop(context); // Dismiss loading dialog
+        Navigator.pop(context);
       }
 
-      // Check mounted again before showing alert
       if (!mounted) return;
 
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Sign Up Error'),
-          content: Text(e.message ?? 'An unknown authentication error occurred.'),
+          content:
+              Text(e.message ?? 'An unknown authentication error occurred.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -140,12 +136,10 @@ class _SignupPageNewState extends State<SignupPageNew> {
         ),
       );
     } catch (e) {
-      // Ensure dialog is popped on any other unexpected errors
       if (mounted) {
-        Navigator.pop(context); // Dismiss loading dialog
+        Navigator.pop(context);
       }
 
-      // Check mounted again before showing alert
       if (!mounted) return;
 
       showDialog(
@@ -170,7 +164,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
       barrierDismissible: false,
       builder: (context) => const Center(
         child: SpinKitThreeBounce(
-          color: pricol, // Assuming 'pricol' is defined in constants.dart
+          color: pricol,
           size: 30,
         ),
       ),
@@ -180,7 +174,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
 
       if (gUser == null) {
         if (mounted) {
-          Navigator.pop(context); // Dismiss loading dialog if user cancels Google sign-in
+          Navigator.pop(context);
         }
         return;
       }
@@ -195,7 +189,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
       UserCredential? userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
 
-      if (!mounted) return; // Check mounted before Firestore interaction
+      if (!mounted) return;
 
       User? user = userCredential.user;
       if (user != null) {
@@ -205,21 +199,21 @@ class _SignupPageNewState extends State<SignupPageNew> {
             .get();
 
         if (!userDoc.exists) {
-          // Store the user info in Firestore for the first time
-          await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({
             'uid': user.uid,
             'username': user.displayName,
             'email': user.email,
             'role': "student",
-            // Note: DOB and Gender are not collected via Google sign-in directly.
-            // You might need a separate onboarding step if they are mandatory.
           });
         }
       }
 
       if (mounted) {
-        Navigator.pop(context); // Dismiss loading dialog
-        Navigator.pushReplacement( // Use pushReplacement to prevent back button to signup
+        Navigator.pop(context);
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => const MainPage(),
@@ -228,7 +222,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Dismiss loading dialog
+        Navigator.pop(context);
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -250,23 +244,23 @@ class _SignupPageNewState extends State<SignupPageNew> {
     DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(1900), // Start from an appropriate past year
-      lastDate: DateTime.now(), // End at current date (or a future date if allowed)
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color.fromARGB(255, 11, 4, 66), // Header color
-              onPrimary: Colors.white, // Text color on header
-              surface: Colors.white, // Calendar background
-              onSurface: Color.fromARGB(255, 11, 4, 66), // Calendar text color
+              primary: Color.fromARGB(255, 11, 4, 66),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Color.fromARGB(255, 11, 4, 66),
             ),
             dialogTheme: const DialogTheme(
-              backgroundColor: Colors.white, // Dialog background
+              backgroundColor: Colors.white,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: const Color.fromARGB(255, 11, 4, 66), // Button text color
+                foregroundColor: const Color.fromARGB(255, 11, 4, 66),
               ),
             ),
           ),
@@ -307,131 +301,146 @@ class _SignupPageNewState extends State<SignupPageNew> {
               controller: namecontroller,
               style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 labelText: 'Name',
-                labelStyle: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                labelStyle:
+                    const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
                 hintText: 'Enter your Full Name',
                 hintStyle: const TextStyle(color: Colors.grey),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                  borderSide: const BorderSide(
+                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
                   borderRadius: BorderRadius.circular(20.0),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                  borderSide: const BorderSide(
+                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
                   borderRadius: BorderRadius.circular(20.0),
                 ),
-                
               ),
-              
             ),
             const SizedBox(height: 20.0),
             TextFormField(
               controller: dobcontroller,
               style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
-              readOnly: true, // Makes the field non-editable, relying on the picker
+              readOnly: true,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 labelText: 'Date of Birth',
-                labelStyle: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                labelStyle:
+                    const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
                 hintText: 'MM/DD/YYYY',
                 hintStyle: const TextStyle(color: Colors.grey),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                  borderSide: const BorderSide(
+                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
                   borderRadius: BorderRadius.circular(20.0),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                  borderSide: const BorderSide(
+                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
                   borderRadius: BorderRadius.circular(20.0),
                 ),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.calendar_today, color: Color.fromARGB(197, 11, 4, 66)),
-                  onPressed: () => _selectDate(context), // Opens the date picker
+                  icon: const Icon(Icons.calendar_today,
+                      color: Color.fromARGB(197, 11, 4, 66)),
+                  onPressed: () => _selectDate(context),
                 ),
               ),
             ),
             const SizedBox(height: 15.0),
-           const Padding(
-             padding:  EdgeInsets.only(left: 10),
-             child:  Text('Gender',style: TextStyle(color: Color.fromARGB(210, 4, 1, 23)),),
-           ),
+            const Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: Text(
+                'Gender',
+                style: TextStyle(color: Color.fromARGB(210, 4, 1, 23)),
+              ),
+            ),
             const SizedBox(height: 10),
             Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: Gender.values.map((gender) {
-    final isSelected = _selectedGender == gender;
-    final label = gender == Gender.male
-        ? 'Male'
-        : gender == Gender.female
-            ? 'Female'
-            : 'Others';
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: Gender.values.map((gender) {
+                final isSelected = _selectedGender == gender;
+                final label = gender == Gender.male
+                    ? 'Male'
+                    : gender == Gender.female
+                        ? 'Female'
+                        : 'Others';
 
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 238, 241, 248),
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
-            color: const Color.fromARGB(255, 11, 4, 66),
-            width: 1.5,
-          ),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(25),
-          onTap: () {
-            setState(() {
-              _selectedGender = gender;
-            });
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color.fromARGB(255, 11, 4, 66),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Radio<Gender>(
-                value: gender,
-                groupValue: _selectedGender,
-                onChanged: (Gender? value) {
-                  setState(() {
-                    _selectedGender = value;
-                  });
-                },
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }).toList(),
-),
-
+                return Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 238, 241, 248),
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: const Color.fromARGB(255, 11, 4, 66),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(25),
+                      onTap: () {
+                        setState(() {
+                          _selectedGender = gender;
+                        });
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            label,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color.fromARGB(255, 11, 4, 66),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Radio<Gender>(
+                            value: gender,
+                            groupValue: _selectedGender,
+                            onChanged: (Gender? value) {
+                              setState(() {
+                                _selectedGender = value;
+                              });
+                            },
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: const VisualDensity(
+                                horizontal: -4, vertical: -4),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
             const SizedBox(height: 16.0),
             TextFormField(
               controller: emailcontroller,
               style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 labelText: 'Email',
-                labelStyle: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                labelStyle:
+                    const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
                 hintText: 'Enter your Email Address',
                 hintStyle: const TextStyle(color: Colors.grey),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                  borderSide: const BorderSide(
+                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
                   borderRadius: BorderRadius.circular(20.0),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                  borderSide: const BorderSide(
+                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
                   borderRadius: BorderRadius.circular(20.0),
                 ),
               ),
@@ -439,20 +448,25 @@ class _SignupPageNewState extends State<SignupPageNew> {
             const SizedBox(height: 20.0),
             TextFormField(
               controller: passcontroller,
-              obscureText: _obscureText, // Uses the state variable for visibility
+              obscureText:
+                  _obscureText, // Uses the state variable for visibility
               style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 labelText: 'Password',
-                labelStyle: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                labelStyle:
+                    const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
                 hintText: 'Password',
                 hintStyle: const TextStyle(color: Colors.grey),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                  borderSide: const BorderSide(
+                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
                   borderRadius: BorderRadius.circular(20.0),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                  borderSide: const BorderSide(
+                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
                   borderRadius: BorderRadius.circular(20.0),
                 ),
                 suffixIcon: IconButton(
@@ -462,7 +476,8 @@ class _SignupPageNewState extends State<SignupPageNew> {
                   ),
                   onPressed: () {
                     setState(() {
-                      _obscureText = !_obscureText; // Toggle password visibility
+                      _obscureText =
+                          !_obscureText; // Toggle password visibility
                     });
                   },
                 ),
@@ -470,19 +485,19 @@ class _SignupPageNewState extends State<SignupPageNew> {
             ),
             const SizedBox(height: 20.0),
             SizedBox(
-              width: double.infinity, // Make button take full width
+              width: double.infinity,
               child: ElevatedButton(
-                onPressed: signup, // Calls the signup function
+                onPressed: signup,
                 style: ElevatedButton.styleFrom(
-                   padding: const EdgeInsets.symmetric(vertical: 5), 
-                  fixedSize: const Size(350, 50), // You can make this dynamic if needed
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  fixedSize: const Size(350, 50),
                   backgroundColor: const Color.fromARGB(197, 11, 4, 66),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24.0),
                   ),
                 ),
-                child: const Text('Sign Up',style: TextStyle(fontSize: 20)),
+                child: const Text('Sign Up', style: TextStyle(fontSize: 20)),
               ),
             ),
             const SizedBox(height: 20.0),
@@ -507,7 +522,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
                 children: [
                   OutlinedButton.icon(
                     onPressed: () {
-                      signInWithGoogle(); // Calls Google sign-in
+                      signInWithGoogle();
                     },
                     style: OutlinedButton.styleFrom(
                       fixedSize: const Size(250, 50),
@@ -527,7 +542,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
                   const SizedBox(height: 32.0),
                   OutlinedButton.icon(
                     onPressed: () {
-                      apple(); // Calls Apple sign-in (currently navigates to ComingSoon)
+                      apple();
                     },
                     style: OutlinedButton.styleFrom(
                       fixedSize: const Size(250, 50),
@@ -555,7 +570,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
                     style: TextStyle(color: Colors.black54)),
                 GestureDetector(
                   onTap: () {
-                    navigateToLogin(); // Navigates to the login page
+                    navigateToLogin();
                   },
                   child: const Text(
                     'Login',

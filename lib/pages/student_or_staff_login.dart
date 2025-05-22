@@ -41,8 +41,8 @@ class StudentOrStaff extends StatelessWidget {
                       color: pricol,
                     ),
                     margin: const EdgeInsets.symmetric(vertical: 30),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 45, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 45, vertical: 12),
                     child: Center(
                       child: Text(
                         'Student',

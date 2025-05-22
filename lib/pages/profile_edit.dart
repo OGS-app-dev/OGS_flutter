@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:intl/intl.dart'; // <--- NEW: Import for date formatting
+import 'package:intl/intl.dart';
 import 'student_or_staff_login.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -32,8 +32,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   File? _pickedImage;
   String? _userName;
 
-  String _memberSinceText =
-      'Loading...'; // <--- NEW: State variable for "Member Since"
+  String _memberSinceText = 'Loading...';
 
   @override
   void initState() {
@@ -60,7 +59,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (_currentUser != null) {
         _emailController.text = _currentUser!.email ?? '';
 
-        // --- NEW: Fetch and format "Member Since" date ---
         if (_currentUser!.metadata.creationTime != null) {
           final DateTime creationDateTime =
               _currentUser!.metadata.creationTime!;
@@ -69,7 +67,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         } else {
           _memberSinceText = 'Member Since: N/A';
         }
-        // --- END NEW ---
 
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
@@ -197,7 +194,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Explicitly setting background white
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -311,7 +308,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      // You might want to use _nameController.text here to display the current user's name
                                       _nameController.text.isNotEmpty
                                           ? _nameController.text
                                           : 'User',
@@ -322,7 +318,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                     ),
                                     const SizedBox(height: 5),
                                     Text(
-                                      _memberSinceText, // <--- Displaying the fetched "Member Since"
+                                      _memberSinceText,
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.grey[600],
@@ -368,8 +364,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           labelText: 'Email ID',
                           hintText: 'ENTER YOUR EMAIL ID',
                           keyboardType: TextInputType.emailAddress,
-                          readOnly:
-                              true, // Email is typically managed by Firebase Auth and not directly editable here
+                          readOnly: true,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your email ID';
@@ -384,7 +379,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         const SizedBox(height: 20),
                         Row(
                           children: [
-                            const SizedBox(width: 15,),
+                            const SizedBox(
+                              width: 15,
+                            ),
                             Text(
                               "Logout",
                               style: GoogleFonts.outfit(
@@ -394,49 +391,48 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               ),
                             ),
                             IconButton(
-                            onPressed: () async {
-                              await FirebaseAuth.instance.signOut();
-                              try {
-                                await GoogleSignIn().signOut();
-                              } catch (e) {
-                                if (context.mounted) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: Text(e.toString()),
-                                    ),
-                                  );
-                                }
-                              }
-                              if (context.mounted) {
-                                /*Navigator.of(context).pushAndRemoveUntil(
+                                onPressed: () async {
+                                  await FirebaseAuth.instance.signOut();
+                                  try {
+                                    await GoogleSignIn().signOut();
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: Text(e.toString()),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                  if (context.mounted) {
+                                    /*Navigator.of(context).pushAndRemoveUntil(
                                                 MaterialPageRoute(
                         builder: (context) => const LoginPage())
                         ,(Route<dynamic> route) => false
                                                 );*/
-                                Provider.of<FormResponse>(context,
-                                        listen: false)
-                                    .tabController!
-                                    .jumpToTab(0);
-                        
-                                Navigator.of(context, rootNavigator: true)
-                                    .pushAndRemoveUntil(
-                                  MaterialPageRoute(
-                                    builder: (BuildContext context) {
-                                      return const StudentOrStaff();
-                                    },
-                                  ),
-                                  (_) => false,
-                                );
-                              }
-                            },
-                            icon: const Icon(
-                              Icons.logout,
-                              size: 20,
-                            )),
+                                    Provider.of<FormResponse>(context,
+                                            listen: false)
+                                        .tabController!
+                                        .jumpToTab(0);
+
+                                    Navigator.of(context, rootNavigator: true)
+                                        .pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (BuildContext context) {
+                                          return const StudentOrStaff();
+                                        },
+                                      ),
+                                      (_) => false,
+                                    );
+                                  }
+                                },
+                                icon: const Icon(
+                                  Icons.logout,
+                                  size: 20,
+                                )),
                           ],
                         ),
-                        
                       ],
                     ),
                   ),
@@ -444,7 +440,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  // >>>>>>>>>>> THIS IS THE _buildTextField FUNCTION WITH STYLING <<<<<<<<<<<
   Widget _buildTextField({
     required TextEditingController controller,
     required String labelText,

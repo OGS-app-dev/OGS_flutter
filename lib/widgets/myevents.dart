@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ogs/models/event_model.dart'; // Import your Event model
-import 'package:ogs/pages/upcoming_events.dart'; // Import the detail page (assuming this is EventDetailPage)
+import 'package:ogs/models/event_model.dart';
+import 'package:ogs/pages/upcoming_events.dart';
 
 class EventsHorizontalScrollView extends StatelessWidget {
   const EventsHorizontalScrollView({super.key});
@@ -11,7 +11,10 @@ class EventsHorizontalScrollView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('events').orderBy('timestamp', descending: true).snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('events')
+          .orderBy('timestamp', descending: true)
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
@@ -31,8 +34,8 @@ class EventsHorizontalScrollView extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: events.map((DocumentSnapshot document) {
-              // CORRECTED LINE HERE: Pass the DocumentSnapshot directly
-              final event = Event.fromFirestore(document as DocumentSnapshot<Map<String, dynamic>>);
+              final event = Event.fromFirestore(
+                  document as DocumentSnapshot<Map<String, dynamic>>);
 
               return GestureDetector(
                 onTap: () {
@@ -50,8 +53,8 @@ class EventsHorizontalScrollView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(15),
                         color: const Color.fromARGB(255, 245, 245, 245),
                       ),
-                      height: 250, // Card height
-                      width: 299, // Card width
+                      height: 250,
+                      width: 299,
                       margin: const EdgeInsets.all(8),
                       padding: const EdgeInsets.all(15),
                       child: Column(
@@ -69,29 +72,39 @@ class EventsHorizontalScrollView extends StatelessWidget {
                                 child: event.imageUrl.startsWith('http')
                                     ? Image.network(
                                         event.imageUrl,
-                                        // ****** CHANGE THIS LINE ******
-                                        fit: BoxFit.contain, // Changed from BoxFit.cover to BoxFit.contain
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) return child;
+                                        fit: BoxFit.contain,
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
                                           return Center(
                                             child: CircularProgressIndicator(
-                                              value: loadingProgress.expectedTotalBytes != null
-                                                  ? loadingProgress.cumulativeBytesLoaded /
-                                                      loadingProgress.expectedTotalBytes!
+                                              value: loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
                                                   : null,
                                               color: Colors.yellow,
                                             ),
                                           );
                                         },
-                                        errorBuilder: (context, error, stackTrace) =>
-                                            const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(Icons.broken_image,
+                                                    size: 50,
+                                                    color: Colors.grey),
                                       )
-                                    : Image.asset( // Use Image.asset for local paths
+                                    : Image.asset(
                                         event.imageUrl,
-                                        // ****** CHANGE THIS LINE ******
-                                        fit: BoxFit.contain, // Changed from BoxFit.cover to BoxFit.contain
-                                        errorBuilder: (context, error, stackTrace) =>
-                                            const Icon(Icons.error, size: 50, color: Colors.red),
+                                        fit: BoxFit.contain,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(Icons.error,
+                                                    size: 50,
+                                                    color: Colors.red),
                                       ),
                               ),
                             ),
@@ -122,13 +135,13 @@ class EventsHorizontalScrollView extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // "Live" tag on the horizontal scroll tile
                     if (event.isLive)
                       Positioned(
                         top: 12,
                         right: 12,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
                             color: Colors.red,
                             borderRadius: BorderRadius.circular(4),
@@ -143,9 +156,8 @@ class EventsHorizontalScrollView extends StatelessWidget {
                           ),
                         ),
                       ),
-                    // Play button overlay
                     Positioned(
-                      right: 85, // Adjusted to better suit wider card, feel free to fine-tune
+                      right: 85,
                       bottom: 28,
                       child: Container(
                         width: 30,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:ogs/models/event_model.dart'; 
-import 'package:url_launcher/url_launcher.dart';// Import your Event model
+import 'package:ogs/models/event_model.dart';
+import 'package:url_launcher/url_launcher.dart'; // Import your Event model
 
 class EventDetailPage extends StatelessWidget {
   final Event event; // The event object to display
@@ -12,24 +12,18 @@ class EventDetailPage extends StatelessWidget {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      // It's good practice to show a user-friendly message here
-      // instead of just throwing.
-      // Use context.mounted to ensure the widget is still in the tree
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Could not open the link: $url')),
         );
       }
-      // You can still throw the error for debugging purposes in development
-      // throw 'Could not launch $url';
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Dark background as per image
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
@@ -60,36 +54,41 @@ class EventDetailPage extends StatelessWidget {
                     bottomRight: Radius.circular(20),
                   ),
                   child: event.imageUrl.startsWith('http')
-      ? Image.network(
-          event.imageUrl,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                    : null,
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.broken_image, size: 50, color: Colors.grey),
-        )
-      : Image.asset( // Use Image.asset for local paths
-          event.imageUrl, // This will be "assets/images/ragam_logo.png"
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.error, size: 50, color: Colors.red), // Asset errors
-        ),
+                      ? Image.network(
+                          event.imageUrl,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.broken_image,
+                                  size: 50, color: Colors.grey),
+                        )
+                      : Image.asset(
+                          event
+                              .imageUrl, // This will be "assets/images/ragam_logo.png"
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.error,
+                                  size: 50, color: Colors.red), // Asset errors
+                        ),
                 ),
-                // "Live" tag
                 if (event.isLive)
                   Positioned(
                     top: 16,
                     right: 16,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(5),
@@ -104,7 +103,6 @@ class EventDetailPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                // Event Name Overlay
                 Positioned(
                   bottom: 20,
                   left: 20,
@@ -201,7 +199,8 @@ class EventDetailPage extends StatelessWidget {
                                 const Icon(Icons.location_on_outlined,
                                     color: Colors.grey, size: 18),
                                 const SizedBox(width: 8),
-                                Flexible( // Use Flexible to prevent overflow if location is long
+                                Flexible(
+                                  // Use Flexible to prevent overflow if location is long
                                   child: Text(
                                     event.location,
                                     style: GoogleFonts.outfit(
@@ -216,12 +215,10 @@ class EventDetailPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      
                     ],
                   ),
                   const SizedBox(height: 30),
 
-                  // Description
                   Text(
                     'Description',
                     style: GoogleFonts.outfit(
@@ -239,26 +236,29 @@ class EventDetailPage extends StatelessWidget {
                       height: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   if (event.siteUrl != null && event.siteUrl!.isNotEmpty)
                     SizedBox(
-                      width: double.infinity, // Make button full width
+                      width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          // Call _launchUrl, passing the current context
                           _launchUrl(context, event.siteUrl!);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 218, 215, 204), // Yellow button color
+                          backgroundColor:
+                              const Color.fromARGB(255, 218, 215, 204),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          elevation: 0, // No shadow for a flat design
-                          shadowColor: Colors.transparent, // Explicitly no shadow
+                          elevation: 0,
+                          shadowColor:
+                              Colors.transparent, // Explicitly no shadow
                         ),
                         child: Text(
-                          'Visit ', // Clear call to action
+                          'Visit ',
                           style: GoogleFonts.outfit(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
@@ -271,11 +271,12 @@ class EventDetailPage extends StatelessWidget {
                 ],
               ),
             ),
-           const SizedBox(height: 80,)
+            const SizedBox(
+              height: 80,
+            )
           ],
         ),
       ),
-      
     );
   }
 }

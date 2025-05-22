@@ -4,15 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'profile_edit.dart';
 
-
-
-// A simple User model to hold user data from Firestore
 class AppUser {
   final String uid;
   final String name;
-  final String profileImageUrl; // This will now hold a real URL or a path to your local asset
+  final String profileImageUrl;
   final DateTime memberSince;
-  final String studentStatus; // e.g., "Student NIT Calicut"
+  final String studentStatus;
 
   AppUser({
     required this.uid,
@@ -26,11 +23,11 @@ class AppUser {
     Map data = doc.data() as Map<String, dynamic>;
     return AppUser(
       uid: doc.id,
-      name: data['name'] ?? 'User Name', // Provide a default for name
+      name: data['name'] ?? 'User Name',
       profileImageUrl: data['profileImageUrl'] ??
-          'lib/assets/images/placeholder_profile.png', // <--- CHANGED HERE
-      memberSince: (data['memberSince'] as Timestamp?)?.toDate() ??
-          DateTime.now(), // Default to now if memberSince is null
+          'lib/assets/images/placeholder_profile.png',
+      memberSince:
+          (data['memberSince'] as Timestamp?)?.toDate() ?? DateTime.now(),
       studentStatus: data['studentStatus'] ?? '',
     );
   }
@@ -67,15 +64,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
         if (userDoc.exists) {
           _appUser = AppUser.fromFirestore(userDoc);
         } else {
-          // If userDoc doesn't exist, create a default AppUser for display
           _appUser = AppUser(
             uid: _currentUser!.uid,
-            name: _currentUser!.displayName ?? _currentUser!.email?.split('@')[0] ?? 'Guest User',
-            profileImageUrl: _currentUser!.photoURL ?? 'lib/assets/images/placeholder_profile.png', // <--- CHANGED HERE
-            memberSince: DateTime.now(), // Default date
+            name: _currentUser!.displayName ??
+                _currentUser!.email?.split('@')[0] ??
+                'Guest User',
+            profileImageUrl: _currentUser!.photoURL ??
+                'lib/assets/images/placeholder_profile.png',
+            memberSince: DateTime.now(),
             studentStatus: '',
           );
-          _errorMessage = "User profile data not found in Firestore. Showing default.";
+          _errorMessage =
+              "User profile data not found in Firestore. Showing default.";
         }
       } else {
         _errorMessage = "No active user logged in. Please log in.";
@@ -83,12 +83,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
     } catch (e) {
       _errorMessage = "Error fetching user data: $e";
       print(_errorMessage);
-      // In case of error, still try to provide a basic AppUser if currentUser is available
       if (_currentUser != null && _appUser == null) {
         _appUser = AppUser(
           uid: _currentUser!.uid,
-          name: _currentUser!.displayName ?? _currentUser!.email?.split('@')[0] ?? 'Error User',
-          profileImageUrl: _currentUser!.photoURL ?? 'lib/assets/images/placeholder_profile.png', // <--- CHANGED HERE
+          name: _currentUser!.displayName ??
+              _currentUser!.email?.split('@')[0] ??
+              'Error User',
+          profileImageUrl: _currentUser!.photoURL ??
+              'lib/assets/images/placeholder_profile.png',
           memberSince: DateTime.now(),
           studentStatus: '',
         );
@@ -114,7 +116,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       _buildProfileHeader(),
                       const SizedBox(height: 20),
                       _buildActionButtons(),
-                      const Divider(height: 30, thickness: 1, indent: 20, endIndent: 20),
+                      const Divider(
+                          height: 30, thickness: 1, indent: 20, endIndent: 20),
                       _buildSection('Saved'),
                       _buildSection('History'),
                       _buildSection('My Ratings'),
@@ -128,8 +131,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Widget _buildProfileHeader() {
     final String userName = _appUser?.name ?? 'Loading User...';
-    // profileUrl can now be a network URL or a local asset path
-    final String profileUrl = _appUser?.profileImageUrl ?? 'lib/assets/images/placeholder_profile.png'; // <--- Ensure this fallback
+    final String profileUrl = _appUser?.profileImageUrl ??
+        'lib/assets/images/placeholder_profile.png'; // <--- Ensure this fallback
     final String memberSinceText = _appUser != null
         ? 'Since ${DateFormat('d MMMM y').format(_appUser!.memberSince)}'
         : 'Since N/A';
@@ -141,20 +144,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(width: 20,),
+            const SizedBox(
+              width: 20,
+            ),
             CircleAvatar(
               radius: 40,
-        
               backgroundImage: profileUrl.startsWith('http')
                   ? NetworkImage(profileUrl) as ImageProvider
                   : AssetImage(profileUrl) as ImageProvider,
               onBackgroundImageError: (exception, stackTrace) {
                 print('Error loading profile image: $exception');
-                // You could set a state here to show the icon if the image fails
-                // For simplicity, we'll rely on the child for general fallbacks
               },
-              
-              child: profileUrl.isEmpty // This check is now less relevant as profileUrl always has a value
+              child: profileUrl.isEmpty
                   ? Container(
                       width: 80,
                       height: 80,
@@ -193,7 +194,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   const SizedBox(height: 8),
                   if (studentStatus.isNotEmpty)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade100,
                         borderRadius: BorderRadius.circular(5),
@@ -209,7 +211,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const Icon(Icons.chevron_right, size: 16, color: Colors.blue),
+                          const Icon(Icons.chevron_right,
+                              size: 16, color: Colors.blue),
                         ],
                       ),
                     ),
@@ -230,13 +233,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
           ],
         ),
-        
       ),
-      
     );
   }
 
-  // ... rest of your _buildActionButtons, _buildActionButton, _buildSection methods ...
   Widget _buildActionButtons() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -247,7 +247,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
           _buildActionButton(Icons.star, 'Points'),
           _buildActionButton(Icons.card_giftcard, 'Voucher'),
           _buildActionButton(Icons.payment, 'PayLater'),
-          
         ],
       ),
     );
