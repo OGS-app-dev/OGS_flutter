@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; 
+import 'package:ogs/pages/comingsoon.dart';
+import 'package:ogs/pages/otp_verification.dart'; // Assuming this path is correct
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});
@@ -19,54 +20,32 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     super.dispose();
   }
 
-  Future<void> _sendPasswordResetEmail() async {
+  Future<void> _sendOtp() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true; 
+        _isLoading = true;
       });
 
-      try {
-        await FirebaseAuth.instance.sendPasswordResetEmail(
-          email: emailcontroller.text.trim(), 
-        );
+      await Future.delayed(const Duration(seconds: 2));
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'If an account exists for this email, a password reset link has been sent.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context); 
-      } on FirebaseAuthException catch (e) {
-        String message;
-        if (e.code == 'user-not-found') {
-          message =
-              'If an account exists for this email, a password reset link has been sent.';
-        } else if (e.code == 'invalid-email') {
-          message = 'The email address is not valid.';
-        } else {
-          message = 'An error occurred. Please try again later.';
-        }
+      setState(() {
+        _isLoading = false;
+      });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: Colors.red,
-          ),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('An unexpected error occurred. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      } finally {
-        setState(() {
-          _isLoading = false; 
-        });
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('If an account exists, an OTP has been sent to your email.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ConfirmOtpPage(email: emailcontroller.text),
+        ),
+      );
     }
   }
 
@@ -81,7 +60,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         ),
         backgroundColor: Colors.white,
         elevation: 0, // Remove shadow
-        iconTheme: const IconThemeData(color: Color.fromARGB(197, 11, 4, 66)), // Back button color
+        iconTheme: const IconThemeData(
+            color: Color.fromARGB(197, 11, 4, 66)), // Back button color
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -102,7 +82,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               ),
               const SizedBox(height: 10.0),
               const Text(
-                'Enter your email address below to receive a password reset link.',
+                'Enter your email address below to receive a One-Time Password (OTP) for password reset.',
                 style: TextStyle(
                   fontSize: 16.0,
                   color: Colors.grey,
@@ -111,11 +91,12 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               const SizedBox(height: 24.0),
               TextFormField(
                 controller: emailcontroller,
-                keyboardType: TextInputType.emailAddress, // Set keyboard type for email
+                keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  labelStyle: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                  labelStyle:
+                      const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
                   hintText: 'Enter your Email',
                   hintStyle: const TextStyle(color: Colors.grey),
                   focusedBorder: OutlineInputBorder(
@@ -128,11 +109,13 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
                     borderRadius: BorderRadius.circular(20.0),
                   ),
-                  errorBorder: OutlineInputBorder( // Style for error state
+                  errorBorder: OutlineInputBorder(
+                    // Style for error state
                     borderSide: const BorderSide(color: Colors.red, width: 2.5),
                     borderRadius: BorderRadius.circular(20.0),
                   ),
-                  focusedErrorBorder: OutlineInputBorder( // Style for focused error state
+                  focusedErrorBorder: OutlineInputBorder(
+                    // Style for focused error state
                     borderSide: const BorderSide(color: Colors.red, width: 2.5),
                     borderRadius: BorderRadius.circular(20.0),
                   ),
@@ -141,17 +124,20 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your email address.';
                   }
+                  // Basic email format validation
                   if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
                     return 'Please enter a valid email address.';
                   }
-                  return null; 
+                  return null; // Return null if the input is valid
                 },
               ),
               const SizedBox(height: 50),
               SizedBox(
-                width: double.infinity, 
+                width: double.infinity, // Make the button take full width
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _sendPasswordResetEmail, // Call Firebase method
+                  onPressed: _isLoading
+                      ? null
+                      : _sendOtp, // Disable button when loading
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size(350, 50),
                     backgroundColor: const Color.fromARGB(197, 11, 4, 66),
@@ -162,10 +148,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         )
                       : const Text(
-                          'Send Reset Link', 
+                          'Send OTP',
                           style: TextStyle(fontSize: 20),
                         ),
                 ),
