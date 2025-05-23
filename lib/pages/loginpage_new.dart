@@ -13,6 +13,7 @@ import 'comingsoon.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ogs/pages/signup_page_new.dart';
+import 'package:ogs/pages/forgot_password.dart';
 class LoginPageNew extends StatefulWidget {
   const LoginPageNew({super.key});
 
@@ -30,7 +31,7 @@ class _LoginPageNewState extends State<LoginPageNew> {
     Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => const ComingSoon() ,
+                builder: (context) => const ForgotPassword() ,
               ));
   }
 
