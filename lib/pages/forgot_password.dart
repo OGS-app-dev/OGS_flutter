@@ -77,7 +77,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       appBar: AppBar(
         title: const Text(
           'Forgot Password',
-          style: TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+          style: TextStyle(color: Color.fromARGB(197, 11, 4, 66),fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         elevation: 0, // Remove shadow
@@ -91,16 +91,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const SizedBox(height: 25.0),
-              const Text(
-                'Reset Your Password',
-                style: TextStyle(
-                  fontSize: 24.0,
-                  color: Color.fromARGB(197, 11, 4, 66),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10.0),
+              const SizedBox(height: 15.0),
               const Text(
                 'Enter your email address below to receive a password reset link.',
                 style: TextStyle(
@@ -147,7 +138,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   return null; 
                 },
               ),
-              const SizedBox(height: 50),
+              const SizedBox(height: 100),
               SizedBox(
                 width: double.infinity, 
                 child: ElevatedButton(
