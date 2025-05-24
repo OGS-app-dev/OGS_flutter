@@ -476,7 +476,11 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 25,
                 ),
-
+const HorizontalScrollTile(height: 254,
+                     width: 299,
+                     outBorderRadius: 26,
+                     hasChild: true,)
+                    ,
                 const SizedBox(
                   height: 150,
                 ),

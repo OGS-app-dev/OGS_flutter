@@ -11,7 +11,8 @@ import 'comingsoon.dart';
 import 'loginpage_new.dart';
 
 class SignupPageNew extends StatefulWidget {
-  const SignupPageNew({super.key});
+  final String role;
+  const SignupPageNew({super.key, required this.role});
 
   @override
   State<SignupPageNew> createState() => _SignupPageNewState();
@@ -21,11 +22,12 @@ enum Gender { male, female, others }
 
 class _SignupPageNewState extends State<SignupPageNew> {
   Gender? _selectedGender = Gender.male;
-  bool _obscureText = true; // State to manage password visibility
+  bool _obscureText = true;
   TextEditingController emailcontroller = TextEditingController();
   TextEditingController passcontroller = TextEditingController();
   TextEditingController namecontroller = TextEditingController();
   TextEditingController dobcontroller = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   FormResponse? formResponse;
 
@@ -36,6 +38,26 @@ class _SignupPageNewState extends State<SignupPageNew> {
     namecontroller.dispose();
     dobcontroller.dispose();
     super.dispose();
+  }
+
+  // Get user-friendly Firebase Auth error message
+  String _getFirebaseAuthErrorMessage(String errorCode) {
+    switch (errorCode) {
+      case 'weak-password':
+        return 'The password is too weak. Please choose a stronger password.';
+      case 'email-already-in-use':
+        return 'An account already exists with this email address. Please try logging in instead.';
+      case 'invalid-email':
+        return 'Please enter a valid email address.';
+      case 'operation-not-allowed':
+        return 'Email/password accounts are not enabled. Please contact support.';
+      case 'network-request-failed':
+        return 'Network error. Please check your internet connection and try again.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again later.';
+      default:
+        return 'An error occurred during sign up. Please try again.';
+    }
   }
 
   void forgotPassword() {
@@ -60,101 +82,93 @@ class _SignupPageNewState extends State<SignupPageNew> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const LoginPageNew(),
+        builder: (context) => LoginPageNew(role: widget.role),
       ),
     );
   }
 
   Future<void> signup() async {
-    // Show loading spinner
-    showDialog(
-      context: context,
-      barrierDismissible: false, // User cannot dismiss by tapping outside
-      builder: (context) => const Center(
-        child: SpinKitThreeBounce(
-          color: Colors.black,
-          size: 30,
-        ),
-      ),
-    );
-
-    try {
-      // 1. Create user with email and password
-      UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailcontroller.text.trim(),
-        password: passcontroller.text.trim(),
-      );
-
-      if (!mounted) return;
-
-      // 2. Store additional user info in Firestore
-      if (userCredential.user != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .set({
-          'uid': userCredential.user!.uid,
-          'email': emailcontroller.text.trim(),
-          'name': namecontroller.text.trim(),
-          'dateOfBirth': dobcontroller.text.trim(),
-          'gender': _selectedGender
-              ?.name, // Store gender as a string (e.g., 'male', 'female')
-          'role': 'student',
-        });
-      }
-
-      if (!mounted) return;
-
-      Navigator.pop(context);
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const MainPage(),
-        ),
-      );
-    } on FirebaseAuthException catch (e) {
-      if (mounted) {
-        Navigator.pop(context);
-      }
-
-      if (!mounted) return;
-
+    if (_formKey.currentState!.validate()) {
+      // Show loading spinner
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Sign Up Error'),
-          content:
-              Text(e.message ?? 'An unknown authentication error occurred.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: SpinKitThreeBounce(
+            color: Colors.black,
+            size: 30,
+          ),
         ),
       );
-    } catch (e) {
-      if (mounted) {
-        Navigator.pop(context);
+
+      try {
+        // Create user with email and password
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: emailcontroller.text.trim(),
+          password: passcontroller.text.trim(),
+        );
+
+        if (!mounted) return;
+
+        // Store additional user info in Firestore
+        if (userCredential.user != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set({
+            'uid': userCredential.user!.uid,
+            'email': emailcontroller.text.trim(),
+            'name': namecontroller.text.trim(),
+            'dateOfBirth': dobcontroller.text.trim(),
+            'gender': _selectedGender?.name,
+            'role': widget.role,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+
+        if (!mounted) return;
+
+        Navigator.pop(context); // Close loading dialog
+
+        // Navigate to main page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainPage(),
+          ),
+        );
+      } on FirebaseAuthException catch (e) {
+        if (mounted) {
+          Navigator.pop(context); // Close loading dialog
+        }
+
+        if (!mounted) return;
+
+        // Show user-friendly error message using SnackBar
+        String errorMessage = _getFirebaseAuthErrorMessage(e.code);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+        
+      } catch (e) {
+        if (mounted) {
+          Navigator.pop(context); // Close loading dialog
+        }
+
+        if (!mounted) return;
+
+        // Handle other unexpected errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('An unexpected error occurred. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
-
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Error'),
-          content: Text('An unexpected error occurred: ${e.toString()}'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
     }
   }
 
@@ -169,6 +183,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
         ),
       ),
     );
+    
     try {
       final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
 
@@ -207,6 +222,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
             'username': user.displayName,
             'email': user.email,
             'role': "student",
+            'createdAt': FieldValue.serverTimestamp(),
           });
         }
       }
@@ -223,17 +239,16 @@ class _SignupPageNewState extends State<SignupPageNew> {
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Google Sign-In Error'),
-            content: Text(e.toString()),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
+        
+        String errorMessage = 'Failed to sign in with Google. Please try again.';
+        if (e.toString().contains('network')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -243,7 +258,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
   Future<void> _selectDate(BuildContext context) async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: DateTime.now().subtract(const Duration(days: 6570)), // 18 years ago
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
       builder: (BuildContext context, Widget? child) {
@@ -283,305 +298,373 @@ class _SignupPageNewState extends State<SignupPageNew> {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const SizedBox(height: 25.0),
-            const Text(
-              'Welcome,',
-              style: TextStyle(
-                fontSize: 24.0,
-                color: Color.fromARGB(197, 11, 4, 66),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 24.0),
-            TextFormField(
-              controller: namecontroller,
-              style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
-              decoration: InputDecoration(
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                labelText: 'Name',
-                labelStyle:
-                    const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
-                hintText: 'Enter your Full Name',
-                hintStyle: const TextStyle(color: Colors.grey),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
-                  borderRadius: BorderRadius.circular(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const SizedBox(height: 25.0),
+              const Text(
+                'Welcome,',
+                style: TextStyle(
+                  fontSize: 24.0,
+                  color: Color.fromARGB(197, 11, 4, 66),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const SizedBox(height: 20.0),
-            TextFormField(
-              controller: dobcontroller,
-              style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
-              readOnly: true,
-              decoration: InputDecoration(
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                labelText: 'Date of Birth',
-                labelStyle:
-                    const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
-                hintText: 'MM/DD/YYYY',
-                hintStyle: const TextStyle(color: Colors.grey),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
-                  borderRadius: BorderRadius.circular(20.0),
+              const SizedBox(height: 24.0),
+              TextFormField(
+                controller: namecontroller,
+                style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                decoration: InputDecoration(
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                  labelText: 'Name ',
+                  labelStyle:
+                      const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                  hintText: 'Enter your Full Name',
+                  hintStyle: const TextStyle(color: Colors.grey),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                        color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                        color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red, width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red, width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
-                  borderRadius: BorderRadius.circular(20.0),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter your name';
+                  }
+                  if (value.trim().length < 2) {
+                    return 'Name must be at least 2 characters long';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20.0),
+              TextFormField(
+                controller: dobcontroller,
+                style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                readOnly: true,
+                decoration: InputDecoration(
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                  labelText: 'Date of Birth ',
+                  labelStyle:
+                      const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                  hintText: 'MM/DD/YYYY',
+                  hintStyle: const TextStyle(color: Colors.grey),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                        color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                        color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red, width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red, width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.calendar_today,
+                        color: Color.fromARGB(197, 11, 4, 66)),
+                    onPressed: () => _selectDate(context),
+                  ),
                 ),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.calendar_today,
-                      color: Color.fromARGB(197, 11, 4, 66)),
-                  onPressed: () => _selectDate(context),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please select your date of birth';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 15.0),
+              const Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: Text(
+                  'Gender',
+                  style: TextStyle(color: Color.fromARGB(210, 4, 1, 23)),
                 ),
               ),
-            ),
-            const SizedBox(height: 15.0),
-            const Padding(
-              padding: EdgeInsets.only(left: 10),
-              child: Text(
-                'Gender',
-                style: TextStyle(color: Color.fromARGB(210, 4, 1, 23)),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: Gender.values.map((gender) {
-                final isSelected = _selectedGender == gender;
-                final label = gender == Gender.male
-                    ? 'Male'
-                    : gender == Gender.female
-                        ? 'Female'
-                        : 'Others';
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: Gender.values.map((gender) {
+                  final isSelected = _selectedGender == gender;
+                  final label = gender == Gender.male
+                      ? 'Male'
+                      : gender == Gender.female
+                          ? 'Female'
+                          : 'Others';
 
-                return Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 238, 241, 248),
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(
-                        color: const Color.fromARGB(255, 11, 4, 66),
-                        width: 1.5,
+                  return Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 238, 241, 248),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: const Color.fromARGB(255, 11, 4, 66),
+                          width: 1.5,
+                        ),
                       ),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(25),
-                      onTap: () {
-                        setState(() {
-                          _selectedGender = gender;
-                        });
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            label,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color.fromARGB(255, 11, 4, 66),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: () {
+                          setState(() {
+                            _selectedGender = gender;
+                          });
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              label,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color.fromARGB(255, 11, 4, 66),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Radio<Gender>(
-                            value: gender,
-                            groupValue: _selectedGender,
-                            onChanged: (Gender? value) {
-                              setState(() {
-                                _selectedGender = value;
-                              });
-                            },
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: const VisualDensity(
-                                horizontal: -4, vertical: -4),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Radio<Gender>(
+                              value: gender,
+                              groupValue: _selectedGender,
+                              onChanged: (Gender? value) {
+                                setState(() {
+                                  _selectedGender = value;
+                                });
+                              },
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: const VisualDensity(
+                                  horizontal: -4, vertical: -4),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: emailcontroller,
-              style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                labelText: 'Email',
-                labelStyle:
-                    const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
-                hintText: 'Enter your Email Address',
-                hintStyle: const TextStyle(color: Colors.grey),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
+                  );
+                }).toList(),
               ),
-            ),
-            const SizedBox(height: 20.0),
-            TextFormField(
-              controller: passcontroller,
-              obscureText:
-                  _obscureText, // Uses the state variable for visibility
-              style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
-              decoration: InputDecoration(
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                labelText: 'Password',
-                labelStyle:
-                    const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
-                hintText: 'Password',
-                hintStyle: const TextStyle(color: Colors.grey),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                      color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureText ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.grey,
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: emailcontroller,
+                style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                  labelText: 'Email',
+                  labelStyle:
+                      const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                  hintText: 'Enter your Email Address',
+                  hintStyle: const TextStyle(color: Colors.grey),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                        color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureText =
-                          !_obscureText; // Toggle password visibility
-                    });
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: signup,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  fixedSize: const Size(350, 50),
-                  backgroundColor: const Color.fromARGB(197, 11, 4, 66),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24.0),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                        color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red, width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red, width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
                   ),
                 ),
-                child: const Text('Sign Up', style: TextStyle(fontSize: 20)),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter your email address';
+                  }
+                  
+                  final emailRegExp = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+                  if (!emailRegExp.hasMatch(value.trim())) {
+                    return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
               ),
-            ),
-            const SizedBox(height: 20.0),
-            const Row(
-              children: <Widget>[
-                Expanded(child: Divider(color: Colors.black26)),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text('OR',
-                      style: TextStyle(color: Colors.black54, fontSize: 20)),
-                ),
-                Expanded(child: Divider(color: Colors.black26)),
-              ],
-            ),
-            const Center(
-              child: Text('Continue With',
-                  style: TextStyle(color: Colors.black54, fontSize: 20)),
-            ),
-            const SizedBox(height: 25.0),
-            Center(
-              child: Column(
-                children: [
-                  OutlinedButton.icon(
+              const SizedBox(height: 20.0),
+              TextFormField(
+                controller: passcontroller,
+                obscureText: _obscureText,
+                style: const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                decoration: InputDecoration(
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                  labelText: 'Password',
+                  labelStyle:
+                      const TextStyle(color: Color.fromARGB(197, 11, 4, 66)),
+                  hintText: 'Password (minimum 6 characters)',
+                  hintStyle: const TextStyle(color: Colors.grey),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                        color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                        color: Color.fromARGB(197, 11, 4, 66), width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red, width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red, width: 2.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
                     onPressed: () {
-                      signInWithGoogle();
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
                     },
-                    style: OutlinedButton.styleFrom(
-                      fixedSize: const Size(250, 50),
-                      side: const BorderSide(
-                          color: Color.fromARGB(197, 11, 4, 66), width: 1.8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                    ),
-                    icon: Image.asset('lib/assets/icons/google.png',
-                        height: 24.0, width: 24.0),
-                    label: const Text('Google',
-                        style: TextStyle(
-                            color: Color.fromARGB(120, 11, 4, 66),
-                            fontSize: 20)),
                   ),
-                  const SizedBox(height: 32.0),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      apple();
-                    },
-                    style: OutlinedButton.styleFrom(
-                      fixedSize: const Size(250, 50),
-                      side: const BorderSide(
-                          color: Color.fromARGB(197, 11, 4, 66), width: 1.8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a password';
+                  }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters long';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20.0),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: signup,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    fixedSize: const Size(350, 50),
+                    backgroundColor: const Color.fromARGB(197, 11, 4, 66),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24.0),
                     ),
-                    icon: const Icon(Icons.apple,
-                        color: Color.fromARGB(197, 11, 4, 66), size: 35),
-                    label: const Text('Apple',
-                        style: TextStyle(
-                            color: Color.fromARGB(120, 11, 4, 66),
-                            fontSize: 20)),
+                  ),
+                  child: const Text('Sign Up', style: TextStyle(fontSize: 18)),
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              const Row(
+                children: <Widget>[
+                  Expanded(child: Divider(color: Colors.black26)),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text('OR',
+                        style: TextStyle(color: Colors.black54, fontSize: 16)),
+                  ),
+                  Expanded(child: Divider(color: Colors.black26)),
+                ],
+              ),
+              const Center(
+                child: Text('Continue With',
+                    style: TextStyle(color: Colors.black54, fontSize: 16)),
+              ),
+              const SizedBox(height: 25.0),
+              Center(
+                child: Column(
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        signInWithGoogle();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        fixedSize: const Size(250, 50),
+                        side: const BorderSide(
+                            color: Color.fromARGB(197, 11, 4, 66), width: 1.8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      ),
+                      icon: Image.asset('lib/assets/icons/google.png',
+                          height: 24.0, width: 24.0),
+                      label: const Text('Google',
+                          style: TextStyle(
+                              color: Color.fromARGB(120, 11, 4, 66),
+                              fontSize: 20)),
+                    ),
+                    const SizedBox(height: 32.0),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        apple();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        fixedSize: const Size(250, 50),
+                        side: const BorderSide(
+                            color: Color.fromARGB(197, 11, 4, 66), width: 1.8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      ),
+                      icon: const Icon(Icons.apple,
+                          color: Color.fromARGB(197, 11, 4, 66), size: 35),
+                      label: const Text('Apple',
+                          style: TextStyle(
+                              color: Color.fromARGB(120, 11, 4, 66),
+                              fontSize: 20)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const Text("Already have an account? ",
+                      style: TextStyle(color: Colors.black54)),
+                  GestureDetector(
+                    onTap: () {
+                      navigateToLogin();
+                    },
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(
+                          color: Color.fromARGB(197, 11, 4, 66),
+                          fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 32.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const Text("Already have an account? ",
-                    style: TextStyle(color: Colors.black54)),
-                GestureDetector(
-                  onTap: () {
-                    navigateToLogin();
-                  },
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(
-                        color: Color.fromARGB(197, 11, 4, 66),
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

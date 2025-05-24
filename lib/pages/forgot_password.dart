@@ -33,7 +33,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                'If an account exists for this email, a password reset link has been sent.'),
+                'a password reset link has been sent to this email'),
             backgroundColor: Colors.green,
           ),
         );
@@ -42,7 +42,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         String message;
         if (e.code == 'user-not-found') {
           message =
-              'If an account exists for this email, a password reset link has been sent.';
+              ' a password reset link has been sent to this email';
         } else if (e.code == 'invalid-email') {
           message = 'The email address is not valid.';
         } else {

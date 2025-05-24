@@ -74,7 +74,7 @@ class StudentOrStaff extends StatelessWidget {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const LoginPageNew(),
+                          builder: (context) => const LoginPageNew(role: 'Staff',),
                         ));
                   },
                   child: Container(

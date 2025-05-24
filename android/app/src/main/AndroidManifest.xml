@@ -10,7 +10,8 @@
     <application
         android:label="ogs"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyB7FpDttigq5uD2xBR0jXJ5Z5XKA8PlYxo"/>
         <activity

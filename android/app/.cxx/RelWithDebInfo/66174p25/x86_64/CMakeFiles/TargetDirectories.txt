@@ -1,0 +1,2 @@
+C:/downloads_d/OGS_app/OGS-app/android/app/.cxx/RelWithDebInfo/66174p25/x86_64/CMakeFiles/edit_cache.dir
+C:/downloads_d/OGS_app/OGS-app/android/app/.cxx/RelWithDebInfo/66174p25/x86_64/CMakeFiles/rebuild_cache.dir

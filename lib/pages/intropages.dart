@@ -39,7 +39,7 @@ class _IntroPagesState extends State<IntroPages> {
               title: "  Complete\n  Guide For\nYour Travel",),
               MyIntroPage(
                 button: true,
-                imgurl: 'im4',
+                imgurl: 'im5',
                 titlecolor: pricol,
               ),
             ],
@@ -132,61 +132,100 @@ class MyIntroPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxImageHeight = screenHeight * 0.5; // Restrict to 50% of screen height
+    
     return Container(
       color: bgcolor,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset('lib/assets/landing ui/$imgurl.png'),
-          ),
-          if (!button)
-          Column(
-            children: [
-              Text(title,
-                  style: GoogleFonts.outfit(
-                      color: titlecolor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 35)),
-              // Text(
-              //   "This is a complete travel app",
-              //   style: GoogleFonts.poppins(color: textcolor),
-              // )
-            ],
-          ),
-          if (button)
-            GestureDetector(
-              onTap: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const StudentOrStaff(),
-                    ));
-              },
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: pricol,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      color: pricol),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 45, vertical: 12),
-                  child: Text(
-                    'Get Started',
-                    style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 23),
-                  ),
+      child: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            const SizedBox(height: 20),
+            
+            // Image container with restricted height
+            Container(
+              constraints: BoxConstraints(
+                maxHeight: maxImageHeight,
+                maxWidth: double.infinity,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Image.asset(
+                  'lib/assets/landing ui/$imgurl.png',
+                  fit: BoxFit.contain, // Maintain aspect ratio while fitting within bounds
+                  height: maxImageHeight,
                 ),
               ),
             ),
-          const SizedBox()
-        ],
+            
+            const SizedBox(height: 20),
+            
+            // Title or Button section
+            if (!button)
+              Flexible(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        color: titlecolor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            
+            if (button)
+              Flexible(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const StudentOrStaff(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: pricol,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            color: pricol,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 45, 
+                            vertical: 12,
+                          ),
+                          child: Text(
+                            'Get Started',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 23,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            
+            const SizedBox(height: 80), // Space for bottom navigation
+          ],
+        ),
       ),
     );
   }

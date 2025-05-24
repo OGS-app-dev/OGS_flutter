@@ -157,7 +157,7 @@ class EventsHorizontalScrollView extends StatelessWidget {
                         ),
                       ),
                     Positioned(
-                      right: 85,
+                      right: 30,
                       bottom: 28,
                       child: Container(
                         width: 30,

@@ -102,32 +102,46 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null && _appUser == null
-              ? Center(child: Text(_errorMessage!))
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildProfileHeader(),
-                      const SizedBox(height: 20),
-                      _buildActionButtons(),
-                      const Divider(
-                          height: 30, thickness: 1, indent: 20, endIndent: 20),
-                      _buildSection('Saved'),
-                      _buildSection('History'),
-                      _buildSection('My Ratings'),
-                      _buildSection('Help Center'),
-                      _buildSection('Customer Service'),
-                    ],
-                  ),
+
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.white,
+    body: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : _errorMessage != null && _appUser == null
+            ? Center(child: Text(_errorMessage!))
+            : SafeArea(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 80), // Add bottom padding
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                        child: IntrinsicHeight(
+                          child: Column(
+                            children: [
+                              _buildProfileHeader(),
+                              const SizedBox(height: 20),
+                              _buildActionButtons(),
+                              const Divider(
+                                  height: 30, thickness: 1, indent: 20, endIndent: 20),
+                              _buildSection('Saved'),
+                              _buildSection('History'),
+                              _buildSection('My Ratings'),
+                              _buildSection('Help Center'),
+                              _buildSection('Customer Service'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-    );
-  }
+              ),
+  );
+}
+
 
   Widget _buildProfileHeader() {
     final String userName = _appUser?.name ?? 'Loading User...';
@@ -296,7 +310,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 50),
         // Spacing between sections
       ],
     );

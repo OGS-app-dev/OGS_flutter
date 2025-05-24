@@ -31,7 +31,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String? _errorMessage;
   File? _pickedImage;
   String? _userName;
-
   String _memberSinceText = 'Loading...';
 
   @override
@@ -48,6 +47,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
+  // Fixed: This method should only fetch data, not save it
   Future<void> _fetchUserData() async {
     setState(() {
       _isLoading = true;
@@ -56,40 +56,54 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     try {
       _currentUser = FirebaseAuth.instance.currentUser;
+      
       if (_currentUser != null) {
-        _emailController.text = _currentUser!.email ?? '';
-
-        if (_currentUser!.metadata.creationTime != null) {
-          final DateTime creationDateTime =
-              _currentUser!.metadata.creationTime!;
-          _memberSinceText =
-              ' Since ${DateFormat('MMMM d, y').format(creationDateTime)}';
-        } else {
-          _memberSinceText = 'Member Since: N/A';
-        }
-
+        // Fetch user data from Firestore
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(_currentUser!.uid)
             .get();
 
         if (userDoc.exists) {
-          Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
-          _nameController.text = data['name'] ?? '';
-          _userName = data['name'] ?? 'User';
-          _mobileNoController.text = data['mobileNo'] ?? '';
-          _profileImageUrl = data['profileImageUrl'];
+          Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+          
+          setState(() {
+            _nameController.text = userData['name'] ?? _currentUser!.displayName ?? '';
+            _mobileNoController.text = userData['mobileNo'] ?? '';
+            _emailController.text = userData['email'] ?? _currentUser!.email ?? '';
+            _profileImageUrl = userData['profileImageUrl'] ?? _currentUser!.photoURL;
+            
+            // Calculate member since date
+            if (_currentUser!.metadata.creationTime != null) {
+              _memberSinceText = 'Member since ${DateFormat('MMM yyyy').format(_currentUser!.metadata.creationTime!)}';
+            } else {
+              _memberSinceText = 'Member since Unknown';
+            }
+          });
         } else {
-          _nameController.text = _currentUser!.displayName ?? '';
-          _errorMessage =
-              "User profile data not found in Firestore. Using defaults.";
+          // If no document exists, use Firebase Auth data
+          setState(() {
+            _nameController.text = _currentUser!.displayName ?? '';
+            _emailController.text = _currentUser!.email ?? '';
+            _profileImageUrl = _currentUser!.photoURL;
+            
+            if (_currentUser!.metadata.creationTime != null) {
+              _memberSinceText = 'Member since ${DateFormat('MMM yyyy').format(_currentUser!.metadata.creationTime!)}';
+            } else {
+              _memberSinceText = 'Member since Unknown';
+            }
+          });
         }
       } else {
-        _errorMessage = "No active user logged in. Please log in.";
+        setState(() {
+          _errorMessage = "No user logged in";
+        });
       }
     } catch (e) {
-      _errorMessage = "Error fetching user data: $e";
-      print(_errorMessage);
+      setState(() {
+        _errorMessage = "Error fetching user data: $e";
+      });
+      print("Error fetching user data: $e");
     } finally {
       setState(() {
         _isLoading = false;
@@ -113,14 +127,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     try {
       final storageRef = FirebaseStorage.instance.ref();
-      final imageRef =
-          storageRef.child('profile_images/${_currentUser!.uid}.jpg');
+      final imageRef = storageRef.child('profile_images/${_currentUser!.uid}.jpg');
+      
+      // Upload the file
       await imageRef.putFile(_pickedImage!);
-      return await imageRef.getDownloadURL();
+      
+      // Get the download URL
+      String downloadURL = await imageRef.getDownloadURL();
+      return downloadURL;
     } catch (e) {
       print("Error uploading image: $e");
-      _showAlertDialog('Upload Error', 'Failed to upload profile image: $e');
-      return null;
+      // Don't show success dialog if image upload fails
+      throw Exception('Failed to upload profile image: $e');
     }
   }
 
@@ -136,15 +154,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
     try {
       if (_currentUser != null) {
         String? newProfileImageUrl = _profileImageUrl;
+        
+        // Only upload image if a new one was picked
         if (_pickedImage != null) {
-          newProfileImageUrl = await _uploadImage();
+          try {
+            newProfileImageUrl = await _uploadImage();
+          } catch (e) {
+            // If image upload fails, show error and don't proceed with profile update
+            setState(() {
+              _isLoading = false;
+            });
+            _showAlertDialog('Upload Error', e.toString());
+            return; // Exit early if image upload fails
+          }
         }
 
+        // Update Firebase Auth profile
         await _currentUser!.updateDisplayName(_nameController.text.trim());
-        if (newProfileImageUrl != null) {
+        if (newProfileImageUrl != null && newProfileImageUrl != _profileImageUrl) {
           await _currentUser!.updatePhotoURL(newProfileImageUrl);
         }
 
+        // Update Firestore document
         await FirebaseFirestore.instance
             .collection('users')
             .doc(_currentUser!.uid)
@@ -154,19 +185,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
             'mobileNo': _mobileNoController.text.trim(),
             'email': _emailController.text.trim(),
             'profileImageUrl': newProfileImageUrl,
+            'updatedAt': FieldValue.serverTimestamp(),
           },
           SetOptions(merge: true),
         );
 
+        // Update local state
+        setState(() {
+          _profileImageUrl = newProfileImageUrl;
+          _pickedImage = null; // Clear the picked image after successful upload
+        });
+
+        // Only show success message if everything succeeds
         _showAlertDialog('Success', 'Profile updated successfully!');
       } else {
         _showAlertDialog('Error', 'No user logged in.');
       }
     } on FirebaseAuthException catch (e) {
-      _showAlertDialog(
-          'Update Error', e.message ?? 'An authentication error occurred.');
+      _showAlertDialog('Update Error', e.message ?? 'An authentication error occurred.');
+    } on FirebaseException catch (e) {
+      _showAlertDialog('Database Error', e.message ?? 'A database error occurred.');
     } catch (e) {
-      _showAlertDialog('Error', 'An unexpected error occurred: $e');
+      _showAlertDialog('Error', 'An unexpected error occurred: ${e.toString()}');
       print("Error saving user data: $e");
     } finally {
       setState(() {
@@ -230,7 +270,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(child: Text(_errorMessage!))
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(_errorMessage!),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _fetchUserData,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
               : SingleChildScrollView(
                   padding: const EdgeInsets.all(20.0),
                   child: Form(
@@ -241,29 +293,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         Center(
                           child: Row(
                             children: [
-                              const SizedBox(
-                                width: 25,
-                              ),
+                              const SizedBox(width: 25),
                               Stack(
                                 children: [
                                   CircleAvatar(
                                     radius: 45,
                                     backgroundImage: _pickedImage != null
-                                        ? FileImage(_pickedImage!)
-                                            as ImageProvider
-                                        : (_profileImageUrl != null &&
-                                                    _profileImageUrl!.isNotEmpty
+                                        ? FileImage(_pickedImage!) as ImageProvider
+                                        : (_profileImageUrl != null && _profileImageUrl!.isNotEmpty
                                                 ? NetworkImage(_profileImageUrl!)
-                                                : const AssetImage(
-                                                    'lib/assets/images/placeholder_grey.png'))
+                                                : const AssetImage('lib/assets/images/placeholder_grey.png'))
                                             as ImageProvider,
-                                    onBackgroundImageError:
-                                        (exception, stackTrace) {
-                                      print(
-                                          'Error loading profile image: $exception');
+                                    onBackgroundImageError: (exception, stackTrace) {
+                                      print('Error loading profile image: $exception');
                                     },
-                                    child: _profileImageUrl == null &&
-                                            _pickedImage == null
+                                    child: _profileImageUrl == null && _pickedImage == null
                                         ? Container(
                                             width: 90,
                                             height: 90,
@@ -287,16 +331,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                       child: Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: const Color.fromARGB(
-                                              255, 100, 10, 10),
+                                          color: const Color.fromARGB(255, 100, 10, 10),
                                           shape: BoxShape.circle,
-                                          border: Border.all(
-                                              color: Colors.white, width: 2),
+                                          border: Border.all(color: Colors.white, width: 2),
                                         ),
-                                        child: const Icon(Icons.edit,
-                                            color: Color.fromARGB(
-                                                255, 255, 255, 255),
-                                            size: 20),
+                                        child: const Icon(
+                                          Icons.edit,
+                                          color: Color.fromARGB(255, 255, 255, 255),
+                                          size: 20,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -308,9 +351,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _nameController.text.isNotEmpty
-                                          ? _nameController.text
-                                          : 'User',
+                                      _nameController.text.isNotEmpty ? _nameController.text : 'User',
                                       style: const TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
@@ -369,8 +410,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your email ID';
                             }
-                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                                .hasMatch(value)) {
+                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
                               return 'Enter a valid email address';
                             }
                             return null;
@@ -379,9 +419,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         const SizedBox(height: 20),
                         Row(
                           children: [
-                            const SizedBox(
-                              width: 15,
-                            ),
+                            const SizedBox(width: 15),
                             Text(
                               "Logout",
                               style: GoogleFonts.outfit(
@@ -391,46 +429,38 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               ),
                             ),
                             IconButton(
-                                onPressed: () async {
-                                  await FirebaseAuth.instance.signOut();
-                                  try {
-                                    await GoogleSignIn().signOut();
-                                  } catch (e) {
-                                    if (context.mounted) {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: Text(e.toString()),
-                                        ),
-                                      );
-                                    }
-                                  }
+                              onPressed: () async {
+                                await FirebaseAuth.instance.signOut();
+                                try {
+                                  await GoogleSignIn().signOut();
+                                } catch (e) {
                                   if (context.mounted) {
-                                    /*Navigator.of(context).pushAndRemoveUntil(
-                                                MaterialPageRoute(
-                        builder: (context) => const LoginPage())
-                        ,(Route<dynamic> route) => false
-                                                );*/
-                                    Provider.of<FormResponse>(context,
-                                            listen: false)
-                                        .tabController!
-                                        .jumpToTab(0);
-
-                                    Navigator.of(context, rootNavigator: true)
-                                        .pushAndRemoveUntil(
-                                      MaterialPageRoute(
-                                        builder: (BuildContext context) {
-                                          return const StudentOrStaff();
-                                        },
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: Text(e.toString()),
                                       ),
-                                      (_) => false,
                                     );
                                   }
-                                },
-                                icon: const Icon(
-                                  Icons.logout,
-                                  size: 20,
-                                )),
+                                }
+                                if (context.mounted) {
+                                  Provider.of<FormResponse>(context, listen: false)
+                                      .tabController!
+                                      .jumpToTab(0);
+
+                                  Navigator.of(context, rootNavigator: true)
+                                      .pushAndRemoveUntil(
+                                    MaterialPageRoute(
+                                      builder: (BuildContext context) {
+                                        return const StudentOrStaff();
+                                      },
+                                    ),
+                                    (_) => false,
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.logout, size: 20),
+                            ),
                           ],
                         ),
                       ],
@@ -458,7 +488,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black87, // Label text color
+              color: Colors.black87,
             ),
           ),
         ),
@@ -467,32 +497,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
           controller: controller,
           keyboardType: keyboardType,
           readOnly: readOnly,
-          style: const TextStyle(color: Colors.black), // Color of typed text
+          style: const TextStyle(color: Colors.black),
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: const TextStyle(
-                color: Color.fromARGB(255, 134, 133, 133)), // Hint text color
+            hintStyle: const TextStyle(color: Color.fromARGB(255, 134, 133, 133)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10.0),
-              borderSide: const BorderSide(
-                  color: Color.fromARGB(255, 177, 177, 177)), // Default border
+              borderSide: const BorderSide(color: Color.fromARGB(255, 177, 177, 177)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10.0),
-              borderSide: const BorderSide(
-                  color: Colors.blue, width: 2), // Focused border
+              borderSide: const BorderSide(color: Colors.blue, width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10.0),
               borderSide: const BorderSide(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                  width: 0), // Enabled border (invisible in this case)
+                color: Color.fromARGB(255, 255, 255, 255),
+                width: 0,
+              ),
             ),
             filled: true,
-            fillColor: const Color.fromARGB(
-                255, 255, 255, 255), // Background fill color
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
           ),
           validator: validator,
         ),
