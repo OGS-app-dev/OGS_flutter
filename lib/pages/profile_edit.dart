@@ -47,7 +47,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
-  // Fixed: This method should only fetch data, not save it
   Future<void> _fetchUserData() async {
     setState(() {
       _isLoading = true;
@@ -81,11 +80,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
             }
           });
         } else {
-          // If no document exists, use Firebase Auth data
+          // If no document exists (likely Google Sign-in user), create one with Firebase Auth data
+          String displayName = _currentUser!.displayName ?? 
+                              (_currentUser!.email?.split('@')[0] ?? 'User');
+          String email = _currentUser!.email ?? '';
+          String? photoURL = _currentUser!.photoURL;
+          
+          await _createUserDocument(displayName, email, photoURL);
+          
           setState(() {
-            _nameController.text = _currentUser!.displayName ?? '';
-            _emailController.text = _currentUser!.email ?? '';
-            _profileImageUrl = _currentUser!.photoURL;
+            _nameController.text = displayName;
+            _emailController.text = email;
+            _profileImageUrl = photoURL;
             
             if (_currentUser!.metadata.creationTime != null) {
               _memberSinceText = 'Member since ${DateFormat('MMM yyyy').format(_currentUser!.metadata.creationTime!)}';
@@ -111,6 +117,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
+  Future<void> _createUserDocument(String name, String email, String? photoURL) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .set({
+        'name': name,
+        'email': email,
+        'profileImageUrl': photoURL,
+        'mobileNo': '',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      print("User document created for Google Sign-in user");
+    } catch (e) {
+      print("Error creating user document: $e");
+    }
+  }
+
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -129,15 +154,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final storageRef = FirebaseStorage.instance.ref();
       final imageRef = storageRef.child('profile_images/${_currentUser!.uid}.jpg');
       
-      // Upload the file
       await imageRef.putFile(_pickedImage!);
       
-      // Get the download URL
       String downloadURL = await imageRef.getDownloadURL();
       return downloadURL;
     } catch (e) {
       print("Error uploading image: $e");
-      // Don't show success dialog if image upload fails
       throw Exception('Failed to upload profile image: $e');
     }
   }
@@ -155,27 +177,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (_currentUser != null) {
         String? newProfileImageUrl = _profileImageUrl;
         
-        // Only upload image if a new one was picked
         if (_pickedImage != null) {
           try {
             newProfileImageUrl = await _uploadImage();
           } catch (e) {
-            // If image upload fails, show error and don't proceed with profile update
             setState(() {
               _isLoading = false;
             });
             _showAlertDialog('Upload Error', e.toString());
-            return; // Exit early if image upload fails
+            return;
           }
         }
 
-        // Update Firebase Auth profile
         await _currentUser!.updateDisplayName(_nameController.text.trim());
         if (newProfileImageUrl != null && newProfileImageUrl != _profileImageUrl) {
           await _currentUser!.updatePhotoURL(newProfileImageUrl);
         }
 
-        // Update Firestore document
         await FirebaseFirestore.instance
             .collection('users')
             .doc(_currentUser!.uid)
@@ -190,13 +208,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
           SetOptions(merge: true),
         );
 
-        // Update local state
         setState(() {
           _profileImageUrl = newProfileImageUrl;
-          _pickedImage = null; // Clear the picked image after successful upload
+          _pickedImage = null;
         });
 
-        // Only show success message if everything succeeds
         _showAlertDialog('Success', 'Profile updated successfully!');
       } else {
         _showAlertDialog('Error', 'No user logged in.');
@@ -298,16 +314,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 children: [
                                   CircleAvatar(
                                     radius: 45,
-                                    backgroundImage: _pickedImage != null
-                                        ? FileImage(_pickedImage!) as ImageProvider
-                                        : (_profileImageUrl != null && _profileImageUrl!.isNotEmpty
-                                                ? NetworkImage(_profileImageUrl!)
-                                                : const AssetImage('lib/assets/images/placeholder_grey.png'))
-                                            as ImageProvider,
+                                    backgroundImage: _getProfileImageProvider(),
                                     onBackgroundImageError: (exception, stackTrace) {
                                       print('Error loading profile image: $exception');
                                     },
-                                    child: _profileImageUrl == null && _pickedImage == null
+                                    child: _shouldShowDefaultIcon() 
                                         ? Container(
                                             width: 90,
                                             height: 90,
@@ -390,11 +401,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           hintText: 'ENTER YOUR MOBILE NUMBER',
                           keyboardType: TextInputType.phone,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your mobile number';
-                            }
-                            if (!RegExp(r'^[0-9]{10,15}$').hasMatch(value)) {
-                              return 'Enter a valid mobile number';
+                            if (value != null && value.isNotEmpty) {
+                              if (!RegExp(r'^[0-9]{10,15}$').hasMatch(value)) {
+                                return 'Enter a valid mobile number';
+                              }
                             }
                             return null;
                           },
@@ -468,6 +478,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                 ),
     );
+  }
+
+  ImageProvider _getProfileImageProvider() {
+    if (_pickedImage != null) {
+      return FileImage(_pickedImage!);
+    } else if (_profileImageUrl != null && _profileImageUrl!.isNotEmpty) {
+      return NetworkImage(_profileImageUrl!);
+    } else {
+      return const AssetImage('lib/assets/images/placeholder_grey.png');
+    }
+  }
+
+  bool _shouldShowDefaultIcon() {
+    return _profileImageUrl == null && _pickedImage == null;
   }
 
   Widget _buildTextField({

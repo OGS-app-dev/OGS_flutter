@@ -1,5 +1,3 @@
-//import 'dart:nativewrappers/_internal/vm/lib/core_patch.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +13,9 @@ import 'package:ogs/widgets/horizontalscrolltile.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:ogs/widgets/myevents.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 
-// ... (imports and other code)
+
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -25,8 +24,6 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
-
-// ... (imports and other code)
 
 class _HomePageState extends State<HomePage> {
   final _fireDb = FireDb();
@@ -57,6 +54,55 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  String getFirstName(DocumentSnapshot<Map<String, dynamic>>? docSnapshot, User? user) {
+    Map<String, dynamic>? userData = docSnapshot?.data();
+    
+    if (userData != null && userData['name'] != null) {
+      // If user data exists in database, use it
+      return userData['name'].split(" ")[0];
+    } else if (user?.displayName != null) {
+      // If no database data but Google sign-in displayName exists
+      return user!.displayName!.split(" ")[0];
+    } else if (user?.email != null) {
+      // Fallback to email username
+      return user!.email!.split("@")[0];
+    } else {
+      // Final fallback
+      return "User";
+    }
+  }
+
+  Widget getProfileImage(DocumentSnapshot<Map<String, dynamic>>? docSnapshot, User? user) {
+    Map<String, dynamic>? userData = docSnapshot?.data();
+    
+    if (userData != null && userData['profileImage'] != null) {
+      // If user has profile image in database
+      return CircleAvatar(
+        radius: 18,
+        backgroundImage: NetworkImage(userData['profileImage']),
+        backgroundColor: pricol,
+      );
+    } else if (user?.photoURL != null) {
+      // If Google sign-in photo exists
+      return CircleAvatar(
+        radius: 18,
+        backgroundImage: NetworkImage(user!.photoURL!),
+        backgroundColor: pricol,
+      );
+    } else {
+      // Default icon
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30), color: pricol),
+        child: const Icon(
+          CupertinoIcons.person_fill,
+          color: Colors.white,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,20 +118,31 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               width: 10,
             ),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30), color: pricol),
-              child: const Icon(
-                CupertinoIcons.person_fill,
-                color: Colors.white,
-              ),
+            // Profile image that works for both regular and Google sign-in users
+            FutureBuilder(
+              future: _fireDb.getUserDetails(currentUser!.uid),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30), color: pricol),
+                    child: const Icon(
+                      CupertinoIcons.person_fill,
+                      color: Colors.white,
+                    ),
+                  );
+                }
+                
+                var docSnapshot = snapshot.data;
+                return getProfileImage(docSnapshot, currentUser);
+              },
             ),
             const SizedBox(
               width: 10,
             ),
-            // COMBINE THE TEXT WIDGETS HERE
-            Flexible( // Keep Flexible for the combined text
+            // User name that works for both regular and Google sign-in users
+            Flexible(
               child: FutureBuilder(
                 future: _fireDb.getUserDetails(currentUser!.uid),
                 builder: (context, snapshot) {
@@ -96,16 +153,16 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
 
-                  var data = snapshot.data;
-                  String firstName = data!['name'].split(" ")[0];
+                  var docSnapshot = snapshot.data;
+                  String firstName = getFirstName(docSnapshot, currentUser);
+                  
                   return Text(
-                    // Combine "Hello, " and the firstName here
                     "Hello, $firstName!",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.outfit(
                       color: const Color.fromARGB(255, 16, 34, 112),
-                      fontSize: 15, // Using a single font size for the whole line
+                      fontSize: 15,
                       fontWeight: FontWeight.w400,
                     ),
                   );
@@ -150,7 +207,6 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      //drawer: const Mydrawer(),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -188,9 +244,7 @@ class _HomePageState extends State<HomePage> {
                                 LineIcons.sunAlt,
                                 size: 30,
                                 color: yel,
-                              )
-                              //Image.asset('lib/assets/icons/sun.png',height: 50,width: 80,),
-                              ),
+                              )),
                         ],
                       ),
                     ),
@@ -434,12 +488,7 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 20,
                 ),
-                const EventsHorizontalScrollView(
-                    // height: 254,
-                    // width: 299,
-                    // outBorderRadius: 26,
-                    // hasChild: true,
-                    ),
+                const EventsHorizontalScrollView(),
                 const SizedBox(
                   height: 18,
                 ),
@@ -476,13 +525,14 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 25,
                 ),
-const HorizontalScrollTile(height: 254,
-                     width: 299,
-                     outBorderRadius: 26,
-                     hasChild: true,)
-                    ,
+                const HorizontalScrollTile(
+                  height: 254,
+                  width: 299,
+                  outBorderRadius: 26,
+                  hasChild: true,
+                ),
                 const SizedBox(
-                  height: 150,
+                  height: 80,
                 ),
               ],
             ),
