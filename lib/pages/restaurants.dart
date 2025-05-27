@@ -1,38 +1,84 @@
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:line_icons/line_icons.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/firebase/dbservices.dart';
 import 'package:ogs/form_response/form_response.dart';
-import 'package:ogs/pages/comingsoon.dart';
 import 'package:ogs/pages/notificationpage.dart';
-import 'package:ogs/widgets/horizontalscrolltile.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
-import 'package:ogs/widgets/myevents.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
-import 'package:ogs/pages/restaurants.dart';
+import 'package:line_icons/line_icons.dart';
 
 
-class HomePage extends StatefulWidget {
-  const HomePage({
-    super.key,
+class Restaurant {
+  final String name;
+  final String location;
+  final String imageUrl;
+
+  Restaurant({
+    required this.name,
+    required this.location,
+    required this.imageUrl,
   });
-
-  @override
-  State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+List<Restaurant> kattangalRestaurants = [
+  Restaurant(
+    name: 'OTM RESTAURANT',
+    location: 'Kattangal, Near NITC, Kerala',
+    imageUrl: 'assets/otm_restaurant.png', 
+  ),
+  Restaurant(
+    name: 'FOODIES',
+    location: 'Kattangal, Near NITC, Kerala',
+    imageUrl: 'assets/foodies.png', 
+  ),
+  Restaurant(
+    name: 'BROAST',
+    location: 'Kattangal, Near NITC, Kerala',
+    imageUrl: 'assets/broast.png', 
+  ),
+];
+
+List<Restaurant> calicutRestaurants = [
+  Restaurant(
+    name: 'OTM RESTAURANT (C)',
+    location: 'Calicut, Near Bus Stand, Kerala',
+    imageUrl: 'assets/otm_restaurant.png', 
+  ),
+  Restaurant(
+    name: 'FOODIES (C)',
+    location: 'Calicut, City Center, Kerala',
+    imageUrl: 'assets/foodies.png', 
+  ),
+  Restaurant(
+    name: 'BROAST (C)',
+    location: 'Calicut, Main Road, Kerala',
+    imageUrl: 'assets/broast.png', 
+  ),
+];
+// --------------------------------------------------------
+
+class RestaurantsPage extends StatefulWidget {
+  const RestaurantsPage({
+    super.key,
+  });
+  @override
+  State<RestaurantsPage> createState() => _RestaurantsPageState();
+}
+
+class _RestaurantsPageState extends State<RestaurantsPage> {
   final _fireDb = FireDb();
 
   PersistentTabController? tabController;
+
   String time = 'Good morning,';
 
   User? currentUser;
+
   @override
   void initState() {
     super.initState();
@@ -107,7 +153,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+       backgroundColor: Colors.white,
       appBar: AppBar(
         bottomOpacity: 0,
         scrolledUnderElevation: 0,
@@ -119,7 +165,6 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               width: 10,
             ),
-            // Profile image that works for both regular and Google sign-in users
             FutureBuilder(
               future: _fireDb.getUserDetails(currentUser!.uid),
               builder: (context, snapshot) {
@@ -142,7 +187,6 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               width: 10,
             ),
-            // User name that works for both regular and Google sign-in users
             Flexible(
               child: FutureBuilder(
                 future: _fireDb.getUserDetails(currentUser!.uid),
@@ -208,9 +252,11 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
+      body: SingleChildScrollView( 
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Column(
               children: [
@@ -329,219 +375,129 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 40,
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width / 25),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Facilities Near You',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF2C2C2C),
-                          fontSize: 21,
-                          fontWeight: FontWeight.w500,
-                          height: 0.06,
-                          letterSpacing: 0.50,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'View All',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF292931),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 0,
-                        ),
-                      )
-                    ],
+            
+            // --- Restaurants in KATTANGAL Section ---
+            _buildRestaurantSection('KATTANGAL', kattangalRestaurants),
+          const  SizedBox(height: 20), 
+
+            // --- Restaurants in CALICUT Section ---
+            _buildRestaurantSection('CALICUT', calicutRestaurants),
+           const  SizedBox(height: 20), 
+          ],
+        ),
+      ),]
+    )));
+  }
+
+  Widget _buildRestaurantSection(String title, List<Restaurant> restaurants) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Restaurants in $title',
+                style:const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  print('View All tapped for $title');
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => AllRestaurantsPage(location: title)));
+                },
+                child:const Text(
+                  'View All',
+                  style: TextStyle(color: Colors.blueAccent),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 200, 
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: restaurants.length,
+            padding:const EdgeInsets.symmetric(horizontal: 16.0),
+            itemBuilder: (context, index) {
+              return _buildRestaurantCard(restaurants[index]);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRestaurantCard(Restaurant restaurant) {
+    return Container(
+      width: 150, 
+      margin:const EdgeInsets.only(right: 12.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset:const Offset(0, 3), 
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+            child: Image.asset(
+              restaurant.imageUrl,
+              height: 100,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 100,
+                  width: double.infinity,
+                  color: Colors.grey[200],
+                  child:const  Icon(Icons.broken_image, color: Colors.grey),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  restaurant.name,
+                  style:const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(
-                  height: 25,
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const  RestaurantsPage() ,
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/petrol.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Petrol",
-                          style: GoogleFonts.outfit(color: pricol),
-                        ),
-                        Text(
-                          "Pumps",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const ComingSoon(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/res.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Restaurants",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const ComingSoon(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/hotel.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Hotels",
-                          style: GoogleFonts.outfit(
-                            color: pricol,
-                          ),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const ComingSoon(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/hospital.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Hospitals",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const EventsHorizontalScrollView(),
-                const SizedBox(
-                  height: 18,
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width / 25),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Explore',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF2C2C2C),
-                          fontSize: 21,
-                          fontWeight: FontWeight.w500,
-                          height: 0.06,
-                          letterSpacing: 0.50,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'View All',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF292931),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 0,
-                        ),
-                      )
-                    ],
+             const   SizedBox(height: 4),
+                Text(
+                  restaurant.location,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
                   ),
-                ),
-                const SizedBox(
-                  height: 25,
-                ),
-                const HorizontalScrollTile(
-                  height: 254,
-                  width: 299,
-                  outBorderRadius: 26,
-                  hasChild: true,
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const SizedBox(
-                  height: 80,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
