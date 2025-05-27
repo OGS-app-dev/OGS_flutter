@@ -11,56 +11,7 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:line_icons/line_icons.dart';
-
-
-class Restaurant {
-  final String name;
-  final String location;
-  final String imageUrl;
-
-  Restaurant({
-    required this.name,
-    required this.location,
-    required this.imageUrl,
-  });
-}
-
-List<Restaurant> kattangalRestaurants = [
-  Restaurant(
-    name: 'OTM RESTAURANT',
-    location: 'Kattangal, Near NITC, Kerala',
-    imageUrl: 'assets/otm_restaurant.png', 
-  ),
-  Restaurant(
-    name: 'FOODIES',
-    location: 'Kattangal, Near NITC, Kerala',
-    imageUrl: 'assets/foodies.png', 
-  ),
-  Restaurant(
-    name: 'BROAST',
-    location: 'Kattangal, Near NITC, Kerala',
-    imageUrl: 'assets/broast.png', 
-  ),
-];
-
-List<Restaurant> calicutRestaurants = [
-  Restaurant(
-    name: 'OTM RESTAURANT (C)',
-    location: 'Calicut, Near Bus Stand, Kerala',
-    imageUrl: 'assets/otm_restaurant.png', 
-  ),
-  Restaurant(
-    name: 'FOODIES (C)',
-    location: 'Calicut, City Center, Kerala',
-    imageUrl: 'assets/foodies.png', 
-  ),
-  Restaurant(
-    name: 'BROAST (C)',
-    location: 'Calicut, Main Road, Kerala',
-    imageUrl: 'assets/broast.png', 
-  ),
-];
-// --------------------------------------------------------
+import 'package:ogs/models/restaurant_model.dart';
 
 class RestaurantsPage extends StatefulWidget {
   const RestaurantsPage({
@@ -105,16 +56,12 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
     Map<String, dynamic>? userData = docSnapshot?.data();
     
     if (userData != null && userData['name'] != null) {
-      // If user data exists in database, use it
       return userData['name'].split(" ")[0];
     } else if (user?.displayName != null) {
-      // If no database data but Google sign-in displayName exists
       return user!.displayName!.split(" ")[0];
     } else if (user?.email != null) {
-      // Fallback to email username
       return user!.email!.split("@")[0];
     } else {
-      // Final fallback
       return "User";
     }
   }
@@ -123,21 +70,18 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
     Map<String, dynamic>? userData = docSnapshot?.data();
     
     if (userData != null && userData['profileImage'] != null) {
-      // If user has profile image in database
       return CircleAvatar(
         radius: 18,
         backgroundImage: NetworkImage(userData['profileImage']),
         backgroundColor: pricol,
       );
     } else if (user?.photoURL != null) {
-      // If Google sign-in photo exists
       return CircleAvatar(
         radius: 18,
         backgroundImage: NetworkImage(user!.photoURL!),
         backgroundColor: pricol,
       );
     } else {
-      // Default icon
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -377,19 +321,19 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
                 ),
             
             // --- Restaurants in KATTANGAL Section ---
-            _buildRestaurantSection('KATTANGAL', kattangalRestaurants),
-          const  SizedBox(height: 20), 
+            _buildFirebaseRestaurantSection('KATTANGAL', 'res_kattangal'),
+            const SizedBox(height: 20), 
 
             // --- Restaurants in CALICUT Section ---
-            _buildRestaurantSection('CALICUT', calicutRestaurants),
-           const  SizedBox(height: 20), 
+            _buildFirebaseRestaurantSection('CALICUT', 'res_calicut'),
+            const SizedBox(height: 20), 
           ],
         ),
       ),]
     )));
   }
 
-  Widget _buildRestaurantSection(String title, List<Restaurant> restaurants) {
+  Widget _buildFirebaseRestaurantSection(String title, String collectionName) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -400,7 +344,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
             children: [
               Text(
                 'Restaurants in $title',
-                style:const TextStyle(
+                style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -411,22 +355,67 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
                   print('View All tapped for $title');
                   // Navigator.push(context, MaterialPageRoute(builder: (context) => AllRestaurantsPage(location: title)));
                 },
-                child:const Text(
+                child: Text(
                   'View All',
-                  style: TextStyle(color: Colors.blueAccent),
+                  style: GoogleFonts.outfit(
+                    color: Colors.blueAccent,
+                  ),
                 ),
               ),
             ],
           ),
         ),
         SizedBox(
-          height: 200, 
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: restaurants.length,
-            padding:const EdgeInsets.symmetric(horizontal: 16.0),
-            itemBuilder: (context, index) {
-              return _buildRestaurantCard(restaurants[index]);
+          height: 200,
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection(collectionName)
+                .orderBy('name') 
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error loading restaurants',
+                    style: GoogleFonts.outfit(color: Colors.red),
+                  ),
+                );
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: SpinKitThreeBounce(
+                    size: 20,
+                    color: pricol,
+                  ),
+                );
+              }
+
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No restaurants found in $title',
+                    style: GoogleFonts.outfit(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                );
+              }
+
+              final restaurants = snapshot.data!.docs;
+
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: restaurants.length,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                itemBuilder: (context, index) {
+                  final restaurant = Restaurant.fromFirestore(
+                    restaurants[index] as DocumentSnapshot<Map<String, dynamic>>
+                  );
+                  return _buildRestaurantCard(restaurant);
+                },
+              );
             },
           ),
         ),
@@ -435,69 +424,135 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
   }
 
   Widget _buildRestaurantCard(Restaurant restaurant) {
-    return Container(
-      width: 150, 
-      margin:const EdgeInsets.only(right: 12.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset:const Offset(0, 3), 
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-            child: Image.asset(
-              restaurant.imageUrl,
-              height: 100,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 100,
-                  width: double.infinity,
-                  color: Colors.grey[200],
-                  child:const  Icon(Icons.broken_image, color: Colors.grey),
-                );
-              },
+    return GestureDetector(
+      onTap: () {
+        // Navigate to restaurant detail page
+        print('Tapped on ${restaurant.name}');
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) => RestaurantDetailPage(restaurant: restaurant),
+        //   ),
+        // );
+      },
+      child: Container(
+        width: 150,
+        margin: const EdgeInsets.only(right: 12.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
               children: [
-                Text(
-                  restaurant.name,
-                  style:const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-             const   SizedBox(height: 4),
-                Text(
-                  restaurant.location,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                  child: restaurant.imageUrl.startsWith('http')
+                      ? Image.network(
+                          restaurant.imageUrl,
+                          height: 100,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              height: 100,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: pricol,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 100,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          restaurant.imageUrl,
+                          height: 100,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 100,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        ),
                 ),
               ],
             ),
-          ),
-        ],
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      restaurant.name,
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    if (restaurant.rating != null)
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            size: 12,
+                            color: Colors.amber,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            restaurant.rating!.toStringAsFixed(1),
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    const Spacer(),
+                    Text(
+                      restaurant.location,
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
