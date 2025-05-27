@@ -1,40 +1,35 @@
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:line_icons/line_icons.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/firebase/dbservices.dart';
 import 'package:ogs/form_response/form_response.dart';
-import 'package:ogs/pages/comingsoon.dart';
 import 'package:ogs/pages/notificationpage.dart';
-import 'package:ogs/widgets/horizontalscrolltile.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
-import 'package:ogs/widgets/myevents.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
-import 'package:ogs/pages/restaurants.dart';
-import 'package:ogs/pages/hotel.dart';
+import 'package:line_icons/line_icons.dart';
+import 'package:ogs/models/hotel_model.dart';
 
-
-
-class HomePage extends StatefulWidget {
-  const HomePage({
+class HotelPage extends StatefulWidget {
+  const HotelPage({
     super.key,
   });
-
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HotelPage> createState() => _HotelPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HotelPageState extends State<HotelPage> {
   final _fireDb = FireDb();
 
   PersistentTabController? tabController;
+
   String time = 'Good morning,';
 
   User? currentUser;
+
   @override
   void initState() {
     super.initState();
@@ -61,16 +56,12 @@ class _HomePageState extends State<HomePage> {
     Map<String, dynamic>? userData = docSnapshot?.data();
     
     if (userData != null && userData['name'] != null) {
-      // If user data exists in database, use it
       return userData['name'].split(" ")[0];
     } else if (user?.displayName != null) {
-      // If no database data but Google sign-in displayName exists
       return user!.displayName!.split(" ")[0];
     } else if (user?.email != null) {
-      // Fallback to email username
       return user!.email!.split("@")[0];
     } else {
-      // Final fallback
       return "User";
     }
   }
@@ -79,21 +70,18 @@ class _HomePageState extends State<HomePage> {
     Map<String, dynamic>? userData = docSnapshot?.data();
     
     if (userData != null && userData['profileImage'] != null) {
-      // If user has profile image in database
       return CircleAvatar(
         radius: 18,
         backgroundImage: NetworkImage(userData['profileImage']),
         backgroundColor: pricol,
       );
     } else if (user?.photoURL != null) {
-      // If Google sign-in photo exists
       return CircleAvatar(
         radius: 18,
         backgroundImage: NetworkImage(user!.photoURL!),
         backgroundColor: pricol,
       );
     } else {
-      // Default icon
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -109,7 +97,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+       backgroundColor: Colors.white,
       appBar: AppBar(
         bottomOpacity: 0,
         scrolledUnderElevation: 0,
@@ -121,7 +109,6 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               width: 10,
             ),
-            // Profile image that works for both regular and Google sign-in users
             FutureBuilder(
               future: _fireDb.getUserDetails(currentUser!.uid),
               builder: (context, snapshot) {
@@ -144,7 +131,6 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               width: 10,
             ),
-            // User name that works for both regular and Google sign-in users
             Flexible(
               child: FutureBuilder(
                 future: _fireDb.getUserDetails(currentUser!.uid),
@@ -210,9 +196,11 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
+      body: SingleChildScrollView( 
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Column(
               children: [
@@ -331,218 +319,238 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 40,
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width / 25),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Facilities Near You',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF2C2C2C),
-                          fontSize: 21,
-                          fontWeight: FontWeight.w500,
-                          height: 0.06,
-                          letterSpacing: 0.50,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'View All',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF292931),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 0,
-                        ),
-                      )
-                    ],
+            
+            // --- Hotel in KATTANGAL Section ---
+            _buildFirebaseHotelection('KATTANGAL', 'hotels_kattangal'),
+            const SizedBox(height: 20), 
+
+            // --- Hotel in CALICUT Section ---
+            _buildFirebaseHotelection('CALICUT', 'hotels_calicut'),
+            const SizedBox(height: 20), 
+          ],
+        ),
+      ),]
+    )));
+  }
+
+  Widget _buildFirebaseHotelection(String title, String collectionName) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Hotel in $title',
+                style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  print('View All tapped for $title');
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => AllHotelPage(location: title)));
+                },
+                child: Text(
+                  'View All',
+                  style: GoogleFonts.outfit(
+                    color: Colors.blueAccent,
                   ),
                 ),
-                const SizedBox(
-                  height: 25,
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const  RestaurantsPage() ,
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/petrol.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Petrol",
-                          style: GoogleFonts.outfit(color: pricol),
-                        ),
-                        Text(
-                          "Pumps",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const RestaurantsPage(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/res.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Restaurants",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const HotelPage(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/hotel.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Hotels",
-                          style: GoogleFonts.outfit(
-                            color: pricol,
-                          ),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const ComingSoon(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/hospital.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Hospitals",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const EventsHorizontalScrollView(),
-                const SizedBox(
-                  height: 18,
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width / 25),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Explore',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF2C2C2C),
-                          fontSize: 21,
-                          fontWeight: FontWeight.w500,
-                          height: 0.06,
-                          letterSpacing: 0.50,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'View All',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF292931),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 0,
-                        ),
-                      )
-                    ],
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 230,
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection(collectionName)
+                .orderBy('name') 
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error loading Hotel',
+                    style: GoogleFonts.outfit(color: Colors.red),
                   ),
-                ),
-                const SizedBox(
-                  height: 25,
-                ),
-                const HorizontalScrollTile(
-                  height: 254,
-                  width: 299,
-                  outBorderRadius: 26,
-                  hasChild: true,
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const SizedBox(
-                  height: 80,
+                );
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: SpinKitThreeBounce(
+                    size: 20,
+                    color: pricol,
+                  ),
+                );
+              }
+
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No Hotel found in $title',
+                    style: GoogleFonts.outfit(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                );
+              }
+
+              final hotel = snapshot.data!.docs;
+
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: hotel.length,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                itemBuilder: (context, index) {
+                  final hotels = Hotel.fromFirestore(
+                    hotel[index] as DocumentSnapshot<Map<String, dynamic>>
+                  );
+                  return _buildhotelsCard(hotels);
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildhotelsCard(Hotel hotels) {
+    return GestureDetector(
+      onTap: () {
+        // Navigate to hotels detail page
+        print('Tapped on ${hotels.name}');
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) => hotelsDetailPage(hotels: hotels),
+        //   ),
+        // );
+      },
+      child: Container(
+        width: 150,
+        margin: const EdgeInsets.only(right: 12.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                  child: hotels.imageUrl.startsWith('http')
+                      ? Image.network(
+                          hotels.imageUrl,
+                          height: 130,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              height: 130,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: pricol,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 100,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          hotels.imageUrl,
+                          height: 130,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 130,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        ),
                 ),
               ],
             ),
-          ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hotels.name,
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    if (hotels.rating != null)
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            size: 12,
+                            color: Colors.amber,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            hotels.rating!.toStringAsFixed(1),
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    Text(
+                      hotels.location,
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
