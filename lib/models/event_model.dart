@@ -10,7 +10,7 @@ class Event {
   final String time;
   final String location;
   final bool isLive;
-  final String? siteUrl; // Make it nullable as discussed
+  final String? siteUrl; 
 
   Event({
     required this.id,

@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:line_icons/line_icons.dart';
 import 'package:ogs/models/hotel_model.dart';
+import 'package:ogs/pages/fnu_view_all.dart';
 
 class HotelPage extends StatefulWidget {
   const HotelPage({
@@ -343,7 +344,7 @@ class _HotelPageState extends State<HotelPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Hotel in $title',
+                'Hotels in $title',
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -352,7 +353,13 @@ class _HotelPageState extends State<HotelPage> {
               ),
               TextButton(
                 onPressed: () {
-                  print('View All tapped for $title');
+                 PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen:   ViewAllPage(pageTitle: 'Hotels in $title', nameCollection: collectionName) ,
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.cupertino,
+                            );
                   // Navigator.push(context, MaterialPageRoute(builder: (context) => AllHotelPage(location: title)));
                 },
                 child: Text(

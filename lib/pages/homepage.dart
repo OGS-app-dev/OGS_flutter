@@ -7,7 +7,6 @@ import 'package:line_icons/line_icons.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/firebase/dbservices.dart';
 import 'package:ogs/form_response/form_response.dart';
-import 'package:ogs/pages/comingsoon.dart';
 import 'package:ogs/pages/notificationpage.dart';
 import 'package:ogs/widgets/horizontalscrolltile.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ogs/models/event_model.dart';
-import 'package:ogs/pages/upcoming_events.dart';
+import 'package:ogs/pages/event_details.dart';
 
 class EventsHorizontalScrollView extends StatelessWidget {
   const EventsHorizontalScrollView({super.key});

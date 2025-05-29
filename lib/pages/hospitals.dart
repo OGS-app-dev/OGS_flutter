@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:line_icons/line_icons.dart';
 import 'package:ogs/models/hospital_model.dart';
+import 'package:ogs/pages/fnu_view_all.dart';
 
 class HospitalPage extends StatefulWidget {
   const HospitalPage({
@@ -343,7 +344,7 @@ class _HospitalPageState extends State<HospitalPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'hospital in $title',
+                'Hospitals in $title',
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -353,7 +354,13 @@ class _HospitalPageState extends State<HospitalPage> {
               TextButton(
                 onPressed: () {
                   print('View All tapped for $title');
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => AllHospitalPage(location: title)));
+                  PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen:   ViewAllPage(pageTitle: 'Hospitals in $title', nameCollection: collectionName) ,
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.cupertino,
+                            );
                 },
                 child: Text(
                   'View All',

@@ -6,6 +6,7 @@ class Hospital {
   final String location;
   final String imageUrl;
   final double? rating; 
+  final String? siteUrl;
 
   Hospital({
     required this.id,
@@ -13,6 +14,7 @@ class Hospital {
     required this.location,
     required this.imageUrl,
     this.rating, 
+    this.siteUrl,
   });
 
   factory Hospital.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -35,6 +37,7 @@ class Hospital {
       location: data['location'] ?? 'No Location Provided',
       imageUrl: data['imageUrl'] ?? 'assets/placeholder.png', 
       rating: (data['rating'] as num?)?.toDouble(), 
+      siteUrl: data['siteUrl'],
     );
   }
 
@@ -44,6 +47,8 @@ class Hospital {
       "location": location,
       "imageUrl": imageUrl,
       "rating": rating,
+            "siteUrl": siteUrl,
+
     };
   }
 }

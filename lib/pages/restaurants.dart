@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:line_icons/line_icons.dart';
 import 'package:ogs/models/restaurant_model.dart';
+import 'package:ogs/pages/fnu_view_all.dart';
+
 
 class RestaurantsPage extends StatefulWidget {
   const RestaurantsPage({
@@ -354,6 +356,13 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
                 onPressed: () {
                   print('View All tapped for $title');
                   // Navigator.push(context, MaterialPageRoute(builder: (context) => AllRestaurantsPage(location: title)));
+                  PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen:   ViewAllPage(pageTitle: 'Restaurants in $title', nameCollection: collectionName) ,
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.cupertino,
+                            );
                 },
                 child: Text(
                   'View All',
