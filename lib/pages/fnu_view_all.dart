@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ogs/models/hospital_model.dart';
+import 'package:url_launcher/url_launcher.dart'; 
+
 
 class ViewAllPage extends StatefulWidget {
   final String pageTitle;
@@ -19,6 +21,18 @@ class ViewAllPage extends StatefulWidget {
 }
 
 class _ViewAllPageState extends State<ViewAllPage> {
+   Future<void> _launchUrl(BuildContext context, String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open the link: $url')),
+        );
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,14 +128,16 @@ class _ViewAllPageState extends State<ViewAllPage> {
   Widget _buildhospitalsCard(Hospital hospitals) {
     return GestureDetector(
       onTap: () {
-        // Navigate to hospitals detail page
-        print('Tapped on ${hospitals.name}');
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => hospitalsDetailPage(hospitals: hospitals),
-        //   ),
-        // );
+        if (hospitals.siteUrl != null && hospitals.siteUrl!.isNotEmpty) {
+        _launchUrl(context, hospitals.siteUrl!);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No website available for ${hospitals.name}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
       },
       child: Container(
         margin: const EdgeInsets.only(right: 12.0),

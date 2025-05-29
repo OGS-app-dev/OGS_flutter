@@ -6,6 +6,7 @@ class Restaurant {
   final String location;
   final String imageUrl;
   final double? rating; 
+  final String? siteUrl;
 
   Restaurant({
     required this.id,
@@ -13,6 +14,7 @@ class Restaurant {
     required this.location,
     required this.imageUrl,
     this.rating, 
+    this.siteUrl,
   });
 
   factory Restaurant.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -26,6 +28,8 @@ class Restaurant {
         location: 'Unknown',
         imageUrl: '', 
         rating: null,
+        siteUrl: null,
+
       );
     }
 
@@ -35,6 +39,8 @@ class Restaurant {
       location: data['location'] ?? 'No Location Provided',
       imageUrl: data['imageUrl'] ?? 'assets/placeholder.png', 
       rating: (data['rating'] as num?)?.toDouble(), 
+      siteUrl: data['siteUrl'],
+
     );
   }
 

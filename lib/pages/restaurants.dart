@@ -13,6 +13,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ogs/models/restaurant_model.dart';
 import 'package:ogs/pages/fnu_view_all.dart';
+import 'package:url_launcher/url_launcher.dart'; 
+
 
 
 class RestaurantsPage extends StatefulWidget {
@@ -31,6 +33,18 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
   String time = 'Good morning,';
 
   User? currentUser;
+  Future<void> _launchUrl(BuildContext context, String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open the link: $url')),
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -435,14 +449,16 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
   Widget _buildRestaurantCard(Restaurant restaurant) {
     return GestureDetector(
       onTap: () {
-        // Navigate to restaurant detail page
-        print('Tapped on ${restaurant.name}');
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => RestaurantDetailPage(restaurant: restaurant),
-        //   ),
-        // );
+         if (restaurant.siteUrl != null && restaurant.siteUrl!.isNotEmpty) {
+        _launchUrl(context, restaurant.siteUrl!);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No website available for ${restaurant.name}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
       },
       child: Container(
         width: 150,
