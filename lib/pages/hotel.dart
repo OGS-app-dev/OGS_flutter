@@ -13,6 +13,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ogs/models/hotel_model.dart';
 import 'package:ogs/pages/fnu_view_all.dart';
+import 'package:url_launcher/url_launcher.dart'; 
+
 
 class HotelPage extends StatefulWidget {
   const HotelPage({
@@ -30,6 +32,18 @@ class _HotelPageState extends State<HotelPage> {
   String time = 'Good morning,';
 
   User? currentUser;
+  Future<void> _launchUrl(BuildContext context, String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open the link: $url')),
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -431,135 +445,139 @@ class _HotelPageState extends State<HotelPage> {
   }
 
   Widget _buildhotelsCard(Hotel hotels) {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to hotels detail page
-        print('Tapped on ${hotels.name}');
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => hotelsDetailPage(hotels: hotels),
-        //   ),
-        // );
-      },
-      child: Container(
-        width: 150,
-        margin: const EdgeInsets.only(right: 12.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-                  child: hotels.imageUrl.startsWith('http')
-                      ? Image.network(
-                          hotels.imageUrl,
-                          height: 130,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              height: 130,
-                              width: double.infinity,
-                              color: Colors.grey[200],
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  color: pricol,
-                                  strokeWidth: 2,
-                                ),
+  return GestureDetector(
+    onTap: () {
+      print('Tapped on ${hotels.name}');
+      
+      if (hotels.siteUrl != null && hotels.siteUrl!.isNotEmpty) {
+        _launchUrl(context, hotels.siteUrl!);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No website available for ${hotels.name}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    },
+    child: Container(
+      width: 150,
+      margin: const EdgeInsets.only(right: 12.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                child: hotels.imageUrl.startsWith('http')
+                    ? Image.network(
+                        hotels.imageUrl,
+                        height: 130,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            height: 130,
+                            width: double.infinity,
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: pricol,
+                                strokeWidth: 2,
                               ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 100,
-                              width: double.infinity,
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.broken_image, color: Colors.grey),
-                            );
-                          },
-                        )
-                      : Image.asset(
-                          hotels.imageUrl,
-                          height: 130,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 130,
-                              width: double.infinity,
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.broken_image, color: Colors.grey),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      hotels.name,
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    if (hotels.rating != null)
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            size: 12,
-                            color: Colors.amber,
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            hotels.rating!.toStringAsFixed(1),
-                            style: GoogleFonts.outfit(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
                             ),
-                          ),
-                        ],
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 100,
+                            width: double.infinity,
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.broken_image, color: Colors.grey),
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        hotels.imageUrl,
+                        height: 130,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 130,
+                            width: double.infinity,
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.broken_image, color: Colors.grey),
+                          );
+                        },
                       ),
-                    Text(
-                      hotels.location,
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hotels.name,
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                  ],
-                ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  if (hotels.rating != null)
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star,
+                          size: 12,
+                          color: Colors.amber,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          hotels.rating!.toStringAsFixed(1),
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  Text(
+                    hotels.location,
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

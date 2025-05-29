@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/models/event_model.dart';
-import 'package:url_launcher/url_launcher.dart'; // Import your Event model
+import 'package:url_launcher/url_launcher.dart'; 
 
 class EventDetailPage extends StatelessWidget {
   final Event event; // The event object to display

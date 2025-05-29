@@ -28,6 +28,8 @@ class Hospital {
         location: 'Unknown',
         imageUrl: '', 
         rating: null,
+                siteUrl:null,
+
       );
     }
 
