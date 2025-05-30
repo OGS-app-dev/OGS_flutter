@@ -13,10 +13,10 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:ogs/widgets/myevents.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
-import 'package:ogs/pages/restaurants.dart';
-import 'package:ogs/pages/hotel.dart';
-import 'package:ogs/pages/hospitals.dart';
-import 'package:ogs/pages/movies.dart';
+import 'package:ogs/pages/fcu_restaurants.dart';
+import 'package:ogs/pages/fcu_hotel.dart';
+import 'package:ogs/pages/fcu_hospitals.dart';
+import 'package:ogs/pages/fcu_movies.dart';
 
 
 

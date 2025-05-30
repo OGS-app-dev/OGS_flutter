@@ -11,21 +11,20 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:line_icons/line_icons.dart';
-import 'package:ogs/models/restaurant_model.dart';
+import 'package:ogs/models/hotel_model.dart';
 import 'package:ogs/pages/fnu_view_all.dart';
 import 'package:url_launcher/url_launcher.dart'; 
 
 
-
-class RestaurantsPage extends StatefulWidget {
-  const RestaurantsPage({
+class HotelPage extends StatefulWidget {
+  const HotelPage({
     super.key,
   });
   @override
-  State<RestaurantsPage> createState() => _RestaurantsPageState();
+  State<HotelPage> createState() => _HotelPageState();
 }
 
-class _RestaurantsPageState extends State<RestaurantsPage> {
+class _HotelPageState extends State<HotelPage> {
   final _fireDb = FireDb();
 
   PersistentTabController? tabController;
@@ -336,12 +335,12 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
                   height: 40,
                 ),
             
-            // --- Restaurants in KATTANGAL Section ---
-            _buildFirebaseRestaurantSection('KATTANGAL', 'res_kattangal'),
+            // --- Hotel in KATTANGAL Section ---
+            _buildFirebaseHotelection('KATTANGAL', 'hotels_kattangal'),
             const SizedBox(height: 20), 
 
-            // --- Restaurants in CALICUT Section ---
-            _buildFirebaseRestaurantSection('CALICUT', 'res_calicut'),
+            // --- Hotel in CALICUT Section ---
+            _buildFirebaseHotelection('CALICUT', 'hotels_calicut'),
             const SizedBox(height: 20), 
           ],
         ),
@@ -349,7 +348,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
     )));
   }
 
-  Widget _buildFirebaseRestaurantSection(String title, String collectionName) {
+  Widget _buildFirebaseHotelection(String title, String collectionName) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -359,7 +358,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Restaurants in $title',
+                'Hotels in $title',
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -368,15 +367,14 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
               ),
               TextButton(
                 onPressed: () {
-                  print('View All tapped for $title');
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => AllRestaurantsPage(location: title)));
-                  PersistentNavBarNavigator.pushNewScreen(
+                 PersistentNavBarNavigator.pushNewScreen(
                               context,
-                              screen:   ViewAllPage(pageTitle: 'Restaurants in $title', nameCollection: collectionName) ,
+                              screen:   ViewAllPage(pageTitle: 'Hotels in $title', nameCollection: collectionName) ,
                               withNavBar: false,
                               pageTransitionAnimation:
                                   PageTransitionAnimation.cupertino,
                             );
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => AllHotelPage(location: title)));
                 },
                 child: Text(
                   'View All',
@@ -389,7 +387,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
           ),
         ),
         SizedBox(
-          height: 200,
+          height: 230,
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection(collectionName)
@@ -399,7 +397,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
               if (snapshot.hasError) {
                 return Center(
                   child: Text(
-                    'Error loading restaurants',
+                    'Error loading Hotel',
                     style: GoogleFonts.outfit(color: Colors.red),
                   ),
                 );
@@ -417,7 +415,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return Center(
                   child: Text(
-                    'No restaurants found in $title',
+                    'No Hotel found in $title',
                     style: GoogleFonts.outfit(
                       color: Colors.grey,
                       fontSize: 14,
@@ -426,17 +424,17 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
                 );
               }
 
-              final restaurants = snapshot.data!.docs;
+              final hotel = snapshot.data!.docs;
 
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: restaurants.length,
+                itemCount: hotel.length,
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 itemBuilder: (context, index) {
-                  final restaurant = Restaurant.fromFirestore(
-                    restaurants[index] as DocumentSnapshot<Map<String, dynamic>>
+                  final hotels = Hotel.fromFirestore(
+                    hotel[index] as DocumentSnapshot<Map<String, dynamic>>
                   );
-                  return _buildRestaurantCard(restaurant);
+                  return _buildhotelsCard(hotels);
                 },
               );
             },
@@ -446,139 +444,140 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
     );
   }
 
-  Widget _buildRestaurantCard(Restaurant restaurant) {
-    return GestureDetector(
-      onTap: () {
-         if (restaurant.siteUrl != null && restaurant.siteUrl!.isNotEmpty) {
-        _launchUrl(context, restaurant.siteUrl!);
+  Widget _buildhotelsCard(Hotel hotels) {
+  return GestureDetector(
+    onTap: () {
+      print('Tapped on ${hotels.name}');
+      
+      if (hotels.siteUrl != null && hotels.siteUrl!.isNotEmpty) {
+        _launchUrl(context, hotels.siteUrl!);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('No website available for ${restaurant.name}'),
+            content: Text('No website available for ${hotels.name}'),
             duration: const Duration(seconds: 2),
           ),
         );
       }
-      },
-      child: Container(
-        width: 150,
-        margin: const EdgeInsets.only(right: 12.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-                  child: restaurant.imageUrl.startsWith('http')
-                      ? Image.network(
-                          restaurant.imageUrl,
-                          height: 100,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              height: 100,
-                              width: double.infinity,
-                              color: Colors.grey[200],
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  color: pricol,
-                                  strokeWidth: 2,
-                                ),
+    },
+    child: Container(
+      width: 130,
+      margin: const EdgeInsets.only(right: 12.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.grey.withOpacity(0.2),
+        //     spreadRadius: 1,
+        //     blurRadius: 5,
+        //     offset: const Offset(0, 3),
+        //   ),
+        // ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.all( Radius.circular(10)),
+                child: hotels.imageUrl.startsWith('http')
+                    ? Image.network(
+                        hotels.imageUrl,
+                        height: 150,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            height: 150,
+                            width: double.infinity,
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: pricol,
+                                strokeWidth: 2,
                               ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 100,
-                              width: double.infinity,
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.broken_image, color: Colors.grey),
-                            );
-                          },
-                        )
-                      : Image.asset(
-                          restaurant.imageUrl,
-                          height: 100,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 100,
-                              width: double.infinity,
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.broken_image, color: Colors.grey),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      restaurant.name,
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    if (restaurant.rating != null)
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            size: 12,
-                            color: Colors.amber,
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            restaurant.rating!.toStringAsFixed(1),
-                            style: GoogleFonts.outfit(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
                             ),
-                          ),
-                        ],
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 100,
+                            width: double.infinity,
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.broken_image, color: Colors.grey),
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        hotels.imageUrl,
+                        height: 150,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 150,
+                            width: double.infinity,
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.broken_image, color: Colors.grey),
+                          );
+                        },
                       ),
-                    const Spacer(),
-                    Text(
-                      restaurant.location,
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hotels.name,
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                  ],
-                ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  if (hotels.rating != null)
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star,
+                          size: 12,
+                          color: Colors.amber,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          hotels.rating!.toStringAsFixed(1),
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  Text(
+                    hotels.location,
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

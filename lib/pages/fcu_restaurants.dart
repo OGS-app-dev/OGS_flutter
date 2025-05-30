@@ -11,20 +11,21 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:line_icons/line_icons.dart';
-import 'package:ogs/models/hospital_model.dart';
+import 'package:ogs/models/restaurant_model.dart';
 import 'package:ogs/pages/fnu_view_all.dart';
 import 'package:url_launcher/url_launcher.dart'; 
 
 
-class HospitalPage extends StatefulWidget {
-  const HospitalPage({
+
+class RestaurantsPage extends StatefulWidget {
+  const RestaurantsPage({
     super.key,
   });
   @override
-  State<HospitalPage> createState() => _HospitalPageState();
+  State<RestaurantsPage> createState() => _RestaurantsPageState();
 }
 
-class _HospitalPageState extends State<HospitalPage> {
+class _RestaurantsPageState extends State<RestaurantsPage> {
   final _fireDb = FireDb();
 
   PersistentTabController? tabController;
@@ -335,12 +336,12 @@ class _HospitalPageState extends State<HospitalPage> {
                   height: 40,
                 ),
             
-            // --- hospital in KATTANGAL Section ---
-            _buildFirebasehospitalsection('KATTANGAL', 'hospitals_kattangal'),
+            // --- Restaurants in KATTANGAL Section ---
+            _buildFirebaseRestaurantSection('KATTANGAL', 'res_kattangal'),
             const SizedBox(height: 20), 
 
-            // --- hospital in CALICUT Section ---
-            _buildFirebasehospitalsection('CALICUT', 'hospitals_calicut'),
+            // --- Restaurants in CALICUT Section ---
+            _buildFirebaseRestaurantSection('CALICUT', 'res_calicut'),
             const SizedBox(height: 20), 
           ],
         ),
@@ -348,7 +349,7 @@ class _HospitalPageState extends State<HospitalPage> {
     )));
   }
 
-  Widget _buildFirebasehospitalsection(String title, String collectionName) {
+  Widget _buildFirebaseRestaurantSection(String title, String collectionName) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -358,7 +359,7 @@ class _HospitalPageState extends State<HospitalPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Hospitals in $title',
+                'Restaurants in $title',
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -368,9 +369,10 @@ class _HospitalPageState extends State<HospitalPage> {
               TextButton(
                 onPressed: () {
                   print('View All tapped for $title');
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => AllRestaurantsPage(location: title)));
                   PersistentNavBarNavigator.pushNewScreen(
                               context,
-                              screen:   ViewAllPage(pageTitle: 'Hospitals in $title', nameCollection: collectionName) ,
+                              screen:   ViewAllPage(pageTitle: 'Restaurants in $title', nameCollection: collectionName) ,
                               withNavBar: false,
                               pageTransitionAnimation:
                                   PageTransitionAnimation.cupertino,
@@ -397,7 +399,7 @@ class _HospitalPageState extends State<HospitalPage> {
               if (snapshot.hasError) {
                 return Center(
                   child: Text(
-                    'Error loading hospital',
+                    'Error loading restaurants',
                     style: GoogleFonts.outfit(color: Colors.red),
                   ),
                 );
@@ -415,7 +417,7 @@ class _HospitalPageState extends State<HospitalPage> {
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return Center(
                   child: Text(
-                    'No hospital found in $title',
+                    'No restaurants found in $title',
                     style: GoogleFonts.outfit(
                       color: Colors.grey,
                       fontSize: 14,
@@ -424,17 +426,17 @@ class _HospitalPageState extends State<HospitalPage> {
                 );
               }
 
-              final hospital = snapshot.data!.docs;
+              final restaurants = snapshot.data!.docs;
 
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: hospital.length,
+                itemCount: restaurants.length,
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 itemBuilder: (context, index) {
-                  final hospitals = Hospital.fromFirestore(
-                    hospital[index] as DocumentSnapshot<Map<String, dynamic>>
+                  final restaurant = Restaurant.fromFirestore(
+                    restaurants[index] as DocumentSnapshot<Map<String, dynamic>>
                   );
-                  return _buildhospitalsCard(hospitals);
+                  return _buildRestaurantCard(restaurant);
                 },
               );
             },
@@ -444,35 +446,34 @@ class _HospitalPageState extends State<HospitalPage> {
     );
   }
 
-  Widget _buildhospitalsCard(Hospital hospitals) {
+  Widget _buildRestaurantCard(Restaurant restaurant) {
     return GestureDetector(
       onTap: () {
-        print('Tapped on ${hospitals.name}');
-         if (hospitals.siteUrl != null && hospitals.siteUrl!.isNotEmpty) {
-        _launchUrl(context, hospitals.siteUrl!);
+         if (restaurant.siteUrl != null && restaurant.siteUrl!.isNotEmpty) {
+        _launchUrl(context, restaurant.siteUrl!);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('No website available for ${hospitals.name}'),
+            content: Text('No website available for ${restaurant.name}'),
             duration: const Duration(seconds: 2),
           ),
         );
       }
       },
       child: Container(
-        width: 150,
+        width: 130,
         margin: const EdgeInsets.only(right: 12.0),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.grey.withOpacity(0.2),
+          //     spreadRadius: 1,
+          //     blurRadius: 5,
+          //     offset: const Offset(0, 3),
+          //   ),
+          // ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -480,17 +481,17 @@ class _HospitalPageState extends State<HospitalPage> {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-                  child: hospitals.imageUrl.startsWith('http')
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  child: restaurant.imageUrl.startsWith('http')
                       ? Image.network(
-                          hospitals.imageUrl,
-                          height: 130,
+                          restaurant.imageUrl,
+                          height: 150,
                           width: double.infinity,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return Container(
-                              height: 130,
+                              height: 150,
                               width: double.infinity,
                               color: Colors.grey[200],
                               child: const Center(
@@ -503,7 +504,7 @@ class _HospitalPageState extends State<HospitalPage> {
                           },
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
-                              height: 100,
+                              height: 130,
                               width: double.infinity,
                               color: Colors.grey[200],
                               child: const Icon(Icons.broken_image, color: Colors.grey),
@@ -511,13 +512,13 @@ class _HospitalPageState extends State<HospitalPage> {
                           },
                         )
                       : Image.asset(
-                          hospitals.imageUrl,
-                          height: 130,
+                          restaurant.imageUrl,
+                          height: 150,
                           width: double.infinity,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
-                              height: 130,
+                              height: 150,
                               width: double.infinity,
                               color: Colors.grey[200],
                               child: const Icon(Icons.broken_image, color: Colors.grey),
@@ -534,7 +535,7 @@ class _HospitalPageState extends State<HospitalPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      hospitals.name,
+                      restaurant.name,
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
@@ -543,7 +544,7 @@ class _HospitalPageState extends State<HospitalPage> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    if (hospitals.rating != null)
+                    if (restaurant.rating != null)
                       Row(
                         children: [
                           const Icon(
@@ -553,7 +554,7 @@ class _HospitalPageState extends State<HospitalPage> {
                           ),
                           const SizedBox(width: 2),
                           Text(
-                            hospitals.rating!.toStringAsFixed(1),
+                            restaurant.rating!.toStringAsFixed(1),
                             style: GoogleFonts.outfit(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
@@ -562,7 +563,7 @@ class _HospitalPageState extends State<HospitalPage> {
                         ],
                       ),
                     Text(
-                      hospitals.location,
+                      restaurant.location,
                       style: GoogleFonts.outfit(
                         fontSize: 12,
                         color: Colors.grey[600],

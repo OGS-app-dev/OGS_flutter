@@ -64,6 +64,7 @@ class _ViewAllPageState extends State<ViewAllPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
+          
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection(collectionName)

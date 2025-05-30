@@ -11,20 +11,20 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:line_icons/line_icons.dart';
-import 'package:ogs/models/hotel_model.dart';
+import 'package:ogs/models/hospital_model.dart';
 import 'package:ogs/pages/fnu_view_all.dart';
 import 'package:url_launcher/url_launcher.dart'; 
 
 
-class HotelPage extends StatefulWidget {
-  const HotelPage({
+class HospitalPage extends StatefulWidget {
+  const HospitalPage({
     super.key,
   });
   @override
-  State<HotelPage> createState() => _HotelPageState();
+  State<HospitalPage> createState() => _HospitalPageState();
 }
 
-class _HotelPageState extends State<HotelPage> {
+class _HospitalPageState extends State<HospitalPage> {
   final _fireDb = FireDb();
 
   PersistentTabController? tabController;
@@ -335,12 +335,12 @@ class _HotelPageState extends State<HotelPage> {
                   height: 40,
                 ),
             
-            // --- Hotel in KATTANGAL Section ---
-            _buildFirebaseHotelection('KATTANGAL', 'hotels_kattangal'),
+            // --- hospital in KATTANGAL Section ---
+            _buildFirebasehospitalsection('KATTANGAL', 'hospitals_kattangal'),
             const SizedBox(height: 20), 
 
-            // --- Hotel in CALICUT Section ---
-            _buildFirebaseHotelection('CALICUT', 'hotels_calicut'),
+            // --- hospital in CALICUT Section ---
+            _buildFirebasehospitalsection('CALICUT', 'hospitals_calicut'),
             const SizedBox(height: 20), 
           ],
         ),
@@ -348,7 +348,7 @@ class _HotelPageState extends State<HotelPage> {
     )));
   }
 
-  Widget _buildFirebaseHotelection(String title, String collectionName) {
+  Widget _buildFirebasehospitalsection(String title, String collectionName) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -358,7 +358,7 @@ class _HotelPageState extends State<HotelPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Hotels in $title',
+                'Hospitals in $title',
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -367,14 +367,14 @@ class _HotelPageState extends State<HotelPage> {
               ),
               TextButton(
                 onPressed: () {
-                 PersistentNavBarNavigator.pushNewScreen(
+                  print('View All tapped for $title');
+                  PersistentNavBarNavigator.pushNewScreen(
                               context,
-                              screen:   ViewAllPage(pageTitle: 'Hotels in $title', nameCollection: collectionName) ,
+                              screen:   ViewAllPage(pageTitle: 'Hospitals in $title', nameCollection: collectionName) ,
                               withNavBar: false,
                               pageTransitionAnimation:
                                   PageTransitionAnimation.cupertino,
                             );
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => AllHotelPage(location: title)));
                 },
                 child: Text(
                   'View All',
@@ -397,7 +397,7 @@ class _HotelPageState extends State<HotelPage> {
               if (snapshot.hasError) {
                 return Center(
                   child: Text(
-                    'Error loading Hotel',
+                    'Error loading hospital',
                     style: GoogleFonts.outfit(color: Colors.red),
                   ),
                 );
@@ -415,7 +415,7 @@ class _HotelPageState extends State<HotelPage> {
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return Center(
                   child: Text(
-                    'No Hotel found in $title',
+                    'No hospital found in $title',
                     style: GoogleFonts.outfit(
                       color: Colors.grey,
                       fontSize: 14,
@@ -424,17 +424,17 @@ class _HotelPageState extends State<HotelPage> {
                 );
               }
 
-              final hotel = snapshot.data!.docs;
+              final hospital = snapshot.data!.docs;
 
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: hotel.length,
+                itemCount: hospital.length,
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 itemBuilder: (context, index) {
-                  final hotels = Hotel.fromFirestore(
-                    hotel[index] as DocumentSnapshot<Map<String, dynamic>>
+                  final hospitals = Hospital.fromFirestore(
+                    hospital[index] as DocumentSnapshot<Map<String, dynamic>>
                   );
-                  return _buildhotelsCard(hotels);
+                  return _buildhospitalsCard(hospitals);
                 },
               );
             },
@@ -444,140 +444,139 @@ class _HotelPageState extends State<HotelPage> {
     );
   }
 
-  Widget _buildhotelsCard(Hotel hotels) {
-  return GestureDetector(
-    onTap: () {
-      print('Tapped on ${hotels.name}');
-      
-      if (hotels.siteUrl != null && hotels.siteUrl!.isNotEmpty) {
-        _launchUrl(context, hotels.siteUrl!);
+  Widget _buildhospitalsCard(Hospital hospitals) {
+    return GestureDetector(
+      onTap: () {
+        print('Tapped on ${hospitals.name}');
+         if (hospitals.siteUrl != null && hospitals.siteUrl!.isNotEmpty) {
+        _launchUrl(context, hospitals.siteUrl!);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('No website available for ${hotels.name}'),
+            content: Text('No website available for ${hospitals.name}'),
             duration: const Duration(seconds: 2),
           ),
         );
       }
-    },
-    child: Container(
-      width: 150,
-      margin: const EdgeInsets.only(right: 12.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-                child: hotels.imageUrl.startsWith('http')
-                    ? Image.network(
-                        hotels.imageUrl,
-                        height: 130,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            height: 130,
-                            width: double.infinity,
-                            color: Colors.grey[200],
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                color: pricol,
-                                strokeWidth: 2,
+      },
+      child: Container(
+        width: 130,
+        margin: const EdgeInsets.only(right: 12.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.grey.withOpacity(0.2),
+          //     spreadRadius: 1,
+          //     blurRadius: 5,
+          //     offset: const Offset(0, 3),
+          //   ),
+          // ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.all( Radius.circular(10)),
+                  child: hospitals.imageUrl.startsWith('http')
+                      ? Image.network(
+                          hospitals.imageUrl,
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              height: 150,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: pricol,
+                                  strokeWidth: 2,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 100,
-                            width: double.infinity,
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.broken_image, color: Colors.grey),
-                          );
-                        },
-                      )
-                    : Image.asset(
-                        hotels.imageUrl,
-                        height: 130,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 130,
-                            width: double.infinity,
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.broken_image, color: Colors.grey),
-                          );
-                        },
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 100,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          hospitals.imageUrl,
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 150,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hospitals.name,
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
                       ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    hotels.name,
-                    style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  if (hotels.rating != null)
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.star,
-                          size: 12,
-                          color: Colors.amber,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          hotels.rating!.toStringAsFixed(1),
-                          style: GoogleFonts.outfit(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
+                    const SizedBox(height: 2),
+                    if (hospitals.rating != null)
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            size: 12,
+                            color: Colors.amber,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 2),
+                          Text(
+                            hospitals.rating!.toStringAsFixed(1),
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    Text(
+                      hospitals.location,
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  Text(
-                    hotels.location,
-                    style: GoogleFonts.outfit(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
