@@ -144,14 +144,14 @@ class _ViewAllPageState extends State<ViewAllPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.grey.withOpacity(0.2),
+          //     spreadRadius: 1,
+          //     blurRadius: 5,
+          //     offset: const Offset(0, 3),
+          //   ),
+          // ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,13 +160,13 @@ class _ViewAllPageState extends State<ViewAllPage> {
               children: [
                 ClipRRect(
                   borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(10)),
+                      const BorderRadius.all( Radius.circular(10)),
                   child: hospitals.imageUrl.startsWith('http')
                       ? Image.network(
                           hospitals.imageUrl,
                           height: 130,
                           width: double.infinity,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return Container(
@@ -183,7 +183,7 @@ class _ViewAllPageState extends State<ViewAllPage> {
                           },
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
-                              height: 100,
+                              height: 130,
                               width: double.infinity,
                               color: Colors.grey[200],
                               child: const Icon(Icons.broken_image,
@@ -195,7 +195,7 @@ class _ViewAllPageState extends State<ViewAllPage> {
                           hospitals.imageUrl,
                           height: 130,
                           width: double.infinity,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               height: 130,

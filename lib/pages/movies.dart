@@ -1,42 +1,50 @@
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:line_icons/line_icons.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/firebase/dbservices.dart';
 import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/notificationpage.dart';
-import 'package:ogs/widgets/horizontalscrolltile.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
-import 'package:ogs/widgets/myevents.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
-import 'package:ogs/pages/restaurants.dart';
-import 'package:ogs/pages/hotel.dart';
-import 'package:ogs/pages/hospitals.dart';
-import 'package:ogs/pages/movies.dart';
+import 'package:line_icons/line_icons.dart';
+import 'package:ogs/pages/fnu_view_all.dart';
+import 'package:url_launcher/url_launcher.dart'; 
+import 'package:ogs/models/movies_model.dart';
 
 
-
-
-class HomePage extends StatefulWidget {
-  const HomePage({
+class MoviesPage extends StatefulWidget {
+  const MoviesPage({
     super.key,
   });
-
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<MoviesPage> createState() => _MoviesPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _MoviesPageState extends State<MoviesPage> {
   final _fireDb = FireDb();
 
   PersistentTabController? tabController;
+
   String time = 'Good morning,';
 
   User? currentUser;
+  Future<void> _launchUrl(BuildContext context, String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open the link: $url')),
+        );
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -63,16 +71,12 @@ class _HomePageState extends State<HomePage> {
     Map<String, dynamic>? userData = docSnapshot?.data();
     
     if (userData != null && userData['name'] != null) {
-      // If user data exists in database, use it
       return userData['name'].split(" ")[0];
     } else if (user?.displayName != null) {
-      // If no database data but Google sign-in displayName exists
       return user!.displayName!.split(" ")[0];
     } else if (user?.email != null) {
-      // Fallback to email username
       return user!.email!.split("@")[0];
     } else {
-      // Final fallback
       return "User";
     }
   }
@@ -81,21 +85,18 @@ class _HomePageState extends State<HomePage> {
     Map<String, dynamic>? userData = docSnapshot?.data();
     
     if (userData != null && userData['profileImage'] != null) {
-      // If user has profile image in database
       return CircleAvatar(
         radius: 18,
         backgroundImage: NetworkImage(userData['profileImage']),
         backgroundColor: pricol,
       );
     } else if (user?.photoURL != null) {
-      // If Google sign-in photo exists
       return CircleAvatar(
         radius: 18,
         backgroundImage: NetworkImage(user!.photoURL!),
         backgroundColor: pricol,
       );
     } else {
-      // Default icon
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -111,7 +112,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+       backgroundColor: Colors.white,
       appBar: AppBar(
         bottomOpacity: 0,
         scrolledUnderElevation: 0,
@@ -123,7 +124,6 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               width: 10,
             ),
-            // Profile image that works for both regular and Google sign-in users
             FutureBuilder(
               future: _fireDb.getUserDetails(currentUser!.uid),
               builder: (context, snapshot) {
@@ -146,7 +146,6 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               width: 10,
             ),
-            // User name that works for both regular and Google sign-in users
             Flexible(
               child: FutureBuilder(
                 future: _fireDb.getUserDetails(currentUser!.uid),
@@ -212,9 +211,11 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
+      body: SingleChildScrollView( 
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Column(
               children: [
@@ -331,220 +332,257 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 const SizedBox(
-                  height: 40,
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width / 25),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Facilities Near You',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF2C2C2C),
-                          fontSize: 21,
-                          fontWeight: FontWeight.w500,
-                          height: 0.06,
-                          letterSpacing: 0.50,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'View All',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF292931),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 0,
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 25,
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const  MoviesPage() ,
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/petrol.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Petrol",
-                          style: GoogleFonts.outfit(color: pricol),
-                        ),
-                        Text(
-                          "Pumps",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const RestaurantsPage(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/res.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Restaurants",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const HotelPage(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/hotel.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Hotels",
-                          style: GoogleFonts.outfit(
-                            color: pricol,
-                          ),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const HospitalPage(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/hospital.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Hospitals",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(
                   height: 20,
                 ),
-                const EventsHorizontalScrollView(),
-                const SizedBox(
-                  height: 18,
+
+            ClipRRect(
+                  borderRadius: const BorderRadius.all( Radius.circular(20)),
+                  child: Image.asset(
+                          'lib/assets/images/mov.png',
+                          height: 170,
+                          width: 350,
+                          fit: BoxFit.fill,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 150,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        ),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width / 25),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Explore',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF2C2C2C),
-                          fontSize: 21,
-                          fontWeight: FontWeight.w500,
-                          height: 0.06,
-                          letterSpacing: 0.50,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'View All',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF292931),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 0,
-                        ),
-                      )
-                    ],
+            // --- movie in KATTANGAL Section ---
+            _buildFirebasemoviesection('Now Showing', 'movies_now'),
+            const SizedBox(height: 10), 
+
+            // --- movie in CALICUT Section ---
+            _buildFirebasemoviesection('Upcoming Movies', 'movies_upcom'),
+            const SizedBox(height: 20), 
+          ],
+        ),
+      ),]
+    )));
+  }
+
+  Widget _buildFirebasemoviesection(String title, String collectionName) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  print('View All tapped for $title');
+                  PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen:   ViewAllPage(pageTitle: title, nameCollection: collectionName) ,
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.cupertino,
+                            );
+                },
+                child: Text(
+                  'View All',
+                  style: GoogleFonts.outfit(
+                    color: Colors.blueAccent,
                   ),
                 ),
-                const SizedBox(
-                  height: 25,
-                ),
-                const HorizontalScrollTile(
-                  height: 254,
-                  width: 299,
-                  outBorderRadius: 26,
-                  hasChild: true,
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const SizedBox(
-                  height: 80,
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 190,
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection(collectionName)
+                .orderBy('name') 
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error loading movie',
+                    style: GoogleFonts.outfit(color: Colors.red),
+                  ),
+                );
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: SpinKitThreeBounce(
+                    size: 20,
+                    color: pricol,
+                  ),
+                );
+              }
+
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No movie found in $title',
+                    style: GoogleFonts.outfit(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                );
+              }
+
+              final movie = snapshot.data!.docs;
+
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: movie.length,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                itemBuilder: (context, index) {
+                  final movies = Movie.fromFirestore(
+                    movie[index] as DocumentSnapshot<Map<String, dynamic>>
+                  );
+                  return _buildmoviesCard(movies);
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildmoviesCard(Movie movies) {
+    return GestureDetector(
+      onTap: () {
+        print('Tapped on ${movies.name}');
+         if (movies.siteUrl != null && movies.siteUrl!.isNotEmpty) {
+        _launchUrl(context, movies.siteUrl!);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No website available for ${movies.name}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      },
+      child: Container(
+        width: 130,
+        margin: const EdgeInsets.only(right: 12.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.grey.withOpacity(0.2),
+          //     spreadRadius: 1,
+          //     blurRadius: 5,
+          //     offset: const Offset(0, 3),
+          //   ),
+          // ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.all( Radius.circular(10)),
+                  child: movies.imageUrl.startsWith('http')
+                      ? Image.network(
+                          movies.imageUrl,
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.fill,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              height: 150,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: pricol,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 100,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          movies.imageUrl,
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.fill,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 150,
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        ),
                 ),
               ],
             ),
-          ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      movies.name,
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    // const SizedBox(height: 2),
+                    // if (movies.rating != null)
+                    //   Row(
+                    //     children: [
+                    //       const Icon(
+                    //         Icons.star,
+                    //         size: 12,
+                    //         color: Colors.amber,
+                    //       ),
+                    //       const SizedBox(width: 2),
+                    //       Text(
+                    //         movies.rating!.toStringAsFixed(1),
+                    //         style: GoogleFonts.outfit(
+                    //           fontSize: 11,
+                    //           fontWeight: FontWeight.w500,
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

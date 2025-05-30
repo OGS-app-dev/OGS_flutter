@@ -1,31 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 
-class Hospital {
+class Movie {
   final String id; 
   final String name;
-  final String location;
   final String imageUrl;
   final double? rating; 
   final String? siteUrl;
 
-  Hospital({
+  Movie({
     required this.id,
     required this.name,
-    required this.location,
     required this.imageUrl,
     this.rating, 
     this.siteUrl,
   });
 
-  factory Hospital.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot,
+  factory Movie.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot,
       [SnapshotOptions? options]) {
     final data = snapshot.data(); 
 
     if (data == null) {
-      return Hospital(
+      return Movie(
         id: snapshot.id,
-        name: 'Unavailable Hospital',
-        location: 'Unknown',
+        name: 'Unavailable Movie',
         imageUrl: '', 
         rating: null,
                 siteUrl:null,
@@ -33,10 +30,9 @@ class Hospital {
       );
     }
 
-    return Hospital(
+    return Movie(
       id: snapshot.id, 
       name: data['name'] ?? 'No Name',
-      location: data['location'] ?? "",
       imageUrl: data['imageUrl'] ?? 'assets/placeholder.png', 
       rating: (data['rating'] as num?)?.toDouble(), 
       siteUrl: data['siteUrl'],
@@ -46,7 +42,6 @@ class Hospital {
   Map<String, dynamic> toFirestore() {
     return {
       "name": name,
-      "location": location,
       "imageUrl": imageUrl,
       "rating": rating,
             "siteUrl": siteUrl,
