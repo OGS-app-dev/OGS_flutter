@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
 
   PersistentTabController? tabController;
   String time = 'Good morning,';
-
+  bool showAllFacilities = false;
   User? currentUser;
   @override
   void initState() {
@@ -108,6 +108,37 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Widget buildFacilityIcon({
+    required String iconPath,
+    required String label1,
+    String? label2,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: SizedBox(
+              height: 40,
+              child: Image.asset(
+                iconPath,
+                color: pricol,
+              )),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          label1,
+          style: GoogleFonts.outfit(color: pricol),
+        ),
+        if (label2 != null)
+          Text(
+            label2,
+            style: GoogleFonts.outfit(color: pricol),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,7 +197,7 @@ class _HomePageState extends State<HomePage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.outfit(
-                      color: const Color.fromARGB(255, 16, 34, 112),
+                      color: Color.fromARGB(255, 16, 34, 112),
                       fontSize: 15,
                       fontWeight: FontWeight.w400,
                     ),
@@ -350,14 +381,21 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const Spacer(),
-                      Text(
-                        'View All',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF292931),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 0,
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            showAllFacilities = !showAllFacilities;
+                          });
+                        },
+                        child: Text(
+                          showAllFacilities ? 'Show Less' : 'View All',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF292931),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            height: 0,
+                          ),
                         ),
                       )
                     ],
@@ -366,130 +404,91 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 25,
                 ),
+                // First row of facilities (always visible)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const  MoviesPage() ,
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/petrol.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Petrol",
-                          style: GoogleFonts.outfit(color: pricol),
-                        ),
-                        Text(
-                          "Pumps",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const RestaurantsPage(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/res.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Restaurants",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const HotelPage(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/hotel.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Hotels",
-                          style: GoogleFonts.outfit(
-                            color: pricol,
+                    buildFacilityIcon(
+                            iconPath: 'lib/assets/icons/movies.png', 
+                            label1: "Movies",
+                            onTap: () {
+                              PersistentNavBarNavigator.pushNewScreen(
+                                context,
+                                screen: const MoviesPage(),
+                                withNavBar: false,
+                                pageTransitionAnimation: PageTransitionAnimation.cupertino,
+                              );
+                            },
                           ),
-                        )
-                      ],
+                    buildFacilityIcon(
+                      iconPath: 'lib/assets/icons/res.png',
+                      label1: "Restaurants",
+                      onTap: () {
+                        PersistentNavBarNavigator.pushNewScreen(
+                          context,
+                          screen: const RestaurantsPage(),
+                          withNavBar: false,
+                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
+                        );
+                      },
                     ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const HospitalPage(),
-                              withNavBar: false,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.cupertino,
-                            );
-                          },
-                          child: SizedBox(
-                              height: 40,
-                              child: Image.asset(
-                                'lib/assets/icons/hospital.png',
-                                color: pricol,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Hospitals",
-                          style: GoogleFonts.outfit(color: pricol),
-                        )
-                      ],
+                    buildFacilityIcon(
+                      iconPath: 'lib/assets/icons/hotel.png',
+                      label1: "Hotels",
+                      onTap: () {
+                        PersistentNavBarNavigator.pushNewScreen(
+                          context,
+                          screen: const HotelPage(),
+                          withNavBar: false,
+                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
+                        );
+                      },
+                    ),
+                    buildFacilityIcon(
+                      iconPath: 'lib/assets/icons/hospital.png',
+                      label1: "Hospitals",
+                      onTap: () {
+                        PersistentNavBarNavigator.pushNewScreen(
+                          context,
+                          screen: const HospitalPage(),
+                          withNavBar: false,
+                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
+                        );
+                      },
                     ),
                   ],
                 ),
+                // Second row of facilities (visible only when showAllFacilities is true)
+                if (showAllFacilities)
+                  Column(
+                    children: [
+                      const SizedBox(height: 25),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          buildFacilityIcon(
+                      iconPath: 'lib/assets/icons/petrol.png',
+                      label1: "Petrol",
+                      label2: "Pumps",
+                      onTap: () {
+                        PersistentNavBarNavigator.pushNewScreen(
+                          context,
+                          screen: const MoviesPage(),
+                          withNavBar: false,
+                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
+                        );
+                      },
+                    ),
+                          // Add more facilities here if needed
+                          const SizedBox(width: 40), // Placeholder to maintain spacing
+                          const SizedBox(width: 40), // Placeholder to maintain spacing
+                          const SizedBox(width: 40), // Placeholder to maintain spacing
+                        ],
+                      ),
+                    ],
+                  ),
                 const SizedBox(
                   height: 20,
                 ),
