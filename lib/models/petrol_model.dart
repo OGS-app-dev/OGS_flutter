@@ -26,7 +26,7 @@ class Petrol {
     if (data == null) {
       return Petrol(
         id: snapshot.id,
-        name: 'Unavailable Petrol',
+        name: 'Unavailable Petrol Pumb',
         location: 'Unknown',
         imageUrl: '', 
         rating: null,

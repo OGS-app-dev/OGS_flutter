@@ -17,6 +17,8 @@ import 'package:ogs/pages/fnu_restaurants.dart';
 import 'package:ogs/pages/fnu_hotel.dart';
 import 'package:ogs/pages/fnu_hospitals.dart';
 import 'package:ogs/pages/fnu_movies.dart';
+import 'package:ogs/pages/fnu_petrol.dart';
+
 
 
 
@@ -475,7 +477,7 @@ class _HomePageState extends State<HomePage> {
                       onTap: () {
                         PersistentNavBarNavigator.pushNewScreen(
                           context,
-                          screen: const MoviesPage(),
+                          screen: const PetrolPage(),
                           withNavBar: false,
                           pageTransitionAnimation: PageTransitionAnimation.cupertino,
                         );
