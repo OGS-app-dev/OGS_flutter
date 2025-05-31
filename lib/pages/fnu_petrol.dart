@@ -334,14 +334,14 @@ class _PetrolPageState extends State<PetrolPage> {
                   height: 40,
                 ),
             
-            _buildFirebasepetrolsection('Petrol Pumbs Near You', 'petrol_pumbs'),
+            _buildFirebasepetrolSection('Petrol Pumbs Near You', 'petrol_pumbs'),
             const SizedBox(height: 20), 
           ],
         ),
       ),]
     )));
   }
-Widget _buildFirebasepetrolsection(String title, String collectionName) {
+Widget _buildFirebasepetrolSection(String title, String collectionName) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -436,14 +436,14 @@ Widget _buildpetrolsCard(Petrol petrols) {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.grey.withOpacity(0.1),
+        //     spreadRadius: 1,
+        //     blurRadius: 8,
+        //     offset: const Offset(0, 2),
+        //   ),
+        // ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,9 +452,8 @@ Widget _buildpetrolsCard(Petrol petrols) {
             width: 120,
             height: 120,
             child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                bottomLeft: Radius.circular(12),
+              borderRadius: const BorderRadius.all(
+                 Radius.circular(12),
               ),
               child: petrols.imageUrl.startsWith('http')
                   ? Image.network(
@@ -541,12 +540,7 @@ Widget _buildpetrolsCard(Petrol petrols) {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Icon(
-                        Icons.location_on,
-                        size: 14,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 4),
+                      
                       Expanded(
                         child: Text(
                           petrols.location,

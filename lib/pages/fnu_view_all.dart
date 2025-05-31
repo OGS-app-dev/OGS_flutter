@@ -50,7 +50,7 @@ class _ViewAllPageState extends State<ViewAllPage> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: _buildFirebasehospitalsection(
+                  child: _buildFirebasehospitalSection(
                       widget.pageTitle, widget.nameCollection),
                 ),
               ),
@@ -59,7 +59,7 @@ class _ViewAllPageState extends State<ViewAllPage> {
     );
   }
 
-  Widget _buildFirebasehospitalsection(String title, String collectionName) {
+  Widget _buildFirebasehospitalSection(String title, String collectionName) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -166,13 +166,13 @@ class _ViewAllPageState extends State<ViewAllPage> {
                       ? Image.network(
                           hospitals.imageUrl,
                           height: 130,
-                          width: double.infinity,
+                          width: 150,
                           fit: BoxFit.fill,
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return Container(
                               height: 130,
-                              width: double.infinity,
+                              width: 150,
                               color: Colors.grey[200],
                               child: const Center(
                                 child: CircularProgressIndicator(
@@ -185,7 +185,7 @@ class _ViewAllPageState extends State<ViewAllPage> {
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               height: 130,
-                              width: double.infinity,
+                              width: 150,
                               color: Colors.grey[200],
                               child: const Icon(Icons.broken_image,
                                   color: Colors.grey),
@@ -195,12 +195,12 @@ class _ViewAllPageState extends State<ViewAllPage> {
                       : Image.asset(
                           hospitals.imageUrl,
                           height: 130,
-                          width: double.infinity,
+                          width: 150,
                           fit: BoxFit.fill,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               height: 130,
-                              width: double.infinity,
+                              width: 150,
                               color: Colors.grey[200],
                               child: const Icon(Icons.broken_image,
                                   color: Colors.grey),

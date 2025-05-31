@@ -336,11 +336,11 @@ class _HotelPageState extends State<HotelPage> {
                 ),
             
             // --- Hotel in KATTANGAL Section ---
-            _buildFirebaseHotelection('KATTANGAL', 'hotels_kattangal'),
+            _buildFirebaseHotelSection('KATTANGAL', 'hotels_kattangal'),
             const SizedBox(height: 20), 
 
             // --- Hotel in CALICUT Section ---
-            _buildFirebaseHotelection('CALICUT', 'hotels_calicut'),
+            _buildFirebaseHotelSection('CALICUT', 'hotels_calicut'),
             const SizedBox(height: 20), 
           ],
         ),
@@ -348,7 +348,7 @@ class _HotelPageState extends State<HotelPage> {
     )));
   }
 
-  Widget _buildFirebaseHotelection(String title, String collectionName) {
+  Widget _buildFirebaseHotelSection(String title, String collectionName) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
