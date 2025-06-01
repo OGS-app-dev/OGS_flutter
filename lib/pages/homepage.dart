@@ -18,8 +18,8 @@ import 'package:ogs/pages/fnu_hotel.dart';
 import 'package:ogs/pages/fnu_hospitals.dart';
 import 'package:ogs/pages/fnu_movies.dart';
 import 'package:ogs/pages/fnu_petrol.dart';
-
-
+import 'package:ogs/pages/points_page.dart';
+import 'package:ogs/pages/bus_position_new.dart';
 
 
 

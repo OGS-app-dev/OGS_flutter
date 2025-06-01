@@ -11,6 +11,9 @@ import 'package:ogs/pages/topnavpage.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:ogs/pages/bus_position_new.dart';
+import 'package:ogs/pages/profile_page_new_2.dart';
+import 'package:ogs/pages/points_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -28,8 +31,9 @@ class _MainPageState extends State<MainPage> {
       const TopTabPage(),
       //TrackBusPage(),
       //const BusPosition(),
-     const LoadingScreen(),
-      const UserProfilePage(),
+     const CollegeMapScreen(),
+       ProfileScreen(),
+       //PointsScreen(),
     ];
   }
 
