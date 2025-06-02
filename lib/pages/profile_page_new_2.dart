@@ -340,6 +340,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+            
              const Padding(
                 padding:  EdgeInsets.only(left: 20),
                 child:   Text(
@@ -437,7 +438,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildFeatureItem(Icons.money_rounded, 'Points', onTap: () => _navigateToPage( PointsScreen())),
+                    _buildFeatureItem(Icons.money_rounded, 'Points', onTap:()=> Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) =>  PointsScreen()),
+            )),
                     _buildFeatureItem(Icons.card_giftcard, 'Voucher',onTap: () => _navigateToPage(const ComingSoon())),
                     _buildFeatureItem(Icons.star, 'Rating',onTap: () => _navigateToPage(const ComingSoon())),
                   ],
@@ -506,12 +510,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
-                child: Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 35),
+                child: Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 30),
               )
             ),
           ),
         const  SizedBox(width: 15),
-          Text(text, style: const TextStyle(fontSize: 22)),
+          Text(text, style: const TextStyle(fontSize: 20)),
         ],
       ),
     );
