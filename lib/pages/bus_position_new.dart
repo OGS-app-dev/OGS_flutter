@@ -1,13 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:geolocator/geolocator.dart'; // For user's current location
-import 'package:cloud_firestore/cloud_firestore.dart'; // For fetching bus locations
-import 'dart:async'; // For timers
-
-// Assuming you have your coordinate constants defined
-import 'package:ogs/constants/coordinates.dart';
-import 'package:ogs/Networking/gps_location.dart'; // For getDist
+import 'package:geolocator/geolocator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CollegeMapScreen extends StatefulWidget {
   const CollegeMapScreen({super.key});
@@ -22,8 +18,7 @@ class _CollegeMapScreenState extends State<CollegeMapScreen> {
   Timer? _busLocationUpdateTimer;
   LatLng? _userCurrentLocation;
 
-  // Initial map center and zoom level for NIT Calicut
-  final LatLng _nitcCenter = const LatLng(11.3215, 75.9360); // Approximate center of NITC
+  final LatLng _nitcCenter = const LatLng(11.3215, 75.9360);
   final double _initialZoom = 16.0;
 
   @override
@@ -31,7 +26,7 @@ class _CollegeMapScreenState extends State<CollegeMapScreen> {
     super.initState();
     _fetchBusLocations();
     _startBusLocationTimer();
-    _getCurrentUserLocation();
+    // _getCurrentUserLocation();
   }
 
   @override
@@ -40,159 +35,133 @@ class _CollegeMapScreenState extends State<CollegeMapScreen> {
     super.dispose();
   }
 
-  // Function to fetch bus locations from Firestore
   Future<void> _fetchBusLocations() async {
-    try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection("Location")
-          .orderBy(FieldPath.documentId, descending: false)
-          .get();
-
-      setState(() {
-        _busLocations = querySnapshot.docs.map((doc) {
-          return LatLng(
-            double.parse(doc.data()["latitude"].toString()),
-            double.parse(doc.data()["longitude"].toString()),
-          );
-        }).toList();
-      });
-    } catch (e) {
-      print("Error fetching bus locations: $e");
-    }
-  }
-
-  // Timer to periodically update bus locations
-  void _startBusLocationTimer() {
-    _busLocationUpdateTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      _fetchBusLocations();
-    });
-  }
-
-  // Function to get the current user's location
-  Future<void> _getCurrentUserLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled, handle appropriately
-      print('Location services are disabled.');
-      return;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permissions are denied, handle appropriately
-        print('Location permissions are denied');
-        return;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately
-      print('Location permissions are permanently denied, we cannot request permissions.');
-      return;
-    }
-
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+  try {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection("Location")
+        .orderBy(FieldPath.documentId)
+        .get();
 
     setState(() {
-      _userCurrentLocation = LatLng(position.latitude, position.longitude);
+      _busLocations = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        final GeoPoint geoPoint = data["location"];
+        return LatLng(geoPoint.latitude, geoPoint.longitude);
+      }).toList();
     });
+  } catch (e) {
+    debugPrint("Error fetching bus locations: $e");
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to fetch bus locations")),
+      );
+    }
+  }
+}
+
+
+  void _startBusLocationTimer() {
+    _busLocationUpdateTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => _fetchBusLocations(),
+    );
+  }
+
+  Future<void> _getCurrentUserLocation() async {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) return;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+
+      if (permission == LocationPermission.deniedForever) return;
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        _userCurrentLocation = LatLng(position.latitude, position.longitude);
+      });
+    } catch (e) {
+      debugPrint("Location error: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // You can define routes here or fetch them from a file/database
-    // For demonstration, let's define a simple polyline for a bus route
     final List<LatLng> busRoutePolyline = [
-      const LatLng(11.3199, 75.9322), // MAIN_GATE
-      const LatLng(11.3215522735941, 75.93410745008883), // CENTER_CIRCLE
-      const LatLng(11.32310277221977, 75.93691330855931), // CHEM_GATE
-      const LatLng(11.3172114769951, 75.93752554112106), // MEGA_HOSTEL
+      const LatLng(11.3199, 75.9322),
+      const LatLng(11.3215522735941, 75.93410745008883),
+      const LatLng(11.32310277221977, 75.93691330855931),
+      const LatLng(11.3172114769951, 75.93752554112106),
     ];
 
-
-    // Create markers for bus locations
-    List<Marker> busMarkers = _busLocations.asMap().entries.map((entry) {
-      int index = entry.key;
-      LatLng busPosition = entry.value;
+    List<Marker> busMarkers = _busLocations.map((busPosition) {
       return Marker(
-        width: 80.0,
-        height: 80.0,
+        width: 50,
+        height: 50,
         point: busPosition,
         child: const Icon(
-          Icons.bus_alert, // Or LineIcons.bus if you have line_icons
+          Icons.directions_bus,
+          size: 36,
           color: Colors.red,
-          size: 40,
         ),
-        // You might want to add info windows for bus numbers
-        // anchorPos: AnchorPos.align(AnchorAlign.top),
       );
     }).toList();
 
-    // Add user location marker
-    if (_userCurrentLocation != null) {
-      busMarkers.add(
-        Marker(
-          width: 80.0,
-          height: 80.0,
-          point: _userCurrentLocation!,
-          child: const Icon(
-            Icons.person_pin_circle,
-            color: Colors.blue,
-            size: 40,
-          ),
-          // You might want to add info windows for user
-          // anchorPos: AnchorPos.align(AnchorAlign.top),
-        ),
-      );
-    }
-
+    // if (_userCurrentLocation != null) {
+    //   busMarkers.add(
+    //     Marker(
+    //       width: 60,
+    //       height: 60,
+    //       point: _userCurrentLocation!,
+    //       child: const Icon(
+    //         Icons.person_pin_circle,
+    //         size: 40,
+    //         color: Colors.blue,
+    //       ),
+    //     ),
+    //   );
+    // }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('NIT Calicut Map & Bus Tracking'),
+        title: const Text('NIT Calicut Map'),
       ),
       body: FlutterMap(
         mapController: _mapController,
         options: MapOptions(
           initialCenter: _nitcCenter,
           initialZoom: _initialZoom,
-          maxZoom: 18.0, // Prevent zooming in too much
-          minZoom: 13.0, // Prevent zooming out too much
-          keepAlive: true, // Keep the map state alive
+          maxZoom: 18,
+          minZoom: 13,
         ),
         children: [
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.yourcompany.yourappname', // Replace with your package name
+            userAgentPackageName: 'com.ogs.busmap',
           ),
-          PolylineLayer(
-            polylines: [
-              Polyline(
-                points: busRoutePolyline,
-                color: Colors.blue,
-                strokeWidth: 5.0,
-              ),
-              // You can add more polylines for different bus routes
-            ],
-          ),
-          MarkerLayer(
-            markers: busMarkers,
-          ),
-          // You can add more layers here, like CircleLayer for geofencing
+          // PolylineLayer(
+          //   polylines: [
+          //     Polyline(
+          //       points: busRoutePolyline,
+          //       color: Colors.orange.withOpacity(0.85),
+          //       strokeWidth: 5.0,
+          //     ),
+          //   ],
+          // ),
+          // MarkerLayer(markers: busMarkers),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Re-center map on NITC
           _mapController.move(_nitcCenter, _initialZoom);
         },
-        child: const Icon(Icons.location_searching),
+        child: const Icon(Icons.my_location),
       ),
     );
   }

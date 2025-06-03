@@ -1,15 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'package:line_icons/line_icons.dart';
 import 'package:ogs/constants.dart';
-import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/bus_position.dart';
-
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class TopTabPage extends StatefulWidget {
   const TopTabPage({super.key});
@@ -21,106 +17,104 @@ class TopTabPage extends StatefulWidget {
 class _TopTabPageState extends State<TopTabPage> {
   PersistentTabController? tabController;
 
+  // Screens now use busId instead of index
   List<Widget> screens() {
-    return [
-      const BusPosition(index: 0),
-      const BusPosition(index: 1),
-      const BusPosition(index: 2),
-      const BusPosition(index: 3),
+    return const [
+      BusPosition(busId: 'lh_1'),
+      BusPosition(busId: 'lh_2'),
+      BusPosition(busId: 'mbh_1'),
+      BusPosition(busId: 'mbh_2'),
     ];
   }
 
-  List<PersistentBottomNavBarItem> navbaritems() {
+  List<PersistentBottomNavBarItem> navbarItems() {
     return [
       PersistentBottomNavBarItem(
-          icon: const Icon(LineIcons.bus),
-          title: 'LH 1',
-          textStyle: GoogleFonts.outfit(
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-              fontSize: 15,
-              letterSpacing: 1),
-          activeColorPrimary: Colors.white,
-          activeColorSecondary: yel),
+        icon: const Icon(LineIcons.bus),
+        title: 'LH 1',
+        textStyle: GoogleFonts.outfit(
+          color: Colors.white,
+          fontWeight: FontWeight.w400,
+          fontSize: 15,
+          letterSpacing: 1,
+        ),
+        activeColorPrimary: Colors.white,
+        activeColorSecondary: yel,
+      ),
       PersistentBottomNavBarItem(
-          icon: const Icon(LineIcons.bus),
-          title: 'LH 2',
-          textStyle: GoogleFonts.outfit(
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-              fontSize: 15,
-              letterSpacing: 1),
-          activeColorPrimary: Colors.white,
-          activeColorSecondary: yel),
+        icon: const Icon(LineIcons.bus),
+        title: 'LH 2',
+        textStyle: GoogleFonts.outfit(
+          color: Colors.white,
+          fontWeight: FontWeight.w400,
+          fontSize: 15,
+          letterSpacing: 1,
+        ),
+        activeColorPrimary: Colors.white,
+        activeColorSecondary: yel,
+      ),
       PersistentBottomNavBarItem(
-          icon: const Icon(LineIcons.bus),
-          title: 'MBH 1',
-          textStyle: GoogleFonts.outfit(
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-              fontSize: 15,
-              letterSpacing: 1),
-          activeColorPrimary: Colors.white,
-          activeColorSecondary: yel),
+        icon: const Icon(LineIcons.bus),
+        title: 'MBH 1',
+        textStyle: GoogleFonts.outfit(
+          color: Colors.white,
+          fontWeight: FontWeight.w400,
+          fontSize: 15,
+          letterSpacing: 1,
+        ),
+        activeColorPrimary: Colors.white,
+        activeColorSecondary: yel,
+      ),
       PersistentBottomNavBarItem(
-          icon: const Icon(LineIcons.bus),
-          title: 'MBH 2',
-          textStyle: GoogleFonts.outfit(
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-              fontSize: 15,
-              letterSpacing: 1),
-          activeColorPrimary: Colors.white,
-          activeColorSecondary: yel),
+        icon: const Icon(LineIcons.bus),
+        title: 'MBH 2',
+        textStyle: GoogleFonts.outfit(
+          color: Colors.white,
+          fontWeight: FontWeight.w400,
+          fontSize: 15,
+          letterSpacing: 1,
+        ),
+        activeColorPrimary: Colors.white,
+        activeColorSecondary: yel,
+      ),
     ];
   }
 
   @override
   void initState() {
-    tabController = PersistentTabController(initialIndex: 0);
-    //tabController = Provider.of<FormResponse>(context, listen: false).tabController;
-    final locationProvider = Provider.of<FormResponse>(context, listen: false);
-    Timer.periodic(const Duration(seconds: 5), (Timer t) {
-      locationProvider.updateTempBusLoc();
-    });
-    // setState(() {
-
-    // });
     super.initState();
+    tabController = PersistentTabController(initialIndex: 0);
+
+    // Optional: If you still want to periodically update something else
+    // Timer.periodic(const Duration(seconds: 5), (_) {
+    //   // Example: polling or syncing
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
-    double bottom = MediaQuery.of(context).size.height * .82;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: PersistentTabView(
         controller: tabController,
-        onWillPop: (context) async {
-          return false;
-        },
-        handleAndroidBackButtonPress: false,
         context,
         screens: screens(),
-
-        items: navbaritems(),
+        items: navbarItems(),
         navBarStyle: NavBarStyle.style14,
-        resizeToAvoidBottomInset: true,
         navBarHeight: 75,
-        padding: const EdgeInsets.all(10),
-        margin: EdgeInsets.only(
-          right: 5,
-          left: 5,
-          bottom: bottom,
-        ),
-
-        decoration: NavBarDecoration(
-            colorBehindNavBar: Colors.white,
-            borderRadius: BorderRadius.circular(40)),
-        //handleAndroidBackButtonPress: true,
         backgroundColor: pricol,
+        padding: const EdgeInsets.all(10),
+        margin: const EdgeInsets.symmetric(horizontal: 5).copyWith(
+          bottom: MediaQuery.of(context).size.height * 0.82,
+        ),
+        decoration: NavBarDecoration(
+          colorBehindNavBar: Colors.white,
+          borderRadius: BorderRadius.circular(40),
+        ),
+        resizeToAvoidBottomInset: true,
+        handleAndroidBackButtonPress: false,
         stateManagement: true,
+        onWillPop: (context) async => false,
       ),
     );
   }

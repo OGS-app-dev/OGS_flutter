@@ -10,122 +10,51 @@ class TrackBusPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-            child: Center(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              GestureDetector(
-                onTap: () {
-                  PersistentNavBarNavigator.pushNewScreen(
-                    context,
-                    screen: const BusPosition(
-                      index: 0,
-                    ),
-                    withNavBar: true,
-                    pageTransitionAnimation: PageTransitionAnimation.cupertino,
-                  );
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: pricol, borderRadius: BorderRadius.circular(40)),
-                  height: 80,
-                  width: 120,
-                  child: Center(
-                      child: Text(
-                    "LH 1",
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 29,
-                      fontWeight: FontWeight.w400
-                    ),
-                  )),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  PersistentNavBarNavigator.pushNewScreen(
-                    context,
-                    screen: const BusPosition(
-                      index: 1,
-                    ),
-                    withNavBar: true,
-                    pageTransitionAnimation: PageTransitionAnimation.cupertino,
-                  );
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: pricol, borderRadius: BorderRadius.circular(40)),
-                  height: 80,
-                  width: 120,
-                  child: Center(
-                      child: Text(
-                    "LH 2",
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 29,
-                      fontWeight: FontWeight.w400
-                    ),
-                  )),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  PersistentNavBarNavigator.pushNewScreen(
-                    context,
-                    screen: const BusPosition(
-                      index: 2,
-                    ),
-                    withNavBar: true,
-                    pageTransitionAnimation: PageTransitionAnimation.cupertino,
-                  );
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: pricol, borderRadius: BorderRadius.circular(40)),
-                  height: 80,
-                  width: 120,
-                  child: Center(
-                      child: Text(
-                    "MBH 1",
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 29,
-                      fontWeight: FontWeight.w400
-                    ),
-                  )),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  PersistentNavBarNavigator.pushNewScreen(
-                    context,
-                    screen: const BusPosition(
-                      index: 3,
-                    ),
-                    withNavBar: true,
-                    pageTransitionAnimation: PageTransitionAnimation.cupertino,
-                  );
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: pricol, borderRadius: BorderRadius.circular(40)),
-                  height: 80,
-                  width: 120,
-                  child: Center(
-                      child: Text(
-                    "MBH 2",
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 29,
-                      fontWeight: FontWeight.w400
-                    ),
-                  )),
-                ),
-              ),
+              _buildBusButton(context, "LH 1", "lh_1"),
+              _buildBusButton(context, "LH 2", "lh_2"),
+              _buildBusButton(context, "MBH 1", "mbh_1"),
+              _buildBusButton(context, "MBH 2", "mbh_2"),
             ],
           ),
-        )));
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBusButton(BuildContext context, String label, String busId) {
+    return GestureDetector(
+      onTap: () {
+        PersistentNavBarNavigator.pushNewScreen(
+          context,
+          screen: BusPosition(busId: busId),
+          withNavBar: true,
+          pageTransitionAnimation: PageTransitionAnimation.cupertino,
+        );
+      },
+      child: Container(
+        height: 80,
+        width: 120,
+        decoration: BoxDecoration(
+          color: pricol,
+          borderRadius: BorderRadius.circular(40),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 29,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
