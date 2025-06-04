@@ -506,11 +506,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: const Color.fromARGB(255, 235, 235, 235), 
                   width: 2, 
                 ),
-                borderRadius: BorderRadius.circular(20.0), 
+                borderRadius: BorderRadius.circular(8.0), 
               ),
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
-                child: Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 30),
+                child: Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 29),
               )
             ),
           ),

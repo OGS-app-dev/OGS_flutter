@@ -87,12 +87,20 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
+  
   # To add assets to your application, add an assets section, like this:
   assets:
     - lib/assets/icons/
     - lib/assets/images/
     - lib/assets/landing ui/
+  fonts:
+    - family: Helvetica
+      fonts:
+        - asset: lib/assets/fonts/Helvetica.ttf
+        - asset: lib/assets/fonts/Helvetica-Bold.ttf
+          weight: 700 
+        - asset: lib/assets/fonts/Helvetica-Light.ttf
+          weight: 300 
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

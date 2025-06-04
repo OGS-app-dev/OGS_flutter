@@ -51,10 +51,10 @@ class EventsHorizontalScrollView extends StatelessWidget {
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
-                        color: const Color.fromARGB(255, 245, 245, 245),
+                        color: const Color.fromARGB(255, 242, 241, 241),
                       ),
-                      height: 250,
-                      width: 299,
+                      height: 220,
+                      width: 249,
                       margin: const EdgeInsets.all(8),
                       padding: const EdgeInsets.all(15),
                       child: Column(

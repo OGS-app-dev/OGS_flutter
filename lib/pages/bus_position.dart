@@ -121,13 +121,12 @@ class _BusPositionState extends State<BusPosition> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Center(
-          child: buspos == -1
-              ? const SpinKitThreeBounce(size: 25, color: pricol)
-              : _buildBusTimeline(),
-        ),
-      ),
+      body: Column(
+        children: [SizedBox(height: 20,),
+          buspos == -1
+            ? const SpinKitThreeBounce(size: 25, color: pricol)
+            : _buildBusTimeline(),
+    ] ),
     );
   }
 

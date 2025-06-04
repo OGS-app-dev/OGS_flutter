@@ -34,6 +34,10 @@ class MyApp extends StatelessWidget {
       child:  MaterialApp(
         debugShowCheckedModeBanner: false,
         //home: Landing(),
+        theme: ThemeData(
+        fontFamily: 'Helvetica', 
+        primarySwatch: Colors.blue,
+      ),
         home:AnimatedSplashScreen(
           splash: "lib/assets/icons/ani.gif",
           nextScreen:const Landing(),

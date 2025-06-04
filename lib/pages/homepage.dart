@@ -8,6 +8,7 @@ import 'package:ogs/constants.dart';
 import 'package:ogs/firebase/dbservices.dart';
 import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/notificationpage.dart';
+import 'package:ogs/pages/search_page.dart';
 import 'package:ogs/widgets/horizontalscrolltile.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
@@ -21,8 +22,6 @@ import 'package:ogs/pages/fnu_petrol.dart';
 import 'package:ogs/pages/points_page.dart';
 import 'package:ogs/pages/bus_position_new.dart';
 
-
-
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -34,11 +33,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _fireDb = FireDb();
+  final TextEditingController _searchController = TextEditingController();
 
   PersistentTabController? tabController;
   String time = 'Good morning,';
   bool showAllFacilities = false;
   User? currentUser;
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +47,12 @@ class _HomePageState extends State<HomePage> {
     tabController =
         Provider.of<FormResponse>(context, listen: false).tabController;
     currentUser = _fireDb.getCurrentUser();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   String getTime() {
@@ -106,6 +113,18 @@ class _HomePageState extends State<HomePage> {
           CupertinoIcons.person_fill,
           color: Colors.white,
         ),
+      );
+    }
+  }
+
+  void _performSearch() {
+    String query = _searchController.text.trim();
+    if (query.isNotEmpty) {
+      PersistentNavBarNavigator.pushNewScreen(
+        context,
+        screen: SearchPage(searchQuery: query),
+        withNavBar: false,
+        pageTransitionAnimation: PageTransitionAnimation.cupertino,
       );
     }
   }
@@ -209,41 +228,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        actions: [
-          GestureDetector(
-            onTap: () {
-              PersistentNavBarNavigator.pushNewScreen(
-                context,
-                screen: const NotificationPage(),
-                withNavBar: false,
-                pageTransitionAnimation: PageTransitionAnimation.cupertino,
-              );
-            },
-            child: Container(
-              width: 45,
-              height: 45,
-              decoration: const ShapeDecoration(
-                color: Color(0xFFF5F5F5),
-                shape: OvalBorder(),
-                shadows: [
-                  BoxShadow(
-                    color: Color(0xFFFFE47C),
-                    blurRadius: 6,
-                    offset: Offset(0, 4),
-                    spreadRadius: 0,
-                  )
-                ],
-              ),
-              child: const Icon(
-                CupertinoIcons.bell,
-                size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(
-            width: 30,
-          )
-        ],
+        //here location
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -311,25 +296,30 @@ class _HomePageState extends State<HomePage> {
                           )
                         ],
                       ),
-                      child: Row(
-                        children: [
-                          const SizedBox(
-                            width: 15,
+                      child: TextField(
+                        controller: _searchController,
+                        onSubmitted: (value) => _performSearch(),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                          hintText: "Explore Events and more....",
+                          hintStyle: GoogleFonts.outfit(
+                            color: Colors.grey[600],
+                            fontSize: 14,
                           ),
-                          Text(
-                            "Search here...",
-                            style: GoogleFonts.outfit(),
+                          suffixIcon: GestureDetector(
+                            onTap: _performSearch,
+                            child: const Icon(
+                              CupertinoIcons.search,
+                              color: yel,
+                              size: 20,
+                            ),
                           ),
-                          const Spacer(),
-                          const Icon(
-                            CupertinoIcons.search,
-                            color: yel,
-                            size: 20,
-                          ),
-                          const SizedBox(
-                            width: 15,
-                          ),
-                        ],
+                        ),
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                     Container(
@@ -339,15 +329,15 @@ class _HomePageState extends State<HomePage> {
                         gradient: const LinearGradient(
                           begin: Alignment(0.52, -0.85),
                           end: Alignment(-0.52, 0.85),
-                          colors: [Color(0xFFFFCC00), Color(0xFFFFE47C)],
+                          colors: [Color(0xFFFFCC00), Color(0xFFFFCC00)],
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(360),
                         ),
                         shadows: const [
                           BoxShadow(
-                            color: Color(0xAAFFE47C),
-                            blurRadius: 13,
+                            color: Color(0xFFFFCC00),
+                            blurRadius: 22,
                             offset: Offset(-4, 5),
                             spreadRadius: 0,
                           )
@@ -355,16 +345,44 @@ class _HomePageState extends State<HomePage> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(11),
-                        child: Image.asset(
-                          'lib/assets/icons/filter.png',
-                          color: Colors.white,
-                        ),
+                        child:
+          GestureDetector(
+            onTap: () {
+              PersistentNavBarNavigator.pushNewScreen(
+                context,
+                screen: const NotificationPage(),
+                withNavBar: false,
+                pageTransitionAnimation: PageTransitionAnimation.cupertino,
+              );
+            },
+            child: Container(
+              width: 45,
+              height: 45,
+              decoration: const ShapeDecoration(
+                color: Color(0xFFFFCC00),
+                shape: CircleBorder(),
+                shadows: [
+                  BoxShadow(
+                    color: Color(0xFFFFCC00),
+                    blurRadius: 0,
+                    offset: Offset(0, 4),
+                    spreadRadius: 0,
+                  )
+                ],
+              ),
+              child: const Icon(
+                CupertinoIcons.bell,
+                size: 20,
+              ),
+            ),
+          ),
+          
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(
-                  height: 40,
+                  height: 35,
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(
@@ -377,7 +395,7 @@ class _HomePageState extends State<HomePage> {
                         style: GoogleFonts.outfit(
                           color: const Color(0xFF2C2C2C),
                           fontSize: 21,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.bold,
                           height: 0.06,
                           letterSpacing: 0.50,
                         ),
@@ -390,10 +408,10 @@ class _HomePageState extends State<HomePage> {
                           });
                         },
                         child: Text(
-                          showAllFacilities ? 'Show Less' : 'View All',
+                          showAllFacilities ? 'Show Less' : 'See more',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.outfit(
-                            color: const Color(0xFF292931),
+                            color: const Color.fromARGB(255, 77, 172, 255),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             height: 0,
@@ -492,11 +510,44 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 const SizedBox(
+                  height: 25,
+                ),
+                 Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.width / 25),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Events happening',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF2C2C2C),
+                          fontSize: 21,
+                          fontWeight: FontWeight.bold,
+                          height: 0.06,
+                          letterSpacing: 0.50,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        'View All',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          color: const Color.fromARGB(255, 77, 172, 255),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 0,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(
                   height: 20,
                 ),
                 const EventsHorizontalScrollView(),
                 const SizedBox(
-                  height: 18,
+                  height: 20,
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(
@@ -509,9 +560,10 @@ class _HomePageState extends State<HomePage> {
                         style: GoogleFonts.outfit(
                           color: const Color(0xFF2C2C2C),
                           fontSize: 21,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.bold,
                           height: 0.06,
                           letterSpacing: 0.50,
+                          
                         ),
                       ),
                       const Spacer(),
@@ -519,7 +571,7 @@ class _HomePageState extends State<HomePage> {
                         'View All',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.outfit(
-                          color: const Color(0xFF292931),
+                          color: const Color.fromARGB(255, 77, 172, 255),
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           height: 0,
@@ -529,11 +581,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(
-                  height: 25,
+                  height: 20,
                 ),
                 const HorizontalScrollTile(
-                  height: 254,
-                  width: 299,
+                  height: 240,
+                  width: 289,
                   outBorderRadius: 26,
                   hasChild: true,
                 ),
@@ -541,7 +593,7 @@ class _HomePageState extends State<HomePage> {
                   height: 20,
                 ),
                 const SizedBox(
-                  height: 80,
+                  height: 50,
                 ),
               ],
             ),
