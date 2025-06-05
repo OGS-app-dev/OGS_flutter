@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:ogs/pages/profile_page_new_2.dart';
 import 'package:ogs/pages/points_page.dart';
 import 'package:ogs/pages/map_page.dart';
+import 'package:ogs/pages/bus.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -29,11 +30,12 @@ class _MainPageState extends State<MainPage> {
   List<Widget> screens() {
     return [
       const HomePage(),
-      const TopTabPage(),
+      //const TopTabPage(),
+      const BusTrackPage(),
       //TrackBusPage(),
       //const BusPosition(),
      const CollegeMapScreen(),
-       ProfileScreen(),
+      const ProfileScreen(),
        //PointsScreen(),
     ];
   }

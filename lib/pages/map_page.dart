@@ -287,10 +287,10 @@ class _CollegeMapScreenState extends State<CollegeMapScreen> {
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 10),
-                        hintText: "Search Nitc buildings",
+                        hintText: "Search Departments,Lecture Halls etc..",
                         hintStyle: GoogleFonts.outfit(
                           color: Colors.grey[600],
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
                         suffixIcon: IconButton(
                           icon: const Icon(CupertinoIcons.search, color: yel),

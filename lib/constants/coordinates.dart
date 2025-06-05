@@ -7,6 +7,9 @@ const List<LatLng> coordinatesBoys = [
   LatLng(11.3215522735941, 75.93410745008883), // CENTER_CIRCLE
   LatLng(11.32310277221977, 75.93691330855931), // CHEM_GATE
   LatLng(11.3172114769951, 75.93752554112106), // MEGA_HOSTEL
+  LatLng(11.3226, 75.9368),//archi
+  LatLng(11.3209, 75.9340),//ccd
+  LatLng(11.3206, 75.9348) //audi
 ];
 
 const List<LatLng> coordinatesGirls = [
@@ -16,6 +19,9 @@ const List<LatLng> coordinatesGirls = [
   LatLng(11.32310277221977, 75.93691330855931), // CHEM_GATE
   LatLng(11.318211816487084, 75.93108353184496), // LH_STOP
   LatLng(11.31484967744654, 75.932466895059), // SOMS
+  LatLng(11.3226, 75.9368),//archi
+  LatLng(11.3209, 75.9340),//ccd
+  LatLng(11.3206, 75.9348)//audi
 ];
 
 // const String MAIN_GATE =
@@ -24,7 +30,10 @@ const List<String> coordinateNameBoys = [
   MAIN_GATE,
   CENTER_CIRCLE,
   CHEM_GATE,
-  MEGA_HOSTEL
+  MEGA_HOSTEL,
+  ARCHITECTURE,
+  CCD,
+  AUDITORIUM
 ];
 
 const List<String> coordinateNameGirls = [
@@ -34,6 +43,9 @@ const List<String> coordinateNameGirls = [
   CENTER_CIRCLE,
   LH_STOP,
   SOMS,
+  ARCHITECTURE,
+  CCD,
+  AUDITORIUM
 ];
 
 const String CHEM_GATE = "CHEM_GATE",
@@ -41,7 +53,11 @@ const String CHEM_GATE = "CHEM_GATE",
     MEGA_HOSTEL = "MEGA_HOSTEL",
     CENTER_CIRCLE = "CENTER_CIRCLE",
     SOMS = "SOMS",
-    LH_STOP = "LH_STOP";
+    LH_STOP = "LH_STOP",
+    ARCHITECTURE="ARCHITECTURE",
+    CCD="CCD",
+    AUDITORIUM="AUDITORIUM"
+    ;
 
 String getNextIdx(LatLng currLoc, bool type) {
   if (type) {
