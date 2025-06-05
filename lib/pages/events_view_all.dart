@@ -30,176 +30,181 @@ class EventsViewAll extends StatelessWidget {
 
         final events = snapshot.data!.docs;
 
-        return Container(
-          color:const Color.fromARGB(255, 255, 255, 255),
-          child: GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 0.75, // Adjust this to control card height
-            ),
-            itemCount: events.length,
-            itemBuilder: (context, index) {
-              final document = events[index];
-              final event = Event.fromFirestore(
-                  document as DocumentSnapshot<Map<String, dynamic>>);
-          
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      
-                      builder: (context) => EventDetailPage(event: event),
-                    ),
-                  );
-                },
-                child: Stack(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: Colors.white,
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+          ),
+          backgroundColor:const Color.fromARGB(255, 255, 255, 255),
+          body: Container(
+            color: const Color.fromARGB(255, 255, 255, 255),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 0.75, // Adjust this to control card height
+              ),
+              itemCount: events.length,
+              itemBuilder: (context, index) {
+                final document = events[index];
+                final event = Event.fromFirestore(
+                    document as DocumentSnapshot<Map<String, dynamic>>);
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EventDetailPage(event: event),
                       ),
-                      margin: const EdgeInsets.all(4),
-                      padding: const EdgeInsets.all(15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(18),
-                                color: Colors.black, // Placeholder background
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(18),
-                                child: event.imageUrl.startsWith('http')
-                                    ? Image.network(
-                                        event.imageUrl,
-                                        fit: BoxFit.cover,
-                                        loadingBuilder:
-                                            (context, child, loadingProgress) {
-                                          if (loadingProgress == null)
-                                            return child;
-                                          return Center(
-                                            child: CircularProgressIndicator(
-                                              value: loadingProgress
-                                                          .expectedTotalBytes !=
-                                                      null
-                                                  ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                  : null,
-                                              color: Colors.yellow,
-                                            ),
-                                          );
-                                        },
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                const Icon(Icons.broken_image,
-                                                    size: 50,
-                                                    color: Colors.grey),
-                                      )
-                                    : Image.asset(
-                                        event.imageUrl,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                const Icon(Icons.error,
-                                                    size: 50,
-                                                    color: Colors.red),
-                                      ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            event.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.outfit(
-                              color: const Color.fromARGB(255, 41, 41, 49),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
-                          Text(
-                            event.location,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.outfit(
-                              color: const Color.fromARGB(255, 137, 137, 137),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 12,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (event.isLive)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'Live',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
-                            ),
-                          ),
+                    );
+                  },
+                  child: Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          color: Colors.white,
                         ),
-                      ),
-                    Positioned(
-                      right: 20,
-                      bottom: 20,
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: ShapeDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment(0.52, -0.85),
-                            end: Alignment(-0.52, 0.85),
-                            colors: [Color(0xFFFFCC00), Color(0xFFFFE47C)],
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0xAAFFE47C),
-                              blurRadius: 13,
-                              offset: Offset(-4, 5),
-                              spreadRadius: 0,
+                        margin: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(15),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(18),
+                                  color: Colors.black, // Placeholder background
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: event.imageUrl.startsWith('http')
+                                      ? Image.network(
+                                          event.imageUrl,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return Center(
+                                              child: CircularProgressIndicator(
+                                                value: loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                    : null,
+                                                color: Colors.yellow,
+                                              ),
+                                            );
+                                          },
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(Icons.broken_image,
+                                                      size: 50,
+                                                      color: Colors.grey),
+                                        )
+                                      : Image.asset(
+                                          event.imageUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(Icons.error,
+                                                      size: 50,
+                                                      color: Colors.red),
+                                        ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              event.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                color: const Color.fromARGB(255, 41, 41, 49),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                            Text(
+                              event.location,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                color: const Color.fromARGB(255, 137, 137, 137),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 12,
+                                decoration: TextDecoration.none,
+                              ),
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          CupertinoIcons.play_arrow,
-                          color: Colors.white,
-                          size: 14,
+                      ),
+                      if (event.isLive)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Live',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ),
+                      Positioned(
+                        right: 20,
+                        bottom: 20,
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: ShapeDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment(0.52, -0.85),
+                              end: Alignment(-0.52, 0.85),
+                              colors: [Color(0xFFFFCC00), Color(0xFFFFE47C)],
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            shadows: const [
+                              BoxShadow(
+                                color: Color(0xAAFFE47C),
+                                blurRadius: 13,
+                                offset: Offset(-4, 5),
+                                spreadRadius: 0,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            CupertinoIcons.play_arrow,
+                            color: Colors.white,
+                            size: 14,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         );
       },

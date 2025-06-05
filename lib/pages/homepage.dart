@@ -22,6 +22,7 @@ import 'package:ogs/pages/fnu_petrol.dart';
 import 'package:ogs/pages/points_page.dart';
 import 'package:ogs/pages/bus_position_new.dart';
 import 'package:ogs/pages/events_view_all.dart';
+import 'package:ogs/pages/ads_view_all.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -578,14 +579,27 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const Spacer(),
-                      Text(
-                        'View All',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: const Color.fromARGB(255, 77, 172, 255),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 0,
+                    GestureDetector(
+                         onTap: () {
+                        PersistentNavBarNavigator.pushNewScreen(
+                          context,
+                          screen: const AdsViewAll(height: 240,
+                  width: 289,
+                  outBorderRadius: 26,
+                  hasChild: true,),
+                          withNavBar: false,
+                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
+                        );
+                      },
+                        child: Text(
+                         'View All',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            color: const Color.fromARGB(255, 77, 172, 255),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            height: 0,
+                          ),
                         ),
                       )
                     ],
