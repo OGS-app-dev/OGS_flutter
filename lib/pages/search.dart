@@ -679,9 +679,9 @@ class _UnifiedSearchPageState extends State<UnifiedSearchPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Universal Search',
+          'Search Results',
           style: GoogleFonts.outfit(
-            color: const Color.fromARGB(255, 21, 4, 62),
+            color: pricol,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),

@@ -608,7 +608,10 @@ class _HomePageState extends State<HomePage> {
                         onTap: () {
                           PersistentNavBarNavigator.pushNewScreen(
                             context,
-                            screen: const AdsViewAll(),
+                            screen: const AdsViewAll( height: 240,
+                  width: 289,
+                  outBorderRadius: 26,
+                  hasChild: true,),
                             withNavBar: false,
                             pageTransitionAnimation:
                                 PageTransitionAnimation.cupertino,
