@@ -3,30 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ogs/constants.dart';
-import 'package:ogs/firebase/hospital_db.dart'; 
+import 'package:ogs/firebase/hotels_db.dart'; 
 
 import 'package:url_launcher/url_launcher.dart';
 
-class HospitalSearchPage extends StatefulWidget {
+class HotelSearch extends StatefulWidget {
   final String searchQuery;
   
-  const HospitalSearchPage({
+  const HotelSearch({
     super.key,
     this.searchQuery = '',
   });
 
   @override
-  State<HospitalSearchPage> createState() => _HospitalSearchPageState();
+  State<HotelSearch> createState() => _HotelSearchState();
 }
 
-class _HospitalSearchPageState extends State<HospitalSearchPage> {
-  final HospitalDbService _hospitalDb = HospitalDbService();
+class _HotelSearchState extends State<HotelSearch> {
+  final HotelsDbService _hotelDb = HotelsDbService();
   final TextEditingController _searchController = TextEditingController();
   String currentQuery = '';
   bool isSearching = false;
   String selectedArea = 'All Areas';
   
-  List<DocumentSnapshot> hospitalResults = [];
+  List<DocumentSnapshot> hotelResults = [];
   List<String> recentSearches = [];
 
   @override
@@ -39,7 +39,7 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
     if (currentQuery.isNotEmpty) {
       _performSearch();
     } else {
-      _loadAllHospitals();
+      _loadAllhotels();
     }
   }
 
@@ -50,9 +50,9 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
   }
 
   void _loadRecentSearches() async {
-    if (_hospitalDb.getCurrentUser() != null) {
-      List<String> searches = await _hospitalDb.getRecentHospitalSearchQueries(
-        _hospitalDb.getCurrentUser()!.uid
+    if (_hotelDb.getCurrentUser() != null) {
+      List<String> searches = await _hotelDb.getRecenthotelsearchQueries(
+        _hotelDb.getCurrentUser()!.uid
       );
       setState(() {
         recentSearches = searches;
@@ -60,7 +60,7 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
     }
   }
 
-  void _loadAllHospitals() async {
+  void _loadAllhotels() async {
     setState(() {
       isSearching = true;
     });
@@ -68,17 +68,17 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
     try {
       List<DocumentSnapshot> results;
       if (selectedArea == 'All Areas') {
-        results = await _hospitalDb.getAllHospitals();
+        results = await _hotelDb.getAllhotels();
       } else {
-        results = await _hospitalDb.getHospitalsByArea(selectedArea);
+        results = await _hotelDb.gethotelsByArea(selectedArea);
       }
       
       setState(() {
-        hospitalResults = results;
+        hotelResults = results;
         isSearching = false;
       });
     } catch (e) {
-      print('Error loading hospitals: $e');
+      print('Error loading hotels: $e');
       setState(() {
         isSearching = false;
       });
@@ -92,12 +92,12 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
     });
 
     if (currentQuery.isEmpty) {
-      _loadAllHospitals();
+      _loadAllhotels();
       return;
     }
 
     try {
-      List<DocumentSnapshot> results = await _hospitalDb.searchHospitalsByName(currentQuery);
+      List<DocumentSnapshot> results = await _hotelDb.searchhotelsByName(currentQuery);
       
       // Filter by selected area if not "All Areas"
       if (selectedArea != 'All Areas') {
@@ -109,13 +109,13 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
       }
       
       setState(() {
-        hospitalResults = results;
+        hotelResults = results;
         isSearching = false;
       });
 
-      if (_hospitalDb.getCurrentUser() != null && currentQuery.isNotEmpty) {
-        await _hospitalDb.saveHospitalSearchQuery(
-          _hospitalDb.getCurrentUser()!.uid, 
+      if (_hotelDb.getCurrentUser() != null && currentQuery.isNotEmpty) {
+        await _hotelDb.savehotelsearchQuery(
+          _hotelDb.getCurrentUser()!.uid, 
           currentQuery
         );
         _loadRecentSearches();
@@ -128,19 +128,9 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
     }
   }
 
-  void _onAreaChanged(String? newArea) {
-    setState(() {
-      selectedArea = newArea ?? 'All Areas';
-    });
-    
-    if (currentQuery.isNotEmpty) {
-      _performSearch();
-    } else {
-      _loadAllHospitals();
-    }
-  }
+  
 
-  Widget _buildHospitalImage(String? imageUrl, {double width = 50, double height = 50, double radius = 8}) {
+  Widget _buildhotelImage(String? imageUrl, {double width = 50, double height = 50, double radius = 8}) {
     if (imageUrl == null || imageUrl.isEmpty) {
       return Container(
         width: width,
@@ -206,18 +196,17 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
     );
   }
 
-  Widget _buildHospitalCard(DocumentSnapshot doc) {
+  Widget _buildhotelCard(DocumentSnapshot doc) {
     var data = doc.data() as Map<String, dynamic>;
-    String area = data['_area'] ?? 'Unknown Area';
     
     return Card(
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        leading: _buildHospitalImage(data['imageUrl'], width: 50, height: 50, radius: 8),
+        leading: _buildhotelImage(data['imageUrl'], width: 50, height: 50, radius: 8),
         title: Text(
-          data['name'] ?? 'Hospital',
+          data['name'] ?? 'hotel',
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.w500,
             fontSize: 16,
@@ -279,12 +268,12 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
                 color: pricol,
                 size: 18,
               ),
-        onTap: () => _showHospitalDetails(doc),
+        onTap: () => _showhotelDetails(doc),
       ),
     );
   }
 
-  void _showHospitalDetails(DocumentSnapshot doc) {
+  void _showhotelDetails(DocumentSnapshot doc) {
     var data = doc.data() as Map<String, dynamic>;
     
     showModalBottomSheet(
@@ -314,7 +303,7 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildHospitalImage(
+                    _buildhotelImage(
                       data['imageUrl'], 
                       width: double.infinity, 
                       height: 200, 
@@ -322,9 +311,9 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
                     ),
                     const SizedBox(height: 16),
                     
-                    // Hospital Name
+                    // hotel Name
                     Text(
-                      data['name'] ?? 'Hospital',
+                      data['name'] ?? 'hotel',
                       style: GoogleFonts.outfit(
                         fontSize: 24,
                         fontWeight: FontWeight.w600,
@@ -500,7 +489,7 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Search Hospitals',
+          'Search hotels',
           style: GoogleFonts.outfit(
             color: const Color.fromARGB(255, 21, 4, 62),
             fontSize: 18,
@@ -517,7 +506,7 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
               controller: _searchController,
               onSubmitted: (value) => _performSearch(),
               decoration: InputDecoration(
-                hintText: 'Search hospitals by name...',
+                hintText: 'Search hotels by name...',
                 hintStyle: GoogleFonts.outfit(color: Colors.grey[600]),
                 suffixIcon: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -530,7 +519,7 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
                           setState(() {
                             currentQuery = '';
                           });
-                          _loadAllHospitals();
+                          _loadAllhotels();
                         },
                       ),
                     IconButton(
@@ -568,11 +557,11 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
                       children: [
                         CircularProgressIndicator(color: pricol),
                         SizedBox(height: 16),
-                        Text('Searching hospitals...'),
+                        Text('Searching hotels...'),
                       ],
                     ),
                   )
-                : hospitalResults.isEmpty
+                : hotelResults.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -587,8 +576,8 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
                             const SizedBox(height: 16),
                             Text(
                               currentQuery.isEmpty 
-                                  ? 'Search for hospitals'
-                                  : 'No hospitals found',
+                                  ? 'Search for hotels'
+                                  : 'No hotels found',
                               style: GoogleFonts.outfit(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w500,
@@ -598,7 +587,7 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
                             const SizedBox(height: 8),
                             Text(
                               currentQuery.isEmpty 
-                                  ? 'Find hospitals by name in Calicut and Kattangal'
+                                  ? 'Find hotels by name in Calicut and Kattangal'
                                   : 'Try different keywords or change area filter',
                               style: GoogleFonts.outfit(
                                 fontSize: 14,
@@ -615,7 +604,7 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                             child: Text(
-                              '${hospitalResults.length} hospital${hospitalResults.length == 1 ? '' : 's'} found',
+                              '${hotelResults.length} hotel${hotelResults.length == 1 ? '' : 's'} found',
                               style: GoogleFonts.outfit(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -625,9 +614,9 @@ class _HospitalSearchPageState extends State<HospitalSearchPage> {
                           ),
                           Expanded(
                             child: ListView.builder(
-                              itemCount: hospitalResults.length,
+                              itemCount: hotelResults.length,
                               itemBuilder: (context, index) {
-                                return _buildHospitalCard(hospitalResults[index]);
+                                return _buildhotelCard(hotelResults[index]);
                               },
                             ),
                           ),

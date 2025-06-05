@@ -14,6 +14,7 @@ import 'package:line_icons/line_icons.dart';
 import 'package:ogs/models/hotel_model.dart';
 import 'package:ogs/pages/fnu_view_all.dart';
 import 'package:url_launcher/url_launcher.dart'; 
+import 'package:ogs/pages/hotel_search.dart';
 
 
 class HotelPage extends StatefulWidget {
@@ -26,7 +27,18 @@ class HotelPage extends StatefulWidget {
 
 class _HotelPageState extends State<HotelPage> {
   final _fireDb = FireDb();
-
+  final TextEditingController _searchController = TextEditingController();
+void _performSearch() {
+    String query = _searchController.text.trim();
+    if (query.isNotEmpty) {
+      PersistentNavBarNavigator.pushNewScreen(
+        context,
+        screen: HotelSearch(searchQuery: query),
+        withNavBar: false,
+        pageTransitionAnimation: PageTransitionAnimation.cupertino,
+      );
+    }
+  }
   PersistentTabController? tabController;
 
   String time = 'Good morning,';
@@ -279,25 +291,30 @@ class _HotelPageState extends State<HotelPage> {
                           )
                         ],
                       ),
-                      child: Row(
-                        children: [
-                          const SizedBox(
-                            width: 15,
+                      child: TextField(
+                        controller: _searchController,
+                        onSubmitted: (value) => _performSearch(),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                          hintText: "Explore Events and more....",
+                          hintStyle: GoogleFonts.outfit(
+                            color: Colors.grey[600],
+                            fontSize: 14,
                           ),
-                          Text(
-                            "Search here...",
-                            style: GoogleFonts.outfit(),
+                          suffixIcon: GestureDetector(
+                            onTap: _performSearch,
+                            child: const Icon(
+                              CupertinoIcons.search,
+                              color: yel,
+                              size: 20,
+                            ),
                           ),
-                          const Spacer(),
-                          const Icon(
-                            CupertinoIcons.search,
-                            color: yel,
-                            size: 20,
-                          ),
-                          const SizedBox(
-                            width: 15,
-                          ),
-                        ],
+                        ),
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                     Container(
