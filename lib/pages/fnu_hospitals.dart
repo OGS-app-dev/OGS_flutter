@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/firebase/dbservices.dart';
 import 'package:ogs/form_response/form_response.dart';
+import 'package:ogs/pages/hospital_search.dart';
 import 'package:ogs/pages/notificationpage.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +27,7 @@ class HospitalPage extends StatefulWidget {
 
 class _HospitalPageState extends State<HospitalPage> {
   final _fireDb = FireDb();
+  final TextEditingController _searchController = TextEditingController();
 
   PersistentTabController? tabController;
 
@@ -52,6 +54,17 @@ class _HospitalPageState extends State<HospitalPage> {
     tabController =
         Provider.of<FormResponse>(context, listen: false).tabController;
     currentUser = _fireDb.getCurrentUser();
+  }
+  void _performSearch() {
+    String query = _searchController.text.trim();
+    if (query.isNotEmpty) {
+      PersistentNavBarNavigator.pushNewScreen(
+        context,
+        screen: HospitalSearchPage(searchQuery: query),
+        withNavBar: false,
+        pageTransitionAnimation: PageTransitionAnimation.cupertino,
+      );
+    }
   }
 
   String getTime() {
@@ -262,7 +275,7 @@ class _HospitalPageState extends State<HospitalPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Container(
+                   Container(
                       width: MediaQuery.of(context).size.width * .8,
                       height: 44,
                       decoration: ShapeDecoration(
@@ -279,25 +292,30 @@ class _HospitalPageState extends State<HospitalPage> {
                           )
                         ],
                       ),
-                      child: Row(
-                        children: [
-                          const SizedBox(
-                            width: 15,
+                      child: TextField(
+                        controller: _searchController,
+                        onSubmitted: (value) => _performSearch(),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                          hintText: "Explore Events and more....",
+                          hintStyle: GoogleFonts.outfit(
+                            color: Colors.grey[600],
+                            fontSize: 14,
                           ),
-                          Text(
-                            "Search here...",
-                            style: GoogleFonts.outfit(),
+                          suffixIcon: GestureDetector(
+                            onTap: _performSearch,
+                            child: const Icon(
+                              CupertinoIcons.search,
+                              color: yel,
+                              size: 20,
+                            ),
                           ),
-                          const Spacer(),
-                          const Icon(
-                            CupertinoIcons.search,
-                            color: yel,
-                            size: 20,
-                          ),
-                          const SizedBox(
-                            width: 15,
-                          ),
-                        ],
+                        ),
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                     Container(

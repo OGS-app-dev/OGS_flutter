@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 class FireDb {
   final FirebaseFirestore _firebase = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -32,51 +31,93 @@ class FireDb {
       print(e.toString());
     }
   }
-}
-// Add this extension to your existing FireDb class or create a new file
-// This extends your existing FireDb service with search functionality
 
-
-extension SearchExtension on FireDb {
-  // Get events stream for search
-  Stream<QuerySnapshot> getEventsStream() {
-    return FirebaseFirestore.instance
-        .collection('events')
-        .orderBy('createdAt', descending: true)
-        .snapshots();
-  }
-
-  // Search events by query
-  Future<List<DocumentSnapshot>> searchEvents(String query) async {
+  Future<List<DocumentSnapshot>> searchEventsByName(String query) async {
     if (query.isEmpty) return [];
     
     try {
-      // Search in title field
-      QuerySnapshot titleResults = await FirebaseFirestore.instance
+      String lowerQuery = query.toLowerCase().trim();
+      
+      QuerySnapshot allEvents = await _firebase
           .collection('events')
-          .where('title', isGreaterThanOrEqualTo: query)
-          .where('title', isLessThanOrEqualTo: query + '\uf8ff')
           .get();
 
-      // Search in category field
-      QuerySnapshot categoryResults = await FirebaseFirestore.instance
-          .collection('events')
-          .where('category', isGreaterThanOrEqualTo: query)
-          .where('category', isLessThanOrEqualTo: query + '\uf8ff')
-          .get();
+      List<DocumentSnapshot> filteredResults = [];
+      
+      for (var doc in allEvents.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        String name = (data['name'] ?? '').toString().toLowerCase();
+        
+        // Check for partial matches, exact matches, and hyphen variations
+        if (name.contains(lowerQuery) || 
+            lowerQuery.contains(name) ||
+            name.replaceAll('-', '').contains(lowerQuery.replaceAll('-', '')) ||
+            name.replaceAll(' ', '').contains(lowerQuery.replaceAll(' ', ''))) {
+          filteredResults.add(doc);
+        }
+      }
 
-      // Combine results and remove duplicates
-      Set<String> seenIds = {};
+      filteredResults.sort((a, b) {
+        String nameA = ((a.data() as Map<String, dynamic>)['name'] ?? '').toString().toLowerCase();
+        String nameB = ((b.data() as Map<String, dynamic>)['name'] ?? '').toString().toLowerCase();
+        
+        if (nameA == lowerQuery && nameB != lowerQuery) return -1;
+        if (nameB == lowerQuery && nameA != lowerQuery) return 1;
+        
+        if (nameA.startsWith(lowerQuery) && !nameB.startsWith(lowerQuery)) return -1;
+        if (nameB.startsWith(lowerQuery) && !nameA.startsWith(lowerQuery)) return 1;
+        
+        return nameA.compareTo(nameB);
+      });
+
+      return filteredResults;
+    } catch (e) {
+      print('Error searching events by name: $e');
+      return [];
+    }
+  }
+
+  Future<List<DocumentSnapshot>> searchEventsByNameEfficient(String query) async {
+    if (query.isEmpty) return [];
+    
+    try {
+      String lowerQuery = query.toLowerCase().trim();
       List<DocumentSnapshot> allResults = [];
       
-      for (var doc in titleResults.docs) {
-        if (!seenIds.contains(doc.id)) {
-          seenIds.add(doc.id);
-          allResults.add(doc);
+      List<String> queryVariations = [
+        lowerQuery,
+        lowerQuery.replaceAll('-', ''),
+        lowerQuery.replaceAll(' ', ''),
+        lowerQuery.replaceAll('-', ' '),
+        lowerQuery.replaceAll(' ', '-'),
+      ];
+      
+      Set<String> seenIds = {};
+      
+      for (String searchQuery in queryVariations) {
+        if (searchQuery.isEmpty) continue;
+        
+        QuerySnapshot results = await _firebase
+            .collection('events')
+            .where('name', isGreaterThanOrEqualTo: searchQuery)
+            .where('name', isLessThanOrEqualTo: searchQuery + '\uf8ff')
+            .get();
+        
+        for (var doc in results.docs) {
+          if (!seenIds.contains(doc.id)) {
+            seenIds.add(doc.id);
+            allResults.add(doc);
+          }
         }
       }
       
-      for (var doc in categoryResults.docs) {
+      QuerySnapshot originalResults = await _firebase
+          .collection('events')
+          .where('name', isGreaterThanOrEqualTo: query)
+          .where('name', isLessThanOrEqualTo: query + '\uf8ff')
+          .get();
+      
+      for (var doc in originalResults.docs) {
         if (!seenIds.contains(doc.id)) {
           seenIds.add(doc.id);
           allResults.add(doc);
@@ -85,33 +126,23 @@ extension SearchExtension on FireDb {
 
       return allResults;
     } catch (e) {
-      print('Error searching events: $e');
+      print('Error in efficient search: $e');
       return [];
     }
   }
 
-  // Search facilities (if you have them in Firestore)
-  Future<List<DocumentSnapshot>> searchFacilities(String query) async {
-    if (query.isEmpty) return [];
-    
-    try {
-      QuerySnapshot results = await FirebaseFirestore.instance
-          .collection('facilities')
-          .where('name', isGreaterThanOrEqualTo: query)
-          .where('name', isLessThanOrEqualTo: query + '\uf8ff')
-          .get();
-
-      return results.docs;
-    } catch (e) {
-      print('Error searching facilities: $e');
-      return [];
-    }
+  // Get events stream (optimized with basic ordering)
+  Stream<QuerySnapshot> getEventsStream() {
+    return _firebase
+        .collection('events')
+        .orderBy('name') // Simple ordering by name
+        .snapshots();
   }
 
-  // Get recent searches (optional - to store user search history)
+  // Save search query to user's history
   Future<void> saveSearchQuery(String userId, String query) async {
     try {
-      await FirebaseFirestore.instance
+      await _firebase
           .collection('users')
           .doc(userId)
           .collection('searchHistory')
@@ -119,14 +150,27 @@ extension SearchExtension on FireDb {
         'query': query,
         'timestamp': FieldValue.serverTimestamp(),
       });
+      
+      // Keep only last 20 searches to avoid storage bloat
+      QuerySnapshot oldSearches = await _firebase
+          .collection('users')
+          .doc(userId)
+          .collection('searchHistory')
+          .orderBy('timestamp', descending: true)
+          .get();
+      
+      // Delete old searches
+      for (var doc in oldSearches.docs) {
+        await doc.reference.delete();
+      }
     } catch (e) {
       print('Error saving search query: $e');
     }
   }
 
-  // Get user's search history
+  // Get user's recent search history (limited to 10)
   Stream<QuerySnapshot> getUserSearchHistory(String userId) {
-    return FirebaseFirestore.instance
+    return _firebase
         .collection('users')
         .doc(userId)
         .collection('searchHistory')
@@ -134,4 +178,80 @@ extension SearchExtension on FireDb {
         .limit(10)
         .snapshots();
   }
+
+  Future<List<String>> getRecentSearchQueries(String userId) async {
+    try {
+      QuerySnapshot snapshot = await _firebase
+          .collection('users')
+          .doc(userId)
+          .collection('searchHistory')
+          .orderBy('timestamp', descending: true)
+          .limit(5)
+          .get();
+      
+      return snapshot.docs
+          .map((doc) => (doc.data() as Map<String, dynamic>)['query'] as String)
+          .toList();
+    } catch (e) {
+      print('Error getting recent search queries: $e');
+      return [];
+    }
+  }
+
+  // Clear user's search history
+  Future<void> clearSearchHistory(String userId) async {
+    try {
+      QuerySnapshot snapshot = await _firebase
+          .collection('users')
+          .doc(userId)
+          .collection('searchHistory')
+          .get();
+      
+      WriteBatch batch = _firebase.batch();
+      for (var doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      
+      await batch.commit();
+    } catch (e) {
+      print('Error clearing search history: $e');
+    }
+  }
+
+  // Get event details by ID (for when user taps on search result)
+  Future<DocumentSnapshot?> getEventById(String eventId) async {
+    try {
+      return await _firebase.collection('events').doc(eventId).get();
+    } catch (e) {
+      print('Error getting event by ID: $e');
+      return null;
+    }
+  }
+
+  // Get events by category (for filtering)
+  Future<List<DocumentSnapshot>> getEventsByCategory(String category) async {
+    try {
+      QuerySnapshot snapshot = await _firebase
+          .collection('events')
+          .where('category', isEqualTo: category)
+          .orderBy('name')
+          .get();
+      
+      return snapshot.docs;
+    } catch (e) {
+      print('Error getting events by category: $e');
+      return [];
+    }
+  }
+
+  // Get featured or popular events (if you have such fields)
+  Stream<QuerySnapshot> getFeaturedEventsStream() {
+    return _firebase
+        .collection('events')
+        .where('featured', isEqualTo: true)
+        .orderBy('name')
+        .limit(10)
+        .snapshots();
+  }
+  
 }

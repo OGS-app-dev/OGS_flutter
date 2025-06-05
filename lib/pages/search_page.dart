@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/firebase/dbservices.dart';
+import 'package:ogs/models/event_model.dart';
+import 'package:ogs/pages/event_details.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:ogs/pages/fnu_restaurants.dart';
 import 'package:ogs/pages/fnu_hotel.dart';
@@ -28,36 +30,44 @@ class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   String currentQuery = '';
   bool isSearching = false;
+  
+  // Only events search results
+  List<DocumentSnapshot> eventResults = [];
 
-  // Facility categories
+  // Facility categories for navigation
   final List<Map<String, dynamic>> facilities = [
     {
       'name': 'Movies',
-      'icon': 'lib/assets/icons/movies.png',
+      'icon': CupertinoIcons.film,
+      'color': Colors.red,
       'keywords': ['movies', 'cinema', 'theater', 'film', 'entertainment'],
       'page': () => const MoviesPage(),
     },
     {
       'name': 'Restaurants',
-      'icon': 'lib/assets/icons/res.png',
+      'icon': CupertinoIcons.house,
+      'color': Colors.orange,
       'keywords': ['restaurants', 'food', 'dining', 'eat', 'cafe', 'restaurant'],
       'page': () => const RestaurantsPage(),
     },
     {
       'name': 'Hotels',
-      'icon': 'lib/assets/icons/hotel.png',
+      'icon': CupertinoIcons.bed_double,
+      'color': Colors.blue,
       'keywords': ['hotels', 'accommodation', 'stay', 'lodge', 'guest house'],
       'page': () => const HotelPage(),
     },
     {
       'name': 'Hospitals',
-      'icon': 'lib/assets/icons/hospital.png',
+      'icon': CupertinoIcons.plus_circled,
+      'color': Colors.green,
       'keywords': ['hospitals', 'medical', 'health', 'clinic', 'doctor', 'emergency'],
       'page': () => const HospitalPage(),
     },
     {
       'name': 'Petrol Pumps',
-      'icon': 'lib/assets/icons/petrol.png',
+      'icon': CupertinoIcons.car,
+      'color': Colors.purple,
       'keywords': ['petrol', 'gas', 'fuel', 'pump', 'station'],
       'page': () => const PetrolPage(),
     },
@@ -68,6 +78,9 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     _searchController.text = widget.searchQuery;
     currentQuery = widget.searchQuery;
+    if (currentQuery.isNotEmpty) {
+      _performSearch();
+    }
   }
 
   @override
@@ -76,49 +89,181 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
-  void _performSearch() {
+  void _performSearch() async {
     setState(() {
       currentQuery = _searchController.text.trim();
       isSearching = true;
     });
-    
-    // Add slight delay to show loading state
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        setState(() {
-          isSearching = false;
-        });
+
+    if (currentQuery.isEmpty) {
+      setState(() {
+        isSearching = false;
+        eventResults.clear();
+      });
+      return;
+    }
+
+    try {
+      // Search only in events collection for name field
+      List<DocumentSnapshot> results = await _searchEventsCollection(currentQuery);
+      
+      setState(() {
+        eventResults = results;
+        isSearching = false;
+      });
+
+      // Save search query to user's history
+      if (_fireDb.getCurrentUser() != null) {
+        await _fireDb.saveSearchQuery(_fireDb.getCurrentUser()!.uid, currentQuery);
       }
-    });
+    } catch (e) {
+      print('Search error: $e');
+      setState(() {
+        isSearching = false;
+      });
+    }
+  }
+
+  // Use the optimized FireDb search method
+  Future<List<DocumentSnapshot>> _searchEventsCollection(String query) async {
+    try {
+      // Use the improved search method from FireDb
+      return await _fireDb.searchEventsByName(query);
+    } catch (e) {
+      print('Error searching events: $e');
+      return [];
+    }
   }
 
   List<Map<String, dynamic>> _getMatchingFacilities() {
-  if (currentQuery.isEmpty) return [];
-  
-  return facilities.where((facility) {
-    List<String> keywords = List<String>.from(facility['keywords']);
-    return keywords.any((keyword) =>
-        keyword.toLowerCase().contains(currentQuery.toLowerCase()));
-  }).toList();
-}
+    if (currentQuery.isEmpty) return [];
+    
+    return facilities.where((facility) {
+      List<String> keywords = List<String>.from(facility['keywords']);
+      return keywords.any((keyword) =>
+          keyword.toLowerCase().contains(currentQuery.toLowerCase()));
+    }).toList();
+  }
+
+  Widget _buildEventCard(DocumentSnapshot doc) {
+    var data = doc.data() as Map<String, dynamic>;
+    
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: data['imageUrl'] != null
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  data['imageUrl'],
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: yel.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(CupertinoIcons.calendar, color: yel, size: 24),
+                  ),
+                ),
+              )
+            : Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: yel.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(CupertinoIcons.calendar, color: yel, size: 24),
+              ),
+        title: Text(
+          data['name'] ?? 'Event',
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (data['description'] != null)
+              Text(
+                data['description'],
+                style: GoogleFonts.outfit(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            if (data['date'] != null || data['eventDate'] != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                data['date'] ?? data['eventDate'],
+                style: GoogleFonts.outfit(
+                  color: yel,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
+        ),
+        trailing: const Icon(
+          CupertinoIcons.chevron_right,
+          color: pricol,
+          size: 18,
+        ),
+        onTap: () {
+          // Navigate to event details
+          try {
+            // Convert DocumentSnapshot to Event model
+            Event event = Event.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>);
+            
+            // Navigate to EventDetailPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EventDetailPage(event: event),
+              ),
+            );
+          } catch (e) {
+            print('Error navigating to event details: $e');
+            // Show error message to user
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error opening event details'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
 
   Widget _buildFacilityCard(Map<String, dynamic> facility) {
     return Card(
       elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: pricol.withOpacity(0.1),
+            color: facility['color'].withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Image.asset(
+          child: Icon(
             facility['icon'],
-            width: 24,
-            height: 24,
-            color: pricol,
+            color: facility['color'],
+            size: 24,
           ),
         ),
         title: Text(
@@ -129,7 +274,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
         subtitle: Text(
-          'Tap to explore ${facility['name'].toLowerCase()}',
+          'Explore ${facility['name'].toLowerCase()} near you',
           style: GoogleFonts.outfit(
             color: Colors.grey[600],
             fontSize: 14,
@@ -152,128 +297,51 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildEventsSection() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _fireDb.getEventsStream(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: pricol),
-          );
-        }
-
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        // Filter events based on search query
-        var filteredEvents = snapshot.data!.docs.where((doc) {
-          var data = doc.data() as Map<String, dynamic>;
-          String title = data['title']?.toString().toLowerCase() ?? '';
-          String description = data['description']?.toString().toLowerCase() ?? '';
-          String category = data['category']?.toString().toLowerCase() ?? '';
-          
-          return title.contains(currentQuery.toLowerCase()) ||
-                 description.contains(currentQuery.toLowerCase()) ||
-                 category.contains(currentQuery.toLowerCase());
-        }).toList();
-
-        if (filteredEvents.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Events',
-                style: GoogleFonts.outfit(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF2C2C2C),
-                ),
+  Widget _buildSectionHeader(String title, int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.outfit(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF2C2C2C),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: pricol.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              count.toString(),
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: pricol,
               ),
             ),
-            ...filteredEvents.map((doc) {
-              var data = doc.data() as Map<String, dynamic>;
-              return Card(
-                elevation: 2,
-                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: yel.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.calendar,
-                      color: pricol,
-                      size: 24,
-                    ),
-                  ),
-                  title: Text(
-                    data['title'] ?? 'Event',
-                    style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                    ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (data['description'] != null)
-                        Text(
-                          data['description'],
-                          style: GoogleFonts.outfit(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      const SizedBox(height: 4),
-                      if (data['date'] != null)
-                        Text(
-                          data['date'],
-                          style: GoogleFonts.outfit(
-                            color: pricol,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                    ],
-                  ),
-                  trailing: const Icon(
-                    CupertinoIcons.chevron_right,
-                    color: pricol,
-                    size: 18,
-                  ),
-                  onTap: () {
-                    // Handle event tap - navigate to event details
-                    // You can add event details page navigation here
-                  },
-                ),
-              );
-            }).toList(),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     List<Map<String, dynamic>> matchingFacilities = _getMatchingFacilities();
+    bool hasResults = eventResults.isNotEmpty || matchingFacilities.isNotEmpty;
     
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(CupertinoIcons.back, color: pricol),
           onPressed: () => Navigator.pop(context),
@@ -295,17 +363,28 @@ class _SearchPageState extends State<SearchPage> {
               controller: _searchController,
               onSubmitted: (value) => _performSearch(),
               decoration: InputDecoration(
-                hintText: 'Search events, facilities...',
+                hintText: 'Search events and facilities...',
                 hintStyle: GoogleFonts.outfit(color: Colors.grey[600]),
                 prefixIcon: const Icon(CupertinoIcons.search, color: pricol),
-                suffixIcon: IconButton(
-                  icon: const Icon(CupertinoIcons.xmark_circle_fill, color: Colors.grey),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() {
-                      currentQuery = '';
-                    });
-                  },
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_searchController.text.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(CupertinoIcons.xmark_circle_fill, color: Colors.grey),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            currentQuery = '';
+                            eventResults.clear();
+                          });
+                        },
+                      ),
+                    IconButton(
+                      icon: const Icon(CupertinoIcons.search, color: pricol),
+                      onPressed: _performSearch,
+                    ),
+                  ],
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -323,7 +402,14 @@ class _SearchPageState extends State<SearchPage> {
           Expanded(
             child: isSearching
                 ? const Center(
-                    child: CircularProgressIndicator(color: pricol),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(color: pricol),
+                        SizedBox(height: 16),
+                        Text('Searching events...'),
+                      ],
+                    ),
                   )
                 : currentQuery.isEmpty
                     ? Center(
@@ -337,7 +423,7 @@ class _SearchPageState extends State<SearchPage> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Search for events and facilities',
+                              'Search for events',
                               style: GoogleFonts.outfit(
                                 fontSize: 18,
                                 color: Colors.grey[600],
@@ -345,7 +431,7 @@ class _SearchPageState extends State<SearchPage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Try searching for "restaurants", "movies", "events"...',
+                              'Find events by name or browse facilities...',
                               style: GoogleFonts.outfit(
                                 fontSize: 14,
                                 color: Colors.grey[500],
@@ -355,69 +441,57 @@ class _SearchPageState extends State<SearchPage> {
                           ],
                         ),
                       )
-                    : SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (matchingFacilities.isEmpty && currentQuery.isNotEmpty)
-                              Column(
-                                children: [
-                                  const SizedBox(height: 40),
-                                  Center(
-                                    child: Column(
-                                      children: [
-                                        Icon(
-                                          CupertinoIcons.exclamationmark_circle,
-                                          size: 64,
-                                          color: Colors.grey[400],
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          'No results found',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          'Try searching for different keywords',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 14,
-                                            color: Colors.grey[500],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            
-                            // Facilities Section
-                            if (matchingFacilities.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Text(
-                                  'Facilities',
+                    : !hasResults
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.exclamationmark_circle,
+                                  size: 64,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No results found',
                                   style: GoogleFonts.outfit(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF2C2C2C),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey[600],
                                   ),
                                 ),
-                              ),
-                              ...matchingFacilities.map((facility) => _buildFacilityCard(facility)),
-                              const SizedBox(height: 20),
-                            ],
-                            
-                            // Events Section
-                            _buildEventsSection(),
-                            
-                            const SizedBox(height: 80),
-                          ],
-                        ),
-                      ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Try different keywords or browse facilities',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 14,
+                                    color: Colors.grey[500],
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          )
+                        : SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Events Section
+                                if (eventResults.isNotEmpty) ...[
+                                  _buildSectionHeader('Events', eventResults.length),
+                                  ...eventResults.map((doc) => _buildEventCard(doc)),
+                                ],
+
+                                // Facility Categories
+                                if (matchingFacilities.isNotEmpty) ...[
+                                  _buildSectionHeader('Facilities', matchingFacilities.length),
+                                  ...matchingFacilities.map((facility) => _buildFacilityCard(facility)),
+                                ],
+
+                                const SizedBox(height: 80),
+                              ],
+                            ),
+                          ),
           ),
         ],
       ),
