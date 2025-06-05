@@ -13,7 +13,7 @@ import 'package:ogs/widgets/horizontalscrolltile.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:ogs/widgets/myevents.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ogs/pages/fnu_restaurants.dart';
 import 'package:ogs/pages/fnu_hotel.dart';
 import 'package:ogs/pages/fnu_hospitals.dart';
@@ -23,6 +23,7 @@ import 'package:ogs/pages/points_page.dart';
 import 'package:ogs/pages/bus_position_new.dart';
 import 'package:ogs/pages/events_view_all.dart';
 import 'package:ogs/pages/ads_view_all.dart';
+import 'package:ogs/pages/search.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -70,9 +71,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  String getFirstName(DocumentSnapshot<Map<String, dynamic>>? docSnapshot, User? user) {
+  String getFirstName(
+      DocumentSnapshot<Map<String, dynamic>>? docSnapshot, User? user) {
     Map<String, dynamic>? userData = docSnapshot?.data();
-    
+
     if (userData != null && userData['name'] != null) {
       // If user data exists in database, use it
       return userData['name'].split(" ")[0];
@@ -88,9 +90,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Widget getProfileImage(DocumentSnapshot<Map<String, dynamic>>? docSnapshot, User? user) {
+  Widget getProfileImage(
+      DocumentSnapshot<Map<String, dynamic>>? docSnapshot, User? user) {
     Map<String, dynamic>? userData = docSnapshot?.data();
-    
+
     if (userData != null && userData['profileImage'] != null) {
       // If user has profile image in database
       return CircleAvatar(
@@ -124,7 +127,7 @@ class _HomePageState extends State<HomePage> {
     if (query.isNotEmpty) {
       PersistentNavBarNavigator.pushNewScreen(
         context,
-        screen: SearchPage(searchQuery: query),
+        screen: UnifiedSearchPage(searchQuery: query),
         withNavBar: false,
         pageTransitionAnimation: PageTransitionAnimation.cupertino,
       );
@@ -192,7 +195,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 }
-                
+
                 var docSnapshot = snapshot.data;
                 return getProfileImage(docSnapshot, currentUser);
               },
@@ -214,7 +217,7 @@ class _HomePageState extends State<HomePage> {
 
                   var docSnapshot = snapshot.data;
                   String firstName = getFirstName(docSnapshot, currentUser);
-                  
+
                   return Text(
                     "Hello, $firstName!",
                     maxLines: 1,
@@ -303,19 +306,34 @@ class _HomePageState extends State<HomePage> {
                         onSubmitted: (value) => _performSearch(),
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 15, vertical: 12),
                           hintText: "Explore Events and more....",
                           hintStyle: GoogleFonts.outfit(
                             color: Colors.grey[600],
                             fontSize: 14,
                           ),
-                          suffixIcon: GestureDetector(
-                            onTap: _performSearch,
-                            child: const Icon(
-                              CupertinoIcons.search,
-                              color: yel,
-                              size: 20,
-                            ),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_searchController.text.isNotEmpty)
+                                IconButton(
+                                  icon: const Icon(
+                                      CupertinoIcons.xmark_circle_fill,
+                                      color: Colors.grey),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {});
+                                  },
+                                ),
+                              IconButton(
+                                icon: const Icon(
+                                  CupertinoIcons.search,
+                                  color: yel,
+                                ),
+                                onPressed: _performSearch,
+                              ),
+                            ],
                           ),
                         ),
                         style: GoogleFonts.outfit(
@@ -347,38 +365,37 @@ class _HomePageState extends State<HomePage> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(11),
-                        child:
-          GestureDetector(
-            onTap: () {
-              PersistentNavBarNavigator.pushNewScreen(
-                context,
-                screen: const NotificationPage(),
-                withNavBar: false,
-                pageTransitionAnimation: PageTransitionAnimation.cupertino,
-              );
-            },
-            child: Container(
-              width: 45,
-              height: 45,
-              decoration: const ShapeDecoration(
-                color: Color(0xFFFFCC00),
-                shape: CircleBorder(),
-                shadows: [
-                  BoxShadow(
-                    color: Color(0xFFFFCC00),
-                    blurRadius: 0,
-                    offset: Offset(0, 4),
-                    spreadRadius: 0,
-                  )
-                ],
-              ),
-              child: const Icon(
-                CupertinoIcons.bell,
-                size: 20,
-              ),
-            ),
-          ),
-          
+                        child: GestureDetector(
+                          onTap: () {
+                            PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: const NotificationPage(),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.cupertino,
+                            );
+                          },
+                          child: Container(
+                            width: 45,
+                            height: 45,
+                            decoration: const ShapeDecoration(
+                              color: Color(0xFFFFCC00),
+                              shape: CircleBorder(),
+                              shadows: [
+                                BoxShadow(
+                                  color: Color(0xFFFFCC00),
+                                  blurRadius: 0,
+                                  offset: Offset(0, 4),
+                                  spreadRadius: 0,
+                                )
+                              ],
+                            ),
+                            child: const Icon(
+                              CupertinoIcons.bell,
+                              size: 20,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -432,17 +449,18 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     buildFacilityIcon(
-                            iconPath: 'lib/assets/icons/movies.png', 
-                            label1: "Movies",
-                            onTap: () {
-                              PersistentNavBarNavigator.pushNewScreen(
-                                context,
-                                screen: const MoviesPage(),
-                                withNavBar: false,
-                                pageTransitionAnimation: PageTransitionAnimation.cupertino,
-                              );
-                            },
-                          ),
+                      iconPath: 'lib/assets/icons/movies.png',
+                      label1: "Movies",
+                      onTap: () {
+                        PersistentNavBarNavigator.pushNewScreen(
+                          context,
+                          screen: const MoviesPage(),
+                          withNavBar: false,
+                          pageTransitionAnimation:
+                              PageTransitionAnimation.cupertino,
+                        );
+                      },
+                    ),
                     buildFacilityIcon(
                       iconPath: 'lib/assets/icons/res.png',
                       label1: "Restaurants",
@@ -451,7 +469,8 @@ class _HomePageState extends State<HomePage> {
                           context,
                           screen: const RestaurantsPage(),
                           withNavBar: false,
-                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
+                          pageTransitionAnimation:
+                              PageTransitionAnimation.cupertino,
                         );
                       },
                     ),
@@ -463,7 +482,8 @@ class _HomePageState extends State<HomePage> {
                           context,
                           screen: const HotelPage(),
                           withNavBar: false,
-                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
+                          pageTransitionAnimation:
+                              PageTransitionAnimation.cupertino,
                         );
                       },
                     ),
@@ -475,7 +495,8 @@ class _HomePageState extends State<HomePage> {
                           context,
                           screen: const HospitalPage(),
                           withNavBar: false,
-                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
+                          pageTransitionAnimation:
+                              PageTransitionAnimation.cupertino,
                         );
                       },
                     ),
@@ -491,22 +512,26 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           buildFacilityIcon(
-                      iconPath: 'lib/assets/icons/petrol.png',
-                      label1: "Petrol",
-                      label2: "Pumps",
-                      onTap: () {
-                        PersistentNavBarNavigator.pushNewScreen(
-                          context,
-                          screen: const PetrolPage(),
-                          withNavBar: false,
-                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
-                        );
-                      },
-                    ),
+                            iconPath: 'lib/assets/icons/petrol.png',
+                            label1: "Petrol",
+                            label2: "Pumps",
+                            onTap: () {
+                              PersistentNavBarNavigator.pushNewScreen(
+                                context,
+                                screen: const PetrolPage(),
+                                withNavBar: false,
+                                pageTransitionAnimation:
+                                    PageTransitionAnimation.cupertino,
+                              );
+                            },
+                          ),
                           // Add more facilities here if needed
-                          const SizedBox(width: 40), // Placeholder to maintain spacing
-                          const SizedBox(width: 40), // Placeholder to maintain spacing
-                          const SizedBox(width: 40), // Placeholder to maintain spacing
+                          const SizedBox(
+                              width: 40), // Placeholder to maintain spacing
+                          const SizedBox(
+                              width: 40), // Placeholder to maintain spacing
+                          const SizedBox(
+                              width: 40), // Placeholder to maintain spacing
                         ],
                       ),
                     ],
@@ -514,7 +539,7 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 25,
                 ),
-                 Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(
                       horizontal: MediaQuery.of(context).size.width / 25),
                   child: Row(
@@ -532,16 +557,17 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const Spacer(),
                       GestureDetector(
-                         onTap: () {
-                        PersistentNavBarNavigator.pushNewScreen(
-                          context,
-                          screen: const EventsViewAll(),
-                          withNavBar: false,
-                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
-                        );
-                      },
+                        onTap: () {
+                          PersistentNavBarNavigator.pushNewScreen(
+                            context,
+                            screen: const EventsViewAll(),
+                            withNavBar: false,
+                            pageTransitionAnimation:
+                                PageTransitionAnimation.cupertino,
+                          );
+                        },
                         child: Text(
-                         'View All',
+                          'View All',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.outfit(
                             color: const Color.fromARGB(255, 77, 172, 255),
@@ -575,21 +601,21 @@ class _HomePageState extends State<HomePage> {
                           fontWeight: FontWeight.bold,
                           height: 0.06,
                           letterSpacing: 0.50,
-                          
                         ),
                       ),
                       const Spacer(),
-                    GestureDetector(
-                         onTap: () {
-                        PersistentNavBarNavigator.pushNewScreen(
-                          context,
-                          screen: const AdsViewAll(),
-                          withNavBar: false,
-                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
-                        );
-                      },
+                      GestureDetector(
+                        onTap: () {
+                          PersistentNavBarNavigator.pushNewScreen(
+                            context,
+                            screen: const AdsViewAll(),
+                            withNavBar: false,
+                            pageTransitionAnimation:
+                                PageTransitionAnimation.cupertino,
+                          );
+                        },
                         child: Text(
-                         'View All',
+                          'View All',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.outfit(
                             color: const Color.fromARGB(255, 77, 172, 255),

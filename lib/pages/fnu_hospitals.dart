@@ -15,6 +15,7 @@ import 'package:line_icons/line_icons.dart';
 import 'package:ogs/models/hospital_model.dart';
 import 'package:ogs/pages/fnu_view_all.dart';
 import 'package:url_launcher/url_launcher.dart'; 
+import 'package:ogs/pages/search.dart';
 
 
 class HospitalPage extends StatefulWidget {
@@ -60,7 +61,7 @@ class _HospitalPageState extends State<HospitalPage> {
     if (query.isNotEmpty) {
       PersistentNavBarNavigator.pushNewScreen(
         context,
-        screen: HospitalSearchPage(searchQuery: query),
+        screen: UnifiedSearchPage(searchQuery: query),
         withNavBar: false,
         pageTransitionAnimation: PageTransitionAnimation.cupertino,
       );
