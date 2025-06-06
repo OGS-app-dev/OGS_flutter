@@ -19,6 +19,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:ogs/pages/settings.dart';
 
 
 class AppUser {
@@ -300,6 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final String studentStatus = _appUser?.studentStatus ?? '';
     final String authProvider = _appUser?.authProvider ?? 'email';
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       body: 
       _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -447,6 +449,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               const  SizedBox(height: 30),
+              Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 35.0),
+            child: Column(
+              children: [
                 _buildMenuItem(
                   Icons.info_outline, 
                   'About us',
@@ -455,7 +461,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildMenuItem(
                   Icons.settings, 
                   'Settings',
-                  onTap: () => _navigateToPage(const ComingSoon()), 
+                  onTap: () => _navigateToPage( SettingsScreen()), 
                 ),
                 _buildMenuItem(
                   Icons.feedback, 
@@ -471,7 +477,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Icons.logout, 
                   'Log out',
                   onTap: () => _handleLogout(),
-                ),
+                ),]))
               ],
             ),
           ),
@@ -494,29 +500,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildMenuItem(IconData icon, String text, {required VoidCallback onTap}) {
     return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: onTap, 
-            child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Row(
+          children: [
+            Container(
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 234, 235, 235), 
-                border: Border.all(
-                  color: const Color.fromARGB(255, 235, 235, 235), 
-                  width: 2, 
-                ),
+                color: const Color.fromARGB(255, 240, 240, 240), 
                 borderRadius: BorderRadius.circular(8.0), 
               ),
               child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 29),
-              )
+                padding: const EdgeInsets.all(12.0),
+                child: Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 24),
+              ),
             ),
-          ),
-        const  SizedBox(width: 15),
-          Text(text, style: const TextStyle(fontSize: 20)),
-        ],
+            const SizedBox(width: 20),
+            Expanded(
+              child: Text(
+                text, 
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
