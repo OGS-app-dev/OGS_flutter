@@ -6,7 +6,7 @@ import 'package:ogs/pages/comingsoon.dart';
 // import 'package:ogs/pages/settings.dart';
 // import 'package:ogs/pages/feedback.dart';
 // import 'package:ogs/pages/report.dart';
-import 'package:ogs/pages/points_page.dart';
+import 'package:ogs/pages/s_points_page.dart';
 import 'package:intl/intl.dart';
 import 'student_or_staff_login.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,7 +19,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:ogs/pages/settings.dart';
+import 'package:ogs/pages/s_settings.dart';
+import 'package:ogs/pages/s_feedback.dart';
 
 
 class AppUser {
@@ -358,7 +359,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     gradient:const LinearGradient(
-                      colors: [Color(0xFFFFE57D), Color(0xFFFFCC00)],
+                      colors: [Color(0xFFFFE57D), Color(0xFFFFDA45)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -466,7 +467,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildMenuItem(
                   Icons.feedback, 
                   'Send Feedback',
-                  onTap: () => _navigateToPage(const ComingSoon()),
+                  onTap: () => _navigateToPage(const FeedbackScreen()),
                 ),
                 _buildMenuItem(
                   Icons.report, 
@@ -535,7 +536,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     PersistentNavBarNavigator.pushNewScreen(
       context,
       screen: page,
-      withNavBar: false,
+      withNavBar: true,
       pageTransitionAnimation: PageTransitionAnimation.cupertino,
     );
   }
@@ -607,7 +608,7 @@ class CurvePainter extends CustomPainter {
     canvas.drawPath(pathBlue, paintBlue);
 
     // --- Yellow Path (Top Section) ---
-    var paintYellow = Paint()..color = Colors.yellow.shade700;
+    var paintYellow = Paint()..color =Color(0xFFFFDA45);
     var pathYellow = Path();
 
     pathYellow.moveTo(0, 0.2);

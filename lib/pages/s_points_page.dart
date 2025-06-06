@@ -18,21 +18,22 @@ class PointsScreen extends StatelessWidget {
             left: 20,
             child: Row(
               children: [
-                Container(decoration: BoxDecoration(
-                  color:const Color.fromARGB(255, 232, 232, 167) ,
-                  border: Border.all(
-                    color: const Color.fromARGB(255, 227, 223, 152),
-                    width: 2.0,        
-                  ),
-                  borderRadius: BorderRadius.circular(8.0), 
-                ),
-                  child: IconButton(
-                    icon:const  Icon(Icons.arrow_back, color:  Color.fromARGB(255, 0, 0, 0)),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
+                Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.yellow, Colors.white], 
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 0, 0, 0), size: 20), 
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
                 const SizedBox(width: 10),
                 const Text(
                   'Points',
@@ -74,7 +75,7 @@ class CurvePainter extends CustomPainter {
     pathBlue.close();
     canvas.drawPath(pathBlue, paintBlue);
 
-    var paintYellow = Paint()..color = Colors.yellow.shade700;
+    var paintYellow = Paint()..color = Color(0xFFFFDA45);
     var pathYellow = Path();
 
     pathYellow.moveTo(0, 0.2);

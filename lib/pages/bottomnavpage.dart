@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 //import 'package:ogs/pages/bus_position_new.dart';
 import 'package:ogs/pages/profile_page_new_2.dart';
-import 'package:ogs/pages/points_page.dart';
+import 'package:ogs/pages/s_points_page.dart';
 import 'package:ogs/pages/map_page.dart';
 import 'package:ogs/pages/bus.dart';
 

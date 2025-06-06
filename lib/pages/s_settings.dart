@@ -9,9 +9,10 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+    final  TextEditingController _searchController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    TextEditingController _searchController = TextEditingController();
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 255, 255, 255),
       body: Column(
@@ -20,21 +21,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               CustomPaint(
                 painter: CurvePainter(),
-                child: Container(height: 200),
+                child: Container(height: 180),
               ),
               Positioned(
                 top: 70,
                 left: 20,
                 child: Row(
                   children: [
-                    // Simple back arrow without container background
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    const SizedBox(width: 5),
+                   Container(
+        decoration: BoxDecoration(
+          gradient:const LinearGradient(
+            colors: [Colors.yellow, Colors.white], 
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 0, 0, 0), size: 20), 
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+                    const SizedBox(width: 10),
                     const Text(
                       'Settings',
                       style: TextStyle(
@@ -167,7 +177,7 @@ class CurvePainter extends CustomPainter {
     pathBlue.close();
     canvas.drawPath(pathBlue, paintBlue);
 
-    var paintYellow = Paint()..color = Colors.yellow.shade700;
+    var paintYellow = Paint()..color =const Color(0xFFFFDA45);
     var pathYellow = Path();
 
     pathYellow.moveTo(0, 0.2);
