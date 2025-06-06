@@ -21,6 +21,7 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:ogs/pages/s_settings.dart';
 import 'package:ogs/pages/s_feedback.dart';
+import 'package:ogs/pages/s_about_us.dart';
 
 
 class AppUser {
@@ -457,7 +458,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildMenuItem(
                   Icons.info_outline, 
                   'About us',
-                  onTap: () => _navigateToPage(const ComingSoon()),
+                  onTap: () => _navigateToPage(const AboutUsScreen()),
                 ),
                 _buildMenuItem(
                   Icons.settings, 

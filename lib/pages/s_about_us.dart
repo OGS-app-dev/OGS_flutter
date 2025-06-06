@@ -53,16 +53,43 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
               ),
             ],
           ),
-         const Text('About us',style:  TextStyle(fontWeight: FontWeight.bold,fontSize: 35),),
+          // Left-aligned "About us" title
+          const SizedBox(height: 25,),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 25),
+              child: Text(
+                'About us',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+              ),
+            ),
+          ),
           const SizedBox(height: 15,),
-          const Text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.'),
-          const Text('Team OGS',style: TextStyle(fontWeight: FontWeight.w500),textAlign: TextAlign.right,)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 25),
+            child: Text(
+              'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+            ),
+          ),
+          // Right-aligned team signature
+                    const SizedBox(height: 15,),
+
+          const Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 25),
+              child: Text(
+                '- Team OGS',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+          )
         ],
       ),
     );
   }
 }
-
 
 class CurvePainter extends CustomPainter {
   @override
