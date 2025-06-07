@@ -314,7 +314,7 @@ class _BusTrackPageState extends State<BusTrackPage> with SingleTickerProviderSt
                             onTap: () {
                               PersistentNavBarNavigator.pushNewScreen(
                                 context,
-                                screen: const NotificationPage(),
+                                screen:  NotificationPage(),
                                 withNavBar: false,
                                 pageTransitionAnimation:
                                     PageTransitionAnimation.cupertino,

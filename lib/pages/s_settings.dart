@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:ogs/pages/comingsoon.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:ogs/pages/s_help_support.dart';
+import 'package:ogs/pages/s_privacy_policy.dart';
+import 'package:ogs/pages/notificationpage.dart';
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -93,12 +95,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildMenuItem(
                   Icons.notifications, 
                   'Notifications',
-                  onTap: () => _navigateToPage(const ComingSoon()), 
+                  onTap: () => _navigateToPage( NotificationPage()), 
                 ),
                 _buildMenuItem(
                   Icons.lock, 
                   'Privacy and Security',
-                  onTap: () => _navigateToPage(const ComingSoon()),
+                  onTap: () => _navigateToPage(const PrivacyPolicyScreen()),
                 ),
                 _buildMenuItem(
                   Icons.headset_mic, 

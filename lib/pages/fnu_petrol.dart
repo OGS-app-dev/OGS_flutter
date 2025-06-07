@@ -191,7 +191,7 @@ void _performSearch() {
             onTap: () {
               PersistentNavBarNavigator.pushNewScreen(
                 context,
-                screen: const NotificationPage(),
+                screen:  NotificationPage(),
                 withNavBar: false,
                 pageTransitionAnimation: PageTransitionAnimation.cupertino,
               );

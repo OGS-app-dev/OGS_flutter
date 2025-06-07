@@ -194,7 +194,7 @@ class _HospitalPageState extends State<HospitalPage> {
             onTap: () {
               PersistentNavBarNavigator.pushNewScreen(
                 context,
-                screen: const NotificationPage(),
+                screen:  NotificationPage(),
                 withNavBar: false,
                 pageTransitionAnimation: PageTransitionAnimation.cupertino,
               );
