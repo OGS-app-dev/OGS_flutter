@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ogs/constants.dart';
 import 'dart:math' as math; 
 import 'package:ogs/pages/comingsoon.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:ogs/pages/s_help_support.dart';
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -48,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const Text(
                       'Settings',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 23,
                         fontWeight: FontWeight.bold,
                         color: Color.fromARGB(255, 0, 0, 0),
                       ),
@@ -101,7 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildMenuItem(
                   Icons.headset_mic, 
                   'Help and Support',
-                  onTap: () => _navigateToPage(const ComingSoon()), 
+                  onTap: () => _navigateToPage(const HelpSupportScreen()), 
                 ),
                 _buildMenuItem(
                   Icons.info_outline, 
@@ -158,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     PersistentNavBarNavigator.pushNewScreen(
       context,
       screen: page,
-      withNavBar: false,
+      withNavBar: true,
       pageTransitionAnimation: PageTransitionAnimation.cupertino,
     );
   }
@@ -167,7 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 class CurvePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    var paintBlue = Paint()..color = Colors.indigo.shade900;
+    var paintBlue = Paint()..color =pricol;
     var pathBlue = Path();
 
     pathBlue.moveTo(0, size.height * 0.7); 

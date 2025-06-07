@@ -470,11 +470,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'Send Feedback',
                   onTap: () => _navigateToPage(const FeedbackScreen()),
                 ),
-                _buildMenuItem(
-                  Icons.report, 
-                  'Report',
-                  onTap: () => _navigateToPage(const ComingSoon()), 
-                ),
+                // _buildMenuItem(
+                //   Icons.report, 
+                //   'Report',
+                //   onTap: () => _navigateToPage(const ComingSoon()), 
+                // ),
                 _buildMenuItem(
                   Icons.logout, 
                   'Log out',
