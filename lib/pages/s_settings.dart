@@ -13,10 +13,84 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-    final  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  // Define all menu items
+  final List<MenuItem> _allMenuItems = [
+    MenuItem(
+      icon: Icons.person,
+      title: 'Account',
+      keywords: ['account', 'profile', 'user', 'personal'],
+    ),
+    MenuItem(
+      icon: Icons.notifications,
+      title: 'Notifications',
+      keywords: ['notifications', 'alerts', 'sounds', 'push'],
+    ),
+    MenuItem(
+      icon: Icons.lock,
+      title: 'Privacy and Security',
+      keywords: ['privacy', 'security', 'password', 'lock', 'protection'],
+    ),
+    MenuItem(
+      icon: Icons.headset_mic,
+      title: 'Help and Support',
+      keywords: ['help', 'support', 'contact', 'assistance', 'faq'],
+    ),
+    MenuItem(
+      icon: Icons.info_outline,
+      title: 'About',
+      keywords: ['about', 'info', 'version', 'app info'],
+    ),
+    MenuItem(
+      icon: Icons.person_add,
+      title: 'Invite your Friends',
+      keywords: ['invite', 'friends', 'share', 'referral'],
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text.toLowerCase();
+    });
+  }
+
+  List<MenuItem> get _filteredMenuItems {
+    if (_searchQuery.isEmpty) {
+      return _allMenuItems;
+    }
+    
+    return _allMenuItems.where((item) {
+      // Search in title
+      if (item.title.toLowerCase().contains(_searchQuery)) {
+        return true;
+      }
+      
+      // Search in keywords
+      return item.keywords.any((keyword) => 
+        keyword.toLowerCase().contains(_searchQuery)
+      );
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final filteredItems = _filteredMenuItems;
+    
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 255, 255, 255),
       body: Column(
@@ -69,8 +143,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search now',
+                hintText: 'Search settings...',
                 prefixIcon: Icon(Icons.search, color: Colors.grey),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(Icons.clear, color: Colors.grey),
+                        onPressed: () {
+                          _searchController.clear();
+                        },
+                      )
+                    : null,
                 filled: true,
                 fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(
@@ -83,41 +165,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 20),
           // Menu items with proper padding from left
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 35.0),
-            child: Column(
-              children: [
-                _buildMenuItem(
-                  Icons.person, 
-                  'Account',
-                  onTap: () => _navigateToPage(const ComingSoon()),
-                ),
-                _buildMenuItem(
-                  Icons.notifications, 
-                  'Notifications',
-                  onTap: () => _navigateToPage( NotificationPage()), 
-                ),
-                _buildMenuItem(
-                  Icons.lock, 
-                  'Privacy and Security',
-                  onTap: () => _navigateToPage(const PrivacyPolicyScreen()),
-                ),
-                _buildMenuItem(
-                  Icons.headset_mic, 
-                  'Help and Support',
-                  onTap: () => _navigateToPage(const HelpSupportScreen()), 
-                ),
-                _buildMenuItem(
-                  Icons.info_outline, 
-                  'About',
-                  onTap: () => _navigateToPage(const ComingSoon()),
-                ),
-                _buildMenuItem(
-                  Icons.person_add, 
-                  'Invite your Friends',
-                  onTap: () => _navigateToPage(const ComingSoon()),
-                ),
-              ],
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 35.0),
+              child: filteredItems.isEmpty
+                  ? _buildNoResultsWidget()
+                  : ListView.builder(
+                      itemCount: filteredItems.length,
+                      itemBuilder: (context, index) {
+                        final item = filteredItems[index];
+                        return _buildMenuItem(
+                          item.icon,
+                          item.title,
+                          onTap: () => _navigateToPage(_getPageForMenuItem(item.title)),
+                        );
+                      },
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoResultsWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off,
+            size: 64,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No settings found',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Try searching with different keywords',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade500,
             ),
           ),
         ],
@@ -130,32 +225,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: GestureDetector(
         onTap: onTap,
-        child: Row(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 240, 240, 240), 
-                borderRadius: BorderRadius.circular(8.0), 
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 24),
-              ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Text(
-                text, 
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8.0),
+            color: Colors.transparent,
+          ),
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 240, 240, 240), 
+                  borderRadius: BorderRadius.circular(8.0), 
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 24),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 20),
+              Expanded(
+                child: Text(
+                  text, 
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              // Icon(
+              //   Icons.arrow_forward_ios,
+              //   size: 16,
+              //   color: Colors.grey.shade400,
+              // ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _getPageForMenuItem(String title) {
+    switch (title) {
+      case 'Notifications':
+        return NotificationPage();
+      case 'Privacy and Security':
+        return const PrivacyPolicyScreen();
+      case 'Help and Support':
+        return const HelpSupportScreen();
+      default:
+        return const ComingSoon();
+    }
   }
 
   void _navigateToPage(Widget page) {
@@ -166,6 +285,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       pageTransitionAnimation: PageTransitionAnimation.cupertino,
     );
   }
+}
+
+class MenuItem {
+  final IconData icon;
+  final String title;
+  final List<String> keywords;
+
+  MenuItem({
+    required this.icon,
+    required this.title,
+    required this.keywords,
+  });
 }
 
 class CurvePainter extends CustomPainter {

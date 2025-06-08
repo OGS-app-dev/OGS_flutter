@@ -119,7 +119,97 @@ void _performSearch() {
       );
     }
   }
+Widget _buildNotificationButton() {
+  return StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('notifications')
+        .where('isRead', isEqualTo: false)
+        .snapshots(),
+    builder: (context, snapshot) {
+      bool hasUnread = false;
+      
+      if (snapshot.hasData && snapshot.data != null) {
+        hasUnread = snapshot.data!.docs.isNotEmpty;
+      }
 
+      return Container(
+        width: 44.53,
+        height: 42.68,
+        decoration: ShapeDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment(0.52, -0.85),
+            end: Alignment(-0.52, 0.85),
+            colors: [Color(0xFFFFCC00), Color(0xFFFFCC00)],
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(360),
+          ),
+          shadows: const [
+            BoxShadow(
+              color: Color(0xFFFFCC00),
+              blurRadius: 22,
+              offset: Offset(-4, 5),
+              spreadRadius: 0,
+            )
+          ],
+        ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(11),
+              child: GestureDetector(
+                onTap: () {
+                  PersistentNavBarNavigator.pushNewScreen(
+                    context,
+                    screen: NotificationPage(),
+                    withNavBar: false,
+                    pageTransitionAnimation:
+                        PageTransitionAnimation.cupertino,
+                  );
+                },
+                child: Container(
+                  width: 45,
+                  height: 45,
+                  decoration: const ShapeDecoration(
+                    color: Color(0xFFFFCC00),
+                    shape: CircleBorder(),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0xFFFFCC00),
+                        blurRadius: 0,
+                        offset: Offset(0, 4),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: const Icon(
+                    CupertinoIcons.bell,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+            // Simple red dot for unread notifications
+            if (hasUnread)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    },
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -316,35 +406,7 @@ void _performSearch() {
                         ),
                       ),
                     ),
-                    Container(
-                      width: 44.53,
-                      height: 42.68,
-                      decoration: ShapeDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment(0.52, -0.85),
-                          end: Alignment(-0.52, 0.85),
-                          colors: [Color(0xFFFFCC00), Color(0xFFFFE47C)],
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        shadows: const [
-                          BoxShadow(
-                            color: Color(0xAAFFE47C),
-                            blurRadius: 13,
-                            offset: Offset(-4, 5),
-                            spreadRadius: 0,
-                          )
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(11),
-                        child: Image.asset(
-                          'lib/assets/icons/filter.png',
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                   _buildNotificationButton()
                   ],
                 ),
                 const SizedBox(
