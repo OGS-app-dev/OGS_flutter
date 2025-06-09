@@ -47,7 +47,15 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                         },
                       ),
                     ),
-                    
+                     const SizedBox(width: 13),
+                    const Text(
+                      'OGS',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                      ),
+                    ),
                   ],
                 ),
               ),

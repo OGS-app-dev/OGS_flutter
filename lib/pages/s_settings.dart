@@ -6,6 +6,8 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:ogs/pages/s_help_support.dart';
 import 'package:ogs/pages/s_privacy_policy.dart';
 import 'package:ogs/pages/notificationpage.dart';
+import 'package:ogs/pages/s_about_us.dart';
+
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -43,11 +45,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: 'About',
       keywords: ['about', 'info', 'version', 'app info'],
     ),
-    MenuItem(
-      icon: Icons.person_add,
-      title: 'Invite your Friends',
-      keywords: ['invite', 'friends', 'share', 'referral'],
-    ),
+    // MenuItem(
+    //   icon: Icons.person_add,
+    //   title: 'Invite your Friends',
+    //   keywords: ['invite', 'friends', 'share', 'referral'],
+    // ),
   ];
 
   @override
@@ -143,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search settings...',
+                hintText: 'Search Now...',
                 prefixIcon: Icon(Icons.search, color: Colors.grey),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -272,6 +274,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return const PrivacyPolicyScreen();
       case 'Help and Support':
         return const HelpSupportScreen();
+      case 'About':
+        return const AboutUsScreen();
       default:
         return const ComingSoon();
     }

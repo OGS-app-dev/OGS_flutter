@@ -22,7 +22,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:ogs/pages/s_settings.dart';
 import 'package:ogs/pages/s_feedback.dart';
 import 'package:ogs/pages/s_about_us.dart';
-
+import 'package:ogs/pages/s_vouchers.dart';
 
 class AppUser {
   final String uid;
@@ -446,7 +446,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context,
               MaterialPageRoute(builder: (context) =>  PointsScreen()),
             )),
-                    _buildFeatureItem(Icons.card_giftcard, 'Voucher',onTap: () => _navigateToPage(const ComingSoon())),
+                    _buildFeatureItem(Icons.card_giftcard, 'Voucher',onTap: () => _navigateToPage(const VouchersScreen())),
                     _buildFeatureItem(Icons.star, 'Rating',onTap: () => _navigateToPage(const ComingSoon())),
                   ],
                 ),
