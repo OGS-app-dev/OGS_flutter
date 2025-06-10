@@ -7,6 +7,9 @@ import 'package:ogs/pages/s_help_support.dart';
 import 'package:ogs/pages/s_privacy_policy.dart';
 import 'package:ogs/pages/notificationpage.dart';
 import 'package:ogs/pages/s_about_us.dart';
+import 'package:ogs/pages/s_privacy_settings.dart';
+
+
 
 
 class SettingsScreen extends StatefulWidget {
@@ -39,6 +42,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       icon: Icons.headset_mic,
       title: 'Help and Support',
       keywords: ['help', 'support', 'contact', 'assistance', 'faq'],
+    ),
+    MenuItem(
+      icon: Icons.lock,
+      title: 'Privacy Policy',
+      keywords: ['privacy', 'Policy', 'password', 'lock', 'protection'],
     ),
     MenuItem(
       icon: Icons.info_outline,
@@ -271,9 +279,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case 'Notifications':
         return NotificationPage();
       case 'Privacy and Security':
-        return const PrivacyPolicyScreen();
+        return const PrivacySettingsScreen();
       case 'Help and Support':
         return const HelpSupportScreen();
+      case 'Privacy Policy':
+        return const PrivacyPolicyScreen();
       case 'About':
         return const AboutUsScreen();
       default:
