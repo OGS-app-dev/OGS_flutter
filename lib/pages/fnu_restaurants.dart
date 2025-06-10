@@ -279,41 +279,7 @@ void _performSearch() {
             ),
           ],
         ),
-        actions: [
-          GestureDetector(
-            onTap: () {
-              PersistentNavBarNavigator.pushNewScreen(
-                context,
-                screen:  NotificationPage(),
-                withNavBar: false,
-                pageTransitionAnimation: PageTransitionAnimation.cupertino,
-              );
-            },
-            child: Container(
-              width: 45,
-              height: 45,
-              decoration: const ShapeDecoration(
-                color: Color(0xFFF5F5F5),
-                shape: OvalBorder(),
-                shadows: [
-                  BoxShadow(
-                    color: Color(0xFFFFE47C),
-                    blurRadius: 6,
-                    offset: Offset(0, 4),
-                    spreadRadius: 0,
-                  )
-                ],
-              ),
-              child: const Icon(
-                CupertinoIcons.bell,
-                size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(
-            width: 30,
-          )
-        ],
+      
       ),
       body: SingleChildScrollView( 
         child: Column(
