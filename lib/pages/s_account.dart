@@ -137,8 +137,8 @@ class _AccountScreenState extends State<AccountScreen> {
   AppUser? _appUser;
   bool _isLoading = true;
   String? _errorMessage;
-  String _selectedMenuItem = 'Profile'; // Track selected menu item
-  String? _hoveredMenuItem; // Track hovered menu item
+  String? _selectedMenuItem; // Track selected menu item - now null by default
+  String? _hoveredMenuItem; // Track hovered menu item - now properly initialized as null
 
   @override
   void initState() {
@@ -234,7 +234,7 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
-  void _updateSelectedMenuItem(String menuItem) {
+  void _updateSelectedMenuItem(String? menuItem) {
     setState(() {
       _selectedMenuItem = menuItem;
     });
@@ -296,6 +296,7 @@ class _AccountScreenState extends State<AccountScreen> {
           SingleChildScrollView(
             child: Column(
               children: [
+                const SizedBox(height: 20,),
                 Container(
                   width: double.infinity,
                   height: 120,
@@ -386,50 +387,45 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icons.home_outlined,
                         title: 'Home',
                         onTap: () {
-                          _updateSelectedMenuItem('Home');
                           _navigateToPage(const HomePage());
                         },
-                        isSelected: _selectedMenuItem == 'Home',
+                        isSelected: false, // No default selection
                         isHovered: _hoveredMenuItem == 'Home',
                       ),
                       _buildMenuItem(
                         icon: Icons.location_on_outlined,
                         title: 'Campus tracking',
                         onTap: () {
-                          _updateSelectedMenuItem('Campus tracking');
                           _navigateToPage(const CollegeMapScreen());
                         },
-                        isSelected: _selectedMenuItem == 'Campus tracking',
+                        isSelected: false, // No default selection
                         isHovered: _hoveredMenuItem == 'Campus tracking',
                       ),
                       _buildMenuItem(
                         icon: Icons.directions_bus_outlined,
                         title: 'Bus tracking',
                         onTap: () {
-                          _updateSelectedMenuItem('Bus tracking');
                           _navigateToPage(const BusTrackPage());
                         },
-                        isSelected: _selectedMenuItem == 'Bus tracking',
+                        isSelected: false, // No default selection
                         isHovered: _hoveredMenuItem == 'Bus tracking',
                       ),
                       _buildMenuItem(
                         icon: Icons.notifications_none_rounded,
                         title: 'Notifications',
                         onTap: () {
-                          _updateSelectedMenuItem('Notifications');
                           _navigateToPage(NotificationPage());
                         },
-                        isSelected: _selectedMenuItem == 'Notifications',
+                        isSelected: false, // No default selection
                         isHovered: _hoveredMenuItem == 'Notifications',
                       ),
                       _buildMenuItem(
                         icon: Icons.person_outline,
                         title: 'Profile',
                         onTap: () {
-                          _updateSelectedMenuItem('Profile');
                           _navigateToPage(const ProfileScreen());
                         },
-                        isSelected: _selectedMenuItem == 'Profile',
+                        isSelected: false, // No default selection
                         isHovered: _hoveredMenuItem == 'Profile',
                       ),
                       const SizedBox(height: 140),
@@ -442,10 +438,9 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icons.settings_rounded,
                         title: 'Settings',
                         onTap: () {
-                          _updateSelectedMenuItem('Settings');
                           _navigateToPage(SettingsScreen());
                         },
-                        isSelected: _selectedMenuItem == 'Settings',
+                        isSelected: false, // No default selection
                         isHovered: _hoveredMenuItem == 'Settings',
                       ),
                       const SizedBox(height: 10),
@@ -469,68 +464,68 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget _buildMenuItem({
-  required IconData icon,
-  required String title,
-  required VoidCallback onTap,
-  bool isSelected = false,
-  bool isHovered = false,
-}) {
-  bool showHighlight = isSelected || isHovered;
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool isSelected = false,
+    bool isHovered = false,
+  }) {
+    bool showHighlight = isSelected || isHovered;
 
-  return MouseRegion(
-    onEnter: (_) => _updateHoveredMenuItem(title),
-    onExit: (_) => _updateHoveredMenuItem(null),
-    child: GestureDetector(
-      onTapDown: (_) => _updateHoveredMenuItem(title),  // 👈 Touch down (mobile)
-      onTapUp: (_) => _updateHoveredMenuItem(null),
-      onTapCancel: () => _updateHoveredMenuItem(null),
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: showHighlight
-              ? const Color.fromARGB(255, 0, 0, 0)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: showHighlight
-              ? Border.all(color: Colors.black, width: 2)
-              : null,
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: Colors.black,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: showHighlight
-                      ? Colors.white
-                      : Colors.black,
+    return MouseRegion(
+      onEnter: (_) => _updateHoveredMenuItem(title),
+      onExit: (_) => _updateHoveredMenuItem(null),
+      child: GestureDetector(
+        onTapDown: (_) => _updateHoveredMenuItem(title),  // Touch down (mobile)
+        onTapUp: (_) => _updateHoveredMenuItem(null),     // Touch up - reset to null
+        onTapCancel: () => _updateHoveredMenuItem(null),  // Touch cancelled - reset to null
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: showHighlight
+                ? const Color.fromARGB(255, 0, 0, 0)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: showHighlight
+                ? Border.all(color: Colors.black, width: 2)
+                : null,
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.black,
+                  size: 24,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: showHighlight
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void _navigateToPage(Widget page) {
     PersistentNavBarNavigator.pushNewScreen(
@@ -540,7 +535,6 @@ class _AccountScreenState extends State<AccountScreen> {
       pageTransitionAnimation: PageTransitionAnimation.cupertino,
     );
   }
-
 
   void _handleLogout() {
     showDialog(

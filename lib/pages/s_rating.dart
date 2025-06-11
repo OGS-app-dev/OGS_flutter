@@ -378,7 +378,7 @@ class _RatingScreenState extends State<RatingScreen> {
                             'Submit',
                             style: TextStyle(
                               fontSize: 18,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
                               color: Colors.black87,
                             ),
                           ),
@@ -403,7 +403,7 @@ class _RatingScreenState extends State<RatingScreen> {
                       'May be later',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: Colors.black87,
                       ),
                     ),

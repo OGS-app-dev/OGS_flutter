@@ -314,7 +314,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 left: 16,
                 right: 16,
                 top: 8,
-                bottom: 80,
+                bottom: 100,
               ),
               child: SizedBox(
                 width: double.infinity,
