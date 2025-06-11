@@ -268,8 +268,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           'Edit Profile',
           style: TextStyle(
             color: Colors.black, 
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: 25,
+            fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
@@ -326,7 +326,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                         const SizedBox(height: 20),
                         _buildGenderDropdown(),
-                        const SizedBox(height: 250),
+                        const SizedBox(height: 180),
                         Container(
                           width: double.infinity,
                           height: 50,
@@ -383,7 +383,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.grey,
+            color: Color.fromARGB(255, 148, 148, 148),
           ),
         ),
         const SizedBox(height: 8),
@@ -391,12 +391,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
           controller: controller,
           keyboardType: keyboardType,
           readOnly: readOnly,
-          style: const TextStyle(color: Colors.black),
+          style: const TextStyle(color: Colors.black,fontSize: 20,fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: const TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
+              color: Color.fromARGB(255, 105, 104, 104),
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
@@ -411,7 +412,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               borderSide: const BorderSide(color: Colors.grey, width: 1),
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: const Color.fromARGB(255, 248, 246, 246),
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
           ),
           validator: validator,
@@ -438,7 +439,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           hint: const Text(
             'Select',
             style: TextStyle(
-              color: Colors.grey,
+              color: Color.fromARGB(255, 104, 104, 104),
               fontSize: 14,
             ),
           ),
@@ -467,7 +468,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
               borderSide: const BorderSide(color: Colors.grey, width: 1),
             ),
             filled: true,
-            fillColor: Colors.white,
+                        fillColor: const Color.fromARGB(255, 246, 244, 244),
+
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
           ),
         ),
