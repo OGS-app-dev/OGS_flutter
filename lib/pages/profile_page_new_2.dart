@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:ogs/pages/comingsoon.dart';
-// Import your other pages here
-// import 'package:ogs/pages/about_us.dart';
-// import 'package:ogs/pages/settings.dart';
-// import 'package:ogs/pages/feedback.dart';
-// import 'package:ogs/pages/report.dart';
 import 'package:ogs/pages/s_points_page.dart';
 import 'package:intl/intl.dart';
 import 'student_or_staff_login.dart';
@@ -24,6 +19,7 @@ import 'package:ogs/pages/s_feedback.dart';
 import 'package:ogs/pages/s_about_us.dart';
 import 'package:ogs/pages/s_vouchers.dart';
 import 'package:ogs/pages/s_rating.dart';
+import 'package:ogs/pages/s_profile_edit.dart';
 
 class AppUser {
   final String uid;
@@ -428,14 +424,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                     const  Spacer(),
-                    const  Text(
-                        'Edit',
-                        style:  TextStyle(
-                            color:  Color.fromARGB(255, 0, 0, 0),
-                            fontSize: 16),
+                    GestureDetector(
+                      onTap: () => _navigateToPage(const EditProfilePage()),
+                      child:const Row(
+                        children: [
+                           Text(
+                            'Edit',
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 0, 0, 0),
+                                fontSize: 16),
+                          ),
+                           Icon(Icons.edit,
+                              color: Color.fromARGB(255, 0, 0, 0), size: 16),
+                        ],
                       ),
-                     const Icon(Icons.edit,
-                          color:  Color.fromARGB(255, 0, 0, 0), size: 16),
+                    ),
                     ],
                   ),
                 ),
@@ -451,7 +454,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildFeatureItem(Icons.star, 'Rating',onTap: () => _navigateToPage(const RatingScreen())),
                   ],
                 ),
-              const  SizedBox(height: 30),
+              const  SizedBox(height: 15),
+              const Padding(
+                padding:  EdgeInsets.only(left: 15),
+                child:  Divider(
+                          color: Color.fromARGB(255, 210, 210, 210),
+                          thickness: 0.8,
+                          height: 8,
+                        ),
+              ),
+                                    const  SizedBox(height: 15),
+
               Padding(
             padding: const EdgeInsets.symmetric(horizontal: 35.0),
             child: Column(

@@ -8,6 +8,7 @@ import 'package:ogs/pages/s_privacy_policy.dart';
 import 'package:ogs/pages/notificationpage.dart';
 import 'package:ogs/pages/s_about_us.dart';
 import 'package:ogs/pages/s_privacy_settings.dart';
+import 'package:ogs/pages/s_account.dart';
 
 
 
@@ -284,6 +285,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return const HelpSupportScreen();
       case 'Privacy Policy':
         return const PrivacyPolicyScreen();
+      case 'Account':
+        return const AccountScreen();
       case 'About':
         return const AboutUsScreen();
       default:
