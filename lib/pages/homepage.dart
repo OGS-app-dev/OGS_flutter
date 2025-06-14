@@ -22,6 +22,7 @@ import 'package:ogs/pages/events_view_all.dart';
 import 'package:ogs/pages/ads_view_all.dart';
 import 'package:ogs/pages/search.dart';
 import 'package:ogs/pages/fnu_bank.dart';
+import 'package:ogs/widgets/urlscard.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -563,8 +564,6 @@ class _HomePageState extends State<HomePage> {
                             },
                           ),
                           // Add more facilities here if needed
-                          const SizedBox(
-                              width: 40), // Placeholder to maintain spacing
                               buildFacilityIcon(
                       iconPath: 'lib/assets/icons/hotel.png',
                       label1: "Hotels",
@@ -633,7 +632,7 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 20,
                 ),
-                const EventsHorizontalScrollView(),
+                const Urlscard(),
                 const SizedBox(
                   height: 20,
                 ),

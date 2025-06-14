@@ -30,7 +30,7 @@ class _BankPageState extends State<BankPage> {
   final _fireDb = FireDb();
   final TextEditingController _searchController = TextEditingController();
 final PageController _imagePageController = PageController(
-  viewportFraction: .55,
+  viewportFraction: .75,
   initialPage: 1,
 );  
   
@@ -295,6 +295,7 @@ Widget _buildSingleBankCard(Map<String, dynamic> bankData) {
       itemCount: imageUrls.length,
       itemBuilder: (context, index) {
         return Container(
+          height: 450,
           margin: const EdgeInsets.symmetric(horizontal:0, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(30),
@@ -307,7 +308,7 @@ Widget _buildSingleBankCard(Map<String, dynamic> bankData) {
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(45),
+            borderRadius: BorderRadius.circular(20),
             child: _buildImage(imageUrls[index], isLogo: false),
           ),
         );
