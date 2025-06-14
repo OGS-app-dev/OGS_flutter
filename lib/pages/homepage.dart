@@ -21,6 +21,7 @@ import 'package:ogs/pages/fnu_petrol.dart';
 import 'package:ogs/pages/events_view_all.dart';
 import 'package:ogs/pages/ads_view_all.dart';
 import 'package:ogs/pages/search.dart';
+import 'package:ogs/pages/fnu_bank.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -496,13 +497,14 @@ class _HomePageState extends State<HomePage> {
                         );
                       },
                     ),
+                    
                     buildFacilityIcon(
-                      iconPath: 'lib/assets/icons/res.png',
-                      label1: "Restaurants",
+                      iconPath: 'lib/assets/icons/bank.png',
+                      label1: "Banks",
                       onTap: () {
                         PersistentNavBarNavigator.pushNewScreen(
                           context,
-                          screen: const RestaurantsPage(),
+                          screen: const BankPage(),
                           withNavBar: false,
                           pageTransitionAnimation:
                               PageTransitionAnimation.cupertino,
@@ -510,12 +512,12 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     buildFacilityIcon(
-                      iconPath: 'lib/assets/icons/hotel.png',
-                      label1: "Hotels",
+                      iconPath: 'lib/assets/icons/res.png',
+                      label1: "Restaurants",
                       onTap: () {
                         PersistentNavBarNavigator.pushNewScreen(
                           context,
-                          screen: const HotelPage(),
+                          screen: const RestaurantsPage(),
                           withNavBar: false,
                           pageTransitionAnimation:
                               PageTransitionAnimation.cupertino,
@@ -563,6 +565,19 @@ class _HomePageState extends State<HomePage> {
                           // Add more facilities here if needed
                           const SizedBox(
                               width: 40), // Placeholder to maintain spacing
+                              buildFacilityIcon(
+                      iconPath: 'lib/assets/icons/hotel.png',
+                      label1: "Hotels",
+                      onTap: () {
+                        PersistentNavBarNavigator.pushNewScreen(
+                          context,
+                          screen: const HotelPage(),
+                          withNavBar: false,
+                          pageTransitionAnimation:
+                              PageTransitionAnimation.cupertino,
+                        );
+                      },
+                    ),
                           const SizedBox(
                               width: 40), // Placeholder to maintain spacing
                           const SizedBox(
