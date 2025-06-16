@@ -4,7 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/models/event_model.dart';
-import 'package:ogs/pages/event_details.dart';
+//import 'package:ogs/pages/event_details.dart';
+import 'package:ogs/pages/urls_details.dart';
+
 import 'package:url_launcher/url_launcher.dart'; 
 
 

@@ -58,7 +58,8 @@ class AppUser {
     );
   }
 
-  factory AppUser.fromFirebaseUser(User firebaseUser, {String? firestoreStudentStatus}) {
+  factory AppUser.fromFirebaseUser(User firebaseUser,
+      {String? firestoreStudentStatus}) {
     // Determine auth provider
     String authProvider = 'email';
     if (firebaseUser.providerData.isNotEmpty) {
@@ -94,7 +95,8 @@ class AppUser {
     }
 
     // Get profile image URL
-    String profileImageUrl = firebaseUser.photoURL ?? 'lib/assets/images/placeholder_profile.png';
+    String profileImageUrl =
+        firebaseUser.photoURL ?? 'lib/assets/images/placeholder_profile.png';
 
     return AppUser(
       uid: firebaseUser.uid,
@@ -120,6 +122,22 @@ class AppUser {
       'lastUpdated': Timestamp.now(),
     };
   }
+}
+
+class CurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.lineTo(0, size.height - 60);
+    path.quadraticBezierTo(
+        size.width / 2, size.height, size.width, size.height - 60);
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
 class ProfileScreen extends StatefulWidget {
@@ -148,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       _currentUser = FirebaseAuth.instance.currentUser;
-      
+
       if (_currentUser == null) {
         throw Exception("No user is currently logged in");
       }
@@ -162,21 +180,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (userDoc.exists) {
         // User exists in Firestore
         _appUser = AppUser.fromFirestore(userDoc);
-        
+
         // Update Firestore with latest Firebase Auth data if needed
         await _syncFirebaseAuthWithFirestore();
       } else {
         // User doesn't exist in Firestore, create from Firebase Auth data
         _appUser = AppUser.fromFirebaseUser(_currentUser!);
-        
+
         // Save new user to Firestore
         await _createUserInFirestore();
       }
-
     } catch (e) {
       _errorMessage = "Error loading profile: ${e.toString()}";
       print("Error in _fetchUserData: $e");
-      
+
       // Fallback: create user from Firebase Auth if possible
       if (_currentUser != null) {
         _appUser = AppUser.fromFirebaseUser(_currentUser!);
@@ -207,14 +224,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
 
       // Update email if different
-      if (_currentUser!.email != null && _appUser!.email != _currentUser!.email!) {
+      if (_currentUser!.email != null &&
+          _appUser!.email != _currentUser!.email!) {
         updates['email'] = _currentUser!.email!;
         needsUpdate = true;
       }
 
       // Update profile image if different (and not empty)
-      if (_currentUser!.photoURL != null && 
-          _currentUser!.photoURL!.isNotEmpty && 
+      if (_currentUser!.photoURL != null &&
+          _currentUser!.photoURL!.isNotEmpty &&
           _appUser!.profileImageUrl != _currentUser!.photoURL!) {
         updates['profileImageUrl'] = _currentUser!.photoURL!;
         needsUpdate = true;
@@ -244,7 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             currentAuthProvider = 'email';
         }
       }
-      
+
       if (_appUser!.authProvider != currentAuthProvider) {
         updates['authProvider'] = currentAuthProvider;
         needsUpdate = true;
@@ -256,7 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .collection('users')
             .doc(_currentUser!.uid)
             .update(updates);
-        
+
         // Refresh user data after update
         DocumentSnapshot updatedDoc = await FirebaseFirestore.instance
             .collection('users')
@@ -277,7 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .collection('users')
           .doc(_currentUser!.uid)
           .set(_appUser!.toFirestore());
-      
+
       print("Created new user profile in Firestore for ${_appUser!.email}");
     } catch (e) {
       print("Error creating user in Firestore: $e");
@@ -288,21 +306,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await _fetchUserData();
   }
 
-  
   @override
   Widget build(BuildContext context) {
     final String userName = _appUser?.name ?? 'Loading User...';
+    final String userEmail = _appUser?.email ?? 'Loading Email...';
     final String profileUrl = _appUser?.profileImageUrl ??
         'lib/assets/images/placeholder_profile.png';
-    final String memberSinceText = _appUser != null
-        ? 'Since ${DateFormat('d MMMM y').format(_appUser!.memberSince)}'
-        : 'Since N/A';
-    final String studentStatus = _appUser?.studentStatus ?? '';
-    final String authProvider = _appUser?.authProvider ?? 'email';
+
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 255, 255, 255),
-      body: 
-      _isLoading
+      backgroundColor: Colors.white,
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null && _appUser == null
               ? Center(
@@ -319,182 +332,258 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 )
               : Stack(
-        children: [
-          Container(
-            color:const  Color.fromARGB(0, 3, 3, 1),
-            child: Column(
-              children: [
-                CustomPaint(
-                  painter: CurvePainter(),
-                  child: Container(
-                    color:const  Color.fromARGB(0, 3, 3, 1),
-                    height: 200, 
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 80, 
-            left: 0,
-            right: 30,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-            
-             const Padding(
-                padding:  EdgeInsets.only(left: 20),
-                child:   Text(
-                    'Profile',
-                    style: TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                        color:  Color.fromARGB(255, 0, 0, 0)),
-                  ),
-              ),
-              const  SizedBox(height: 20),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient:const LinearGradient(
-                      colors: [Color(0xFFFFE57D), Color(0xFFFFDA45)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                  children: [
+                    // Curved yellow background
+                    Container(
+                      height: 182,
+                      color: yel,
                     ),
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset:const Offset(0, 3), 
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 66,
-                        height: 66,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color.fromARGB(255, 255, 255, 255), 
-                            width: 5.0,
-                          ),
-                        ),
-                        child: CircleAvatar(
-                  radius: 40,
-                  backgroundImage: profileUrl.startsWith('http')
-                      ? NetworkImage(profileUrl) as ImageProvider
-                      : AssetImage(profileUrl) as ImageProvider,
-                  onBackgroundImageError: (exception, stackTrace) {
-                    print('Error loading profile image: $exception');
-                  },
-                  child: profileUrl.isEmpty
-                      ? Container(
-                          width: 80,
-                          height: 80,
-                          decoration:  const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.grey,
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Colors.white,
-                          ),
-                        )
-                      : null,
-                ),
-                      ),
-                     const SizedBox(width: 15),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                    // Content
+                    SafeArea(
+                      child: Column(
                         children: [
+                          // Profile title
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(29, 60, 20, 0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: const Text(
+                                'Profile',
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 1),
+
+                          // Profile picture positioned to overlap with curve
+                          Stack(
+                            children: [
+                              Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 8,
+                                  ),
+                                ),
+                                child: CircleAvatar(
+                                  radius: 58,
+                                  backgroundImage: profileUrl.startsWith('http')
+                                      ? NetworkImage(profileUrl)
+                                          as ImageProvider
+                                      : AssetImage(profileUrl) as ImageProvider,
+                                  onBackgroundImageError:
+                                      (exception, stackTrace) {
+                                    print(
+                                        'Error loading profile image: $exception');
+                                  },
+                                  child: profileUrl.isEmpty
+                                      ? Container(
+                                          width: 116,
+                                          height: 116,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.grey,
+                                          ),
+                                          child: const Icon(
+                                            Icons.person,
+                                            size: 58,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 7,
+                                right: 5,
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFFFDA45),
+                                    shape: BoxShape.circle,
+                                    border: Border.symmetric(
+                                      horizontal: BorderSide(
+                                          color: Colors.white, width: 2),
+                                      vertical: BorderSide(
+                                          color: Colors.white, width: 2),
+                                    ),
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () => _navigateToPage(
+                                        const EditProfilePage()),
+                                    child: const Icon(
+                                      Icons.edit,
+                                      color: Colors.black,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          // User name and email
                           Text(
                             userName,
                             style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+                              fontSize: 24,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
                           ),
+                          const SizedBox(height: 4),
                           Text(
-                            memberSinceText,
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    const  Spacer(),
-                    GestureDetector(
-                      onTap: () => _navigateToPage(const EditProfilePage()),
-                      child:const Row(
-                        children: [
-                           Text(
-                            'Edit',
+                            userEmail,
                             style: TextStyle(
-                                color: Color.fromARGB(255, 0, 0, 0),
-                                fontSize: 16),
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
                           ),
-                           Icon(Icons.edit,
-                              color: Color.fromARGB(255, 0, 0, 0), size: 16),
+
+                          const SizedBox(height: 12),
+                          const Divider(
+                            color: Color.fromARGB(255, 222, 222, 222),
+                            thickness: 0.5,
+                            height: 8,
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Features Row
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 30),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildFeatureItem(
+                                  Icons.monetization_on_outlined,
+                                  'Points',
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => PointsScreen()),
+                                  ),
+                                ),
+                              const  SizedBox(
+                                  height: 35, 
+                                  child:  VerticalDivider(
+                                    color: Color.fromARGB(255, 222, 222, 222),
+                                    thickness: 0.5,
+                                    width: 5,
+                                  ),
+                                ),
+                                _buildFeatureItem(
+                                  Icons.card_giftcard_outlined,
+                                  'Voucher',
+                                  onTap: () =>
+                                      _navigateToPage(const VouchersScreen()),
+                                ),
+                                 const  SizedBox(
+                                  height: 35, 
+                                  child:  VerticalDivider(
+                                    color: Color.fromARGB(255, 222, 222, 222),
+                                    thickness: 0.5,
+                                    width: 5,
+                                  ),
+                                ),
+                                _buildFeatureItem(
+                                  Icons.star_border,
+                                  'Rating',
+                                  onTap: () =>
+                                      _navigateToPage(const RatingScreen()),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+                          const Divider(
+                            color: Color.fromARGB(255, 222, 222, 222),
+                            thickness: 0.8,
+                            height: 8,
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Menu Items
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: Column(
+                                children: [
+                                  _buildMenuItem(
+                                    Icons.settings,
+                                    'Settings',
+                                    onTap: () =>
+                                        _navigateToPage(SettingsScreen()),
+                                  ),
+                                  _buildMenuItem(
+                                    Icons.feedback,
+                                    'Send Feedback',
+                                    onTap: () =>
+                                        _navigateToPage(const FeedbackScreen()),
+                                  ),
+                                  _buildMenuItem(
+                                    Icons.info,
+                                    'About us',
+                                    onTap: () =>
+                                        _navigateToPage(const AboutUsScreen()),
+                                  ),
+                                  _buildMenuItem(
+                                    Icons.logout,
+                                    'Log out',
+                                    onTap: () => _handleLogout(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    ],
-                  ),
-                ),
-               const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildFeatureItem(Icons.money_rounded, 'Points', onTap:()=> Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) =>  PointsScreen()),
-            )),
-                    _buildFeatureItem(Icons.card_giftcard, 'Voucher',onTap: () => _navigateToPage(const VouchersScreen())),
-                    _buildFeatureItem(Icons.star, 'Rating',onTap: () => _navigateToPage(const RatingScreen())),
                   ],
                 ),
-              const  SizedBox(height: 15),
-              const Padding(
-                padding:  EdgeInsets.only(left: 15),
-                child:  Divider(
-                          color: Color.fromARGB(255, 210, 210, 210),
-                          thickness: 0.8,
-                          height: 8,
-                        ),
-              ),
-                                    const  SizedBox(height: 15),
+    );
+  }
 
-              Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 35.0),
-            child: Column(
-              children: [
-                _buildMenuItem(
-                  Icons.info_outline, 
-                  'About us',
-                  onTap: () => _navigateToPage(const AboutUsScreen()),
-                ),
-                _buildMenuItem(
-                  Icons.settings, 
-                  'Settings',
-                  onTap: () => _navigateToPage( SettingsScreen()), 
-                ),
-                _buildMenuItem(
-                  Icons.feedback, 
-                  'Send Feedback',
-                  onTap: () => _navigateToPage(const FeedbackScreen()),
-                ),
-                // _buildMenuItem(
-                //   Icons.report, 
-                //   'Report',
-                //   onTap: () => _navigateToPage(const ComingSoon()), 
-                // ),
-                _buildMenuItem(
-                  Icons.logout, 
-                  'Log out',
-                  onTap: () => _handleLogout(),
-                ),]))
-              ],
+  Widget _buildFeatureItem(IconData icon, String text,
+      {required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 28,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -502,47 +591,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildFeatureItem(IconData icon, String text,{required VoidCallback onTap}) {
-    return Column(
-      children: [
-      GestureDetector(
-         onTap: onTap, 
-        child: Icon(icon, size: 35, color: Colors.grey[700])),
-       const SizedBox(height: 5),
-        Text(text, style: TextStyle(color: Colors.grey[700])),
-      ],
-    );
-  }
-
-  Widget _buildMenuItem(IconData icon, String text, {required VoidCallback onTap}) {
+  Widget _buildMenuItem(IconData icon, String text,
+      {required VoidCallback onTap}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Row(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 240, 240, 240), 
-                borderRadius: BorderRadius.circular(8.0), 
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 24),
-              ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Text(
-                text, 
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: Colors.black,
+            size: 25,
+          ),
         ),
+        title: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w400,
+            color: Colors.black,
+          ),
+        ),
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
       ),
     );
   }
@@ -570,71 +646,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             TextButton(
               onPressed: () async {
-                                await FirebaseAuth.instance.signOut();
-                                try {
-                                  await GoogleSignIn().signOut();
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: Text(e.toString()),
-                                      ),
-                                    );
-                                  }
-                                }
-                                if (context.mounted) {
-                                  Provider.of<FormResponse>(context, listen: false)
-                                      .tabController!
-                                      .jumpToTab(0);
+                await FirebaseAuth.instance.signOut();
+                try {
+                  await GoogleSignIn().signOut();
+                } catch (e) {
+                  if (context.mounted) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text(e.toString()),
+                      ),
+                    );
+                  }
+                }
+                if (context.mounted) {
+                  Provider.of<FormResponse>(context, listen: false)
+                      .tabController!
+                      .jumpToTab(0);
 
-                                  Navigator.of(context, rootNavigator: true)
-                                      .pushAndRemoveUntil(
-                                    MaterialPageRoute(
-                                      builder: (BuildContext context) {
-                                        return const StudentOrStaff();
-                                      },
-                                    ),
-                                    (_) => false,
-                                  );
-                                }
-                              },
+                  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return const StudentOrStaff();
+                      },
+                    ),
+                    (_) => false,
+                  );
+                }
+              },
               child: const Text('Logout'),
             ),
           ],
         );
       },
     );
-  }
-}
-
-class CurvePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    // --- Blue Path (Bottom Section) ---
-    var paintBlue = Paint()..color = Colors.indigo.shade900;
-    var pathBlue = Path();
-
-    pathBlue.moveTo(0, size.height * 0.7); 
-    pathBlue.quadraticBezierTo(size.width / 2, size.height * 0.85, size.width, size.height * 0);
-    pathBlue.lineTo(size.width, size.height);
-    pathBlue.lineTo(0, size.height);
-    pathBlue.close();
-    canvas.drawPath(pathBlue, paintBlue);
-
-    // --- Yellow Path (Top Section) ---
-    var paintYellow = Paint()..color =Color(0xFFFFDA45);
-    var pathYellow = Path();
-
-    pathYellow.moveTo(0, 0.2);
-    pathYellow.lineTo(size.width*1.1, 0);
-    pathYellow.quadraticBezierTo(size.width *0.9, size.height * 0.9, 0.1, size.height * 0.9);
-    pathYellow.close();
-    canvas.drawPath(pathYellow, paintYellow);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
   }
 }

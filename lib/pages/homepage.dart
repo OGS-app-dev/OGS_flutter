@@ -18,11 +18,13 @@ import 'package:ogs/pages/fnu_hotel.dart';
 import 'package:ogs/pages/fnu_hospitals.dart';
 import 'package:ogs/pages/fnu_movies.dart';
 import 'package:ogs/pages/fnu_petrol.dart';
-import 'package:ogs/pages/events_view_all.dart';
+//import 'package:ogs/pages/events_view_all.dart';
 import 'package:ogs/pages/ads_view_all.dart';
 import 'package:ogs/pages/search.dart';
 import 'package:ogs/pages/fnu_bank.dart';
 import 'package:ogs/widgets/urlscard.dart';
+import 'package:ogs/pages/urls_details.dart';
+import 'package:ogs/pages/urs_view_all.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({

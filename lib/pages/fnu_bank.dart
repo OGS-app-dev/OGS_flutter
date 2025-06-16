@@ -30,7 +30,7 @@ class _BankPageState extends State<BankPage> {
   final _fireDb = FireDb();
   final TextEditingController _searchController = TextEditingController();
 final PageController _imagePageController = PageController(
-  viewportFraction: .75,
+  viewportFraction: .63,
   initialPage: 1,
 );  
   
@@ -258,6 +258,7 @@ Widget _buildBankCards() {
     },
   );
 }
+
 Widget _buildSingleBankCard(Map<String, dynamic> bankData) {
   final String logoUrl = bankData['logoUrl'] ?? '';
   final String imageUrl = bankData['imageUrl'] ?? '';
@@ -282,40 +283,64 @@ Widget _buildSingleBankCard(Map<String, dynamic> bankData) {
       children: [
         // Logo inside black card at top
         Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: SizedBox(height: 90, child: _buildImage(logoUrl, isLogo: true)),
+          padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
+          child: Align(alignment: Alignment.centerLeft,child: SizedBox(height: 90,width: 270, child: _buildImage(logoUrl, isLogo: true))),
         ),
 
         Expanded(
-  child: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 10),
-    child: PageView.builder(
-      controller: _imagePageController,
-      physics: const BouncingScrollPhysics(),
-      itemCount: imageUrls.length,
-      itemBuilder: (context, index) {
-        return Container(
-          height: 450,
-          margin: const EdgeInsets.symmetric(horizontal:0, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 10),
+            child: PageView.builder(
+              controller: _imagePageController,
+              physics: const BouncingScrollPhysics(),
+              itemCount: imageUrls.length,
+              itemBuilder: (context, index) {
+                return AnimatedBuilder(
+                  animation: _imagePageController,
+                  builder: (context, child) {
+                    double value = 1.0;
+                    if (_imagePageController.position.haveDimensions) {
+                      value = _imagePageController.page! - index;
+                      value = (1 - (value.abs() * 0.2)).clamp(0.8, 1.0);
+                    } else {
+                      // Set initial scale based on initialPage (which is 1)
+                      if (index == 1) {
+                        value = 1.0; // Center image is full size
+                      } else {
+                        value = 0.8; // Side images are smaller
+                      }
+                    }
+                    
+                    return Center(
+                      child: Transform.scale(
+                        scale: value,
+                        child: Container(
+                          height: 480,
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 15,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: _buildImage(imageUrls[index], isLogo: false),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: _buildImage(imageUrls[index], isLogo: false),
-          ),
-        );
-      },
-    ),
-  ),
-),
+        ),
 
         const SizedBox(height: 20),
       ],
@@ -345,7 +370,7 @@ Widget _buildVisitAppButton(Map<String, dynamic> bankData) {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         elevation: 5,
       ),
-      child: Text('Visit App', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+      child: const Text('Visit App', style: TextStyle(fontSize:15, fontWeight: FontWeight.w700)),
     ),
   );
 }
@@ -370,7 +395,7 @@ Widget _buildVisitAppButton(Map<String, dynamic> bankData) {
         imageUrl,
         width: double.infinity,
         height: double.infinity,
-        fit: isLogo ? BoxFit.contain : BoxFit.cover,
+        fit: isLogo ? BoxFit.contain : BoxFit.contain,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
           return Container(
@@ -403,7 +428,7 @@ Widget _buildVisitAppButton(Map<String, dynamic> bankData) {
         imageUrl,
         width: double.infinity,
         height: double.infinity,
-        fit: isLogo ? BoxFit.contain : BoxFit.contain,
+        fit: isLogo ? BoxFit.cover : BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           return Container(
             width: double.infinity,
