@@ -88,7 +88,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
                     const Text(
                       'Privacy Policy',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 23,
                         fontWeight: FontWeight.bold,
                         color: Color.fromARGB(255, 0, 0, 0),
                       ),

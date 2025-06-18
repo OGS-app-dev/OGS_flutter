@@ -301,16 +301,10 @@ class _AccountScreenState extends State<AccountScreen> {
                   width: double.infinity,
                   height: 120,
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 18, top: 25),
+                    padding: const EdgeInsets.only(left: 20, top: 25),
                     child: Row(
                       children: [
-                        IconButton(
-                        icon: const Icon(Icons.arrow_back,
-                            color: Color.fromARGB(255, 0, 0, 0), size: 20),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
+                  
                         Container(
                           width: 80,
                           height: 80,
@@ -318,7 +312,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: Colors.white,
-                              width: 4,
+                              width: 6,
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -329,7 +323,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             ],
                           ),
                           child: CircleAvatar(
-                            radius: 30,
+                            radius: 35,
                             backgroundImage:
                                 _appUser!.profileImageUrl.startsWith('http')
                                     ? NetworkImage(_appUser!.profileImageUrl)
@@ -498,7 +492,9 @@ class _AccountScreenState extends State<AccountScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: showHighlight
+                ? const Color.fromARGB(255, 255, 255, 255)
+                : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(

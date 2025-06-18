@@ -279,7 +279,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     const Text(
                       'Help & Support',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 23,
                         fontWeight: FontWeight.bold,
                         color: Color.fromARGB(255, 0, 0, 0),
                       ),

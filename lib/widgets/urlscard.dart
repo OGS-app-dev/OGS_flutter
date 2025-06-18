@@ -77,51 +77,54 @@ class Urlscard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Container(
+                            child: Container(height: 193,
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(18),
                                 color: Colors.black, // Placeholder background
                               ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(18),
-                                child: event.imageUrl.startsWith('http')
-                                    ? Image.network(
-                                        event.imageUrl,
-                                        fit: BoxFit.contain,
-                                        loadingBuilder:
-                                            (context, child, loadingProgress) {
-                                          if (loadingProgress == null)
-                                            return child;
-                                          return Center(
-                                            child: CircularProgressIndicator(
-                                              value: loadingProgress
-                                                          .expectedTotalBytes !=
-                                                      null
-                                                  ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                  : null,
-                                              color: Colors.yellow,
-                                            ),
-                                          );
-                                        },
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                const Icon(Icons.broken_image,
-                                                    size: 50,
-                                                    color: Colors.grey),
-                                      )
-                                    : Image.asset(
-                                        event.imageUrl,
-                                        fit: BoxFit.contain,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                const Icon(Icons.error,
-                                                    size: 50,
-                                                    color: Colors.red),
-                                      ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: event.imageUrl.startsWith('http')
+                                      ? Image.network(
+                                          event.imageUrl,
+                                          fit: BoxFit.contain,
+                                          loadingBuilder:
+                                              (context, child, loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return Center(
+                                              child: CircularProgressIndicator(
+                                                value: loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                    : null,
+                                                color: Colors.yellow,
+                                              ),
+                                            );
+                                          },
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(Icons.broken_image,
+                                                      size: 50,
+                                                      color: Colors.grey),
+                                        )
+                                      : Image.asset(
+                                          event.imageUrl,
+                                          fit: BoxFit.contain,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(Icons.error,
+                                                      size: 50,
+                                                      color: Colors.red),
+                                        ),
+                                ),
                               ),
                             ),
                           ),
@@ -148,8 +151,10 @@ class Urlscard extends StatelessWidget {
                               letterSpacing: 1,
                             ),
                           ),
+                          const SizedBox(height: 5,),
                           if (event.siteUrl != null && event.siteUrl!.isNotEmpty)
                     SizedBox(
+                      height: 35,
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
@@ -167,11 +172,11 @@ class Urlscard extends StatelessWidget {
                               Colors.transparent, // Explicitly no shadow
                         ),
                         child: Text(
-                          'Visit ',
+                          'Visit Page',
                           style: GoogleFonts.outfit(
                             color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
                           ),
                         ),
                       ),

@@ -451,7 +451,7 @@ class _HomePageState extends State<HomePage> {
                         'Facilities Near You',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFF2C2C2C),
-                          fontSize: 21,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           height: 0.06,
                           letterSpacing: 0.50,
@@ -485,7 +485,7 @@ class _HomePageState extends State<HomePage> {
                 // First row of facilities (always visible)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     buildFacilityIcon(
                       iconPath: 'lib/assets/icons/movies.png',
@@ -549,7 +549,7 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(height: 25),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           buildFacilityIcon(
                             iconPath: 'lib/assets/icons/petrol.png',
@@ -600,8 +600,8 @@ class _HomePageState extends State<HomePage> {
                         'Events happening',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFF2C2C2C),
-                          fontSize: 21,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                           height: 0.06,
                           letterSpacing: 0.50,
                         ),
@@ -648,8 +648,8 @@ class _HomePageState extends State<HomePage> {
                         'Explore',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFF2C2C2C),
-                          fontSize: 21,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                           height: 0.06,
                           letterSpacing: 0.50,
                         ),

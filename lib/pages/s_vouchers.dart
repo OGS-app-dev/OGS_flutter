@@ -58,7 +58,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                     const Text(
                       'Vouchers',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 23,
                         fontWeight: FontWeight.bold,
                         color: Color.fromARGB(255, 0, 0, 0),
                       ),

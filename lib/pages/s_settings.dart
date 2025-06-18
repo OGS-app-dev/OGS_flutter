@@ -174,7 +174,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          // const SizedBox(height: 10),
           // Menu items with proper padding from left
           Expanded(
             child: Padding(

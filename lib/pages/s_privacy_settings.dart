@@ -355,7 +355,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                     const Text(
                       'Privacy & Settings',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 23,
                         fontWeight: FontWeight.bold,
                         color: Color.fromARGB(255, 0, 0, 0),
                       ),
