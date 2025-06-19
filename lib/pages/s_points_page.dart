@@ -1,64 +1,397 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math; 
+import 'dart:math' as math;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ogs/services/points_service.dart';
+import 'package:ogs/models/user_points.dart';
 
+class PointsScreen extends StatefulWidget {
+  @override
+  _PointsScreenState createState() => _PointsScreenState();
+}
 
-class PointsScreen extends StatelessWidget {
+class _PointsScreenState extends State<PointsScreen> {
+  UserPoints? userPoints;
+  bool isLoading = true;
+  String? error;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadUserPoints();
+  }
+  
+  Future<void> _loadUserPoints() async {
+    try {
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
+      
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final points = await PointsService.getUserPoints(user.uid);
+        setState(() {
+          userPoints = points;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          error = 'User not authenticated';
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        error = 'Failed to load points: $e';
+        isLoading = false;
+      });
+    }
+  }
+  
+  Future<void> _refreshPoints() async {
+    await _loadUserPoints();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
-      body: Stack(
-        children: [
-          CustomPaint(
-            painter: CurvePainter(),
-            child: Container(height: 200),
-          ),
-          Positioned(
-            top: 70,
-            left: 20,
-            child: Row(
+      body: RefreshIndicator(
+        onRefresh: _refreshPoints,
+        child: Column(
+          children: [
+            Stack(
               children: [
-                Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.yellow, Colors.white], 
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 0, 0, 0), size: 20), 
-          onPressed: () {
-            Navigator.pop(context);
-          },
+                CustomPaint(
+                  painter: CurvePainter(),
+                  child: Container(height: 200),
+                ),
+                Positioned(
+                  top: 70,
+                  left: 20,
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.yellow, Colors.white], 
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 0, 0, 0), size: 20), 
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Points',
+                        style: TextStyle(
+                          fontSize: 23,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+              ],
+            ),
+            SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 15,),
+                      // Main Points Badge
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        color: const Color.fromARGB(255, 255, 252, 252),
+                        child: isLoading 
+                          ? _buildLoadingBadge()
+                          : error != null 
+                            ? _buildErrorBadge()
+                            : CustomPaint(
+                                size: const Size(350, 250), 
+                                painter: PentagonBadgePainter(
+                                  points: userPoints?.totalPoints ?? 0,
+                                ),
+                              ),
+                      ),
+                      
+                      // // Points Summary Cards
+                      // if (!isLoading && userPoints != null) ...[
+                      //   Padding(
+                      //     padding: const EdgeInsets.all(20),
+                      //     child: Column(
+                      //       children: [
+                      //         _buildSummaryCard(),
+                      //         SizedBox(height: 20),
+                      //         _buildRecentTransactions(),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ],
+                    ],
+                  ),
+                ),
+          ],
         ),
       ),
-                const SizedBox(width: 10),
-                const Text(
-                  'Points',
+    );
+  }
+  
+  Widget _buildLoadingBadge() {
+    return Container(
+      width: 350,
+      height: 250,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.indigo.shade900),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Loading your points...',
+              style: TextStyle(
+                color: Colors.indigo.shade900,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildErrorBadge() {
+    return Container(
+      width: 350,
+      height: 250,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.red.shade600,
+              size: 48,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Failed to load points',
+              style: TextStyle(
+                color: Colors.red.shade600,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _refreshPoints,
+              child: Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo.shade900,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildSummaryCard() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Points Summary',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.indigo.shade900,
+              ),
+            ),
+            SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildStatItem('Total Points', '${userPoints!.totalPoints}', Icons.stars),
+                _buildStatItem('Screen Time', '${userPoints!.screenTimeMinutes}m', Icons.access_time),
+                _buildStatItem('Transactions', '${userPoints!.transactions.length}', Icons.receipt_long),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildStatItem(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.amber.shade600, size: 24),
+        SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.indigo.shade900,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildRecentTransactions() {
+    final recentTransactions = userPoints!.transactions.take(5).toList();
+    
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Recent Activity',
                   style: TextStyle(
-                    fontSize: 23,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color:  Color.fromARGB(255, 0, 0, 0),
+                    color: Colors.indigo.shade900,
+                  ),
+                ),
+                Icon(Icons.history, color: Colors.grey.shade600),
+              ],
+            ),
+            SizedBox(height: 12),
+            if (recentTransactions.isEmpty)
+              Center(
+                child: Text(
+                  'No recent activity',
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+              )
+            else
+              ...recentTransactions.map((transaction) => _buildTransactionItem(transaction)),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildTransactionItem(PointTransaction transaction) {
+    final isPositive = transaction.points > 0;
+    final icon = _getTransactionIcon(transaction.type);
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isPositive ? Colors.green.shade50 : Colors.red.shade50,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: isPositive ? Colors.green.shade600 : Colors.red.shade600,
+              size: 20,
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.description,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  _formatDate(transaction.timestamp),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
                   ),
                 ),
               ],
             ),
           ),
-          Center(
-            child: Container(
-            padding: const EdgeInsets.all(20),
-            color: const Color.fromARGB(255, 255, 252, 252),
-            child: CustomPaint(
-              size: const Size(350, 250), 
-              painter: PentagonBadgePainter(),
+          Text(
+            '${isPositive ? '+' : ''}${transaction.points}',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isPositive ? Colors.green.shade600 : Colors.red.shade600,
             ),
-          ),
           ),
         ],
       ),
     );
+  }
+  
+  IconData _getTransactionIcon(String type) {
+    switch (type) {
+      case 'signup_bonus':
+        return Icons.celebration;
+      case 'daily_login':
+        return Icons.login;
+      case 'screen_time':
+        return Icons.access_time;
+      case 'facility_view':
+        return Icons.visibility;
+      case 'search':
+        return Icons.search;
+      case 'voucher_redeemed':
+        return Icons.redeem;
+      default:
+        return Icons.stars;
+    }
+  }
+  
+  String _formatDate(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+    
+    if (difference.inDays > 0) {
+      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+    } else {
+      return 'Just now';
+    }
   }
 }
 
@@ -88,10 +421,14 @@ class CurvePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
-  }}
-
+  }
+}
 
 class PentagonBadgePainter extends CustomPainter {
+  final int points;
+  
+  PentagonBadgePainter({this.points = 0});
+
   void _drawYellowWings(Canvas canvas, double width, double height) {
     var yellowPaint = Paint()
       ..color = const Color.fromARGB(255, 255, 193, 7) // Golden yellow
@@ -228,7 +565,6 @@ class PentagonBadgePainter extends CustomPainter {
       yellowPaint,
     );
   }
-
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -369,14 +705,15 @@ class PentagonBadgePainter extends CustomPainter {
     innerBadgePath.close(); // Ensure the inner path is closed
 
     canvas.drawPath(innerBadgePath, fillPaint); // Draw the inner fill
-_drawYellowline(canvas, width, height);
+    _drawYellowline(canvas, width, height);
+    
     // --- Draw Trophy Icon ---
     _drawIconFromData(canvas, Icons.emoji_events.codePoint, width / 2, height * 0.2, 40.0);
 
-    // --- Draw Number Text ---
+    // --- Draw Number Text (Dynamic Points) ---
     final textPainterNumber = TextPainter(
       text: TextSpan(
-        text: '56',
+        text: '$points',
         style: TextStyle(
           color: const Color.fromARGB(255, 255, 255, 255),
           fontSize: 88,
@@ -393,7 +730,7 @@ _drawYellowline(canvas, width, height);
 
     // --- Draw Points Text ---
     final textPainterPoints = TextPainter(
-      text:const TextSpan(
+      text: const TextSpan(
         text: 'Points',
         style: TextStyle(
           color: const Color.fromARGB(255, 255, 255, 255),
@@ -406,7 +743,8 @@ _drawYellowline(canvas, width, height);
     textPainterPoints.layout(minWidth: 0, maxWidth: width);
     textPainterPoints.paint(canvas, Offset((width - textPainterPoints.width) / 2, height * 0.65));
   }
-void _drawIconFromData(Canvas canvas, int codePoint, double centerX, double centerY, double size) {
+
+  void _drawIconFromData(Canvas canvas, int codePoint, double centerX, double centerY, double size) {
     final textPainter = TextPainter(
       text: TextSpan(
         text: String.fromCharCode(codePoint),
@@ -425,256 +763,12 @@ void _drawIconFromData(Canvas canvas, int codePoint, double centerX, double cent
       Offset(centerX - textPainter.width / 2, centerY - textPainter.height / 2)
     );
   }
-  void _drawTrophy(Canvas canvas, double centerX, double centerY, double size) {
-    var trophyPaint = Paint()
-      ..color = const Color.fromARGB(255, 255, 255, 255)
-      ..style = PaintingStyle.fill;
-
-    // Trophy cup (main body)
-    var cupPath = Path();
-    double cupWidth = size * 0.8;
-    double cupHeight = size * 0.6;
-    
-    // Cup body - rounded rectangle
-    cupPath.addRRect(RRect.fromRectAndCorners(
-      Rect.fromCenter(
-        center: Offset(centerX, centerY - size * 0.1),
-        width: cupWidth,
-        height: cupHeight,
-      ),
-      topLeft: Radius.circular(size * 0.1),
-      topRight: Radius.circular(size * 0.1),
-      bottomLeft: Radius.circular(size * 0.2),
-      bottomRight: Radius.circular(size * 0.2),
-    ));
-    
-    canvas.drawPath(cupPath, trophyPaint);
-
-    // Trophy handles (left and right)
-    var handlePaint = Paint()
-      ..color = const Color.fromARGB(255, 255, 255, 255)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size * 0.08;
-
-    // Left handle
-    canvas.drawArc(
-      Rect.fromCenter(
-        center: Offset(centerX - cupWidth * 0.6, centerY - size * 0.1),
-        width: size * 0.4,
-        height: size * 0.3,
-      ),
-      -math.pi / 2,
-      math.pi,
-      false,
-      handlePaint,
-    );
-
-    // Right handle
-    canvas.drawArc(
-      Rect.fromCenter(
-        center: Offset(centerX + cupWidth * 0.6, centerY - size * 0.1),
-        width: size * 0.4,
-        height: size * 0.3,
-      ),
-      -math.pi / 2,
-      -math.pi,
-      false,
-      handlePaint,
-    );
-
-    // Trophy base
-    canvas.drawRRect(
-      RRect.fromRectAndCorners(
-        Rect.fromCenter(
-          center: Offset(centerX, centerY + size * 0.35),
-          width: cupWidth * 1.2,
-          height: size * 0.2,
-        ),
-        topLeft: Radius.circular(size * 0.05),
-        topRight: Radius.circular(size * 0.05),
-        bottomLeft: Radius.circular(size * 0.05),
-        bottomRight: Radius.circular(size * 0.05),
-      ),
-      trophyPaint,
-    );
-
-    // Trophy stem
-    canvas.drawRect(
-      Rect.fromCenter(
-        center: Offset(centerX, centerY + size * 0.25),
-        width: size * 0.15,
-        height: size * 0.2,
-      ),
-      trophyPaint,
-    );
-  }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    // Set to true if the properties of the painter can change,
-    // causing a repaint (e.g., if `topRadius` was a dynamic variable).
-    // For static shapes, false is efficient.
-    return false;
-  }
-}
-class StraightPentagonBadgePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    double width = size.width;
-    double height = size.height;
-
-    // --- Paint for the Border ---
-    var borderPaint = Paint()
-      ..color = Colors.blue.shade700 // Deep blue border
-      ..style = PaintingStyle.stroke // Draw only the border
-      ..strokeWidth = 4.0; // Thickness of the border
-
-    // --- Paint for the Inner Fill ---
-    var fillPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.yellow.shade100, // Lighter yellow at the top
-          Colors.yellow.shade300, // Slightly darker yellow at the bottom
-        ],
-      ).createShader(Rect.fromLTWH(0, 0, width, height));
-
-    // --- Pentagon Points (Straight edges only) ---
-    var pentagonPath = Path();
-
-    // Define the 5 points of the pentagon
-    // 1. Top-left point
-    Offset topLeft = Offset(0, height * 0.2);
-    
-    // 2. Top-right point
-    Offset topRight = Offset(width, height * 0.2);
-    
-    // 3. Bottom-right point
-    Offset bottomRight = Offset(width * 0.8, height * 0.8);
-    
-    // 4. Bottom center point (the sharp peak)
-    Offset bottomCenter = Offset(width / 2, height);
-    
-    // 5. Bottom-left point
-    Offset bottomLeft = Offset(width * 0.2, height * 0.8);
-
-    // --- Drawing the Pentagon Path ---
-    pentagonPath.moveTo(topLeft.dx, topLeft.dy);
-    pentagonPath.lineTo(topRight.dx, topRight.dy);
-    pentagonPath.lineTo(bottomRight.dx, bottomRight.dy);
-    pentagonPath.lineTo(bottomCenter.dx, bottomCenter.dy);
-    pentagonPath.lineTo(bottomLeft.dx, bottomLeft.dy);
-    pentagonPath.close(); // Close the path back to the starting point
-
-    // Draw the filled pentagon
-    canvas.drawPath(pentagonPath, fillPaint);
-    
-    // Draw the border
-    canvas.drawPath(pentagonPath, borderPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
-  }
-}
-
-// Alternative version with adjustable parameters
-class CustomStraightPentagonPainter extends CustomPainter {
-  final Color borderColor;
-  final Color fillColor;
-  final double borderWidth;
-  final double topWidth; // How wide the top should be (0.0 to 1.0)
-  final double bottomWidth; // How wide the bottom should be (0.0 to 1.0)
-
-  CustomStraightPentagonPainter({
-    this.borderColor = Colors.blue,
-    this.fillColor = Colors.yellow,
-    this.borderWidth = 4.0,
-    this.topWidth = 1.0, // Full width at top
-    this.bottomWidth = 0.6, // 60% width at bottom
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    double width = size.width;
-    double height = size.height;
-
-    // --- Paint for the Border ---
-    var borderPaint = Paint()
-      ..color = borderColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = borderWidth;
-
-    // --- Paint for the Inner Fill ---
-    var fillPaint = Paint()..color = fillColor;
-
-    // --- Pentagon Points with custom proportions ---
-    var pentagonPath = Path();
-
-    // Calculate the actual widths based on percentages
-    double actualTopWidth = width * topWidth;
-    double actualBottomWidth = width * bottomWidth;
-    
-    // Center the pentagon horizontally
-    double topStartX = (width - actualTopWidth) / 2;
-    double bottomStartX = (width - actualBottomWidth) / 2;
-
-    // Define the 5 points of the pentagon
-    Offset topLeft = Offset(topStartX, 0);
-    Offset topRight = Offset(topStartX + actualTopWidth, 0);
-    Offset bottomRight = Offset(bottomStartX + actualBottomWidth, height * 0.7);
-    Offset bottomCenter = Offset(width / 2, height);
-    Offset bottomLeft = Offset(bottomStartX, height * 0.7);
-
-    // --- Drawing the Pentagon Path ---
-    pentagonPath.moveTo(topLeft.dx, topLeft.dy);
-    pentagonPath.lineTo(topRight.dx, topRight.dy);
-    pentagonPath.lineTo(bottomRight.dx, bottomRight.dy);
-    pentagonPath.lineTo(bottomCenter.dx, bottomCenter.dy);
-    pentagonPath.lineTo(bottomLeft.dx, bottomLeft.dy);
-    pentagonPath.close();
-
-    // Draw the filled pentagon
-    canvas.drawPath(pentagonPath, fillPaint);
-    
-    // Draw the border
-    canvas.drawPath(pentagonPath, borderPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
-  }
-}
-
-// Usage example widget
-class PentagonBadge extends StatelessWidget {
-  final double width;
-  final double height;
-  final Color? borderColor;
-  final Color? fillColor;
-  final double? borderWidth;
-
-  const PentagonBadge({
-    Key? key,
-    this.width = 100,
-    this.height = 120,
-    this.borderColor,
-    this.fillColor,
-    this.borderWidth,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(width, height),
-      painter: CustomStraightPentagonPainter(
-        borderColor: borderColor ?? Colors.blue.shade700,
-        fillColor: fillColor ?? Colors.yellow.shade200,
-        borderWidth: borderWidth ?? 4.0,
-      ),
-    );
+    if (oldDelegate is PentagonBadgePainter) {
+      return oldDelegate.points != points;
+    }
+    return true;
   }
 }

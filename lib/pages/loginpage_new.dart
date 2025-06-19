@@ -14,6 +14,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ogs/pages/signup_page_new.dart';
 import 'package:ogs/pages/forgot_password.dart';
+import 'package:ogs/services/points_service.dart';
 
 class LoginPageNew extends StatefulWidget {
   final String role;
@@ -235,6 +236,7 @@ class _LoginPageNewState extends State<LoginPageNew> {
           ),
         );
       }
+      await PointsService.initializeUserPoints(user!.uid);
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);

@@ -9,6 +9,7 @@ import 'package:ogs/form_response/form_response.dart';
 import 'package:ogs/pages/bottomnavpage.dart';
 import 'comingsoon.dart';
 import 'loginpage_new.dart';
+import 'package:ogs/services/points_service.dart';
 
 class SignupPageNew extends StatefulWidget {
   final String role;
@@ -236,6 +237,7 @@ class _SignupPageNewState extends State<SignupPageNew> {
           ),
         );
       }
+       await PointsService.initializeUserPoints(user!.uid);
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);

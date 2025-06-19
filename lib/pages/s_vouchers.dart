@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ogs/pages/comingsoon.dart';
+import 'package:ogs/services/points_service.dart';
+import 'package:ogs/models/voucher.dart';
+import 'package:ogs/models/user_points.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:ticket_widget/ticket_widget.dart';
 
@@ -13,6 +17,247 @@ class VouchersScreen extends StatefulWidget {
 }
 
 class _VouchersScreenState extends State<VouchersScreen> {
+  List<Voucher> availableVouchers = [];
+  UserPoints? userPoints;
+  bool isLoading = true;
+  String? currentUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Get current user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        currentUserId = user.uid;
+        
+        // Load user points and available vouchers simultaneously
+        final results = await Future.wait([
+          PointsService.getUserPoints(user.uid),
+          PointsService.getAvailableVouchers(),
+        ]);
+
+        setState(() {
+          userPoints = results[0] as UserPoints?;
+          availableVouchers = results[1] as List<Voucher>;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading voucher data: $e');
+      setState(() {
+        isLoading = false;
+      });
+      
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load vouchers. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _redeemVoucher(Voucher voucher) async {
+    if (currentUserId == null) {
+      _showMessage('Please log in to redeem vouchers', isError: true);
+      return;
+    }
+
+    if (userPoints == null || userPoints!.totalPoints < voucher.pointsCost) {
+      _showMessage(
+        'Insufficient points! You need ${voucher.pointsCost} points but have ${userPoints?.totalPoints ?? 0}.',
+        isError: true,
+      );
+      return;
+    }
+
+    // Show confirmation dialog
+    final confirmed = await _showRedeemConfirmation(voucher);
+    if (!confirmed) return;
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      final success = await PointsService.redeemVoucher(currentUserId!, voucher.id);
+      Navigator.pop(context); // Close loading dialog
+
+      if (success) {
+        _showMessage('🎉 Voucher redeemed successfully!', isError: false);
+        
+        // Refresh data to show updated points
+        await _initializeData();
+        
+        // Navigate to user vouchers or show success screen
+        _showRedemptionSuccess(voucher);
+      } else {
+        _showMessage('Failed to redeem voucher. Please try again.', isError: true);
+      }
+    } catch (e) {
+      Navigator.pop(context); // Close loading dialog
+      _showMessage('An error occurred. Please try again.', isError: true);
+    }
+  }
+
+  Future<bool> _showRedeemConfirmation(Voucher voucher) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Redemption'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Are you sure you want to redeem this voucher?'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    voucher.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(voucher.description),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Cost: ${voucher.pointsCost} points'),
+                      Text('Your Points: ${userPoints?.totalPoints ?? 0}'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.indigo,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Redeem'),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
+  void _showRedemptionSuccess(Voucher voucher) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green, size: 28),
+            SizedBox(width: 8),
+            Text('Success!'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('You have successfully redeemed:'),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.green.shade50, Colors.green.shade100],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    voucher.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    voucher.description,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey.shade700),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Check "My Vouchers" section to view and use your redeemed vouchers.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Great!'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMessage(String message, {required bool isError}) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: isError ? Colors.red : Colors.green,
+          duration: Duration(seconds: isError ? 4 : 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,6 +273,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
               Positioned(
                 top: 70,
                 left: 20,
+                right: 20,
                 child: Row(
                   children: [
                     Container(
@@ -55,74 +301,170 @@ class _VouchersScreenState extends State<VouchersScreen> {
                       ),
                     ),
                     const SizedBox(width: 13),
-                    const Text(
-                      'Vouchers',
-                      style: TextStyle(
-                        fontSize: 23,
-                        fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 0, 0, 0),
+                    const Expanded(
+                      child: Text(
+                        'Vouchers',
+                        style: TextStyle(
+                          fontSize: 23,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                        ),
                       ),
                     ),
+                    // Points display
+                    if (userPoints != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.stars,
+                              color: Colors.amber,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${userPoints!.totalPoints}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.indigo,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 25),
+          
+          // Loading or content
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: voucherCard(index),
-                );
-              },
-            ),
+            child: isLoading
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('Loading vouchers...'),
+                      ],
+                    ),
+                  )
+                : availableVouchers.isEmpty
+                    ? _buildEmptyState()
+                    : RefreshIndicator(
+                        onRefresh: _initializeData,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          itemCount: availableVouchers.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 20),
+                              child: _buildVoucherCard(availableVouchers[index]),
+                            );
+                          },
+                        ),
+                      ),
           ),
-          SizedBox(height: 60,)
+          const SizedBox(height: 60),
         ],
       ),
     );
   }
 
-  Widget voucherCard(int index) {
-    // Different voucher types for variety
-    final voucherData = [
-      {
-        'title': '26% OFF on Movie tickets',
-        'subtitle': 'Valid till 31st Dec',
-        'image': 'lib/assets/images/mov.png',
-        'colors': [const Color(0xFF6A5ACD), const Color(0xFF483D8B)],
-      },
-      {
-        'title': '15% OFF on Restaurants',
-        'subtitle': 'Min order ₹500',
-        'image': 'lib/assets/images/res.png',
-        'colors': [const Color(0xFFFF6347), const Color(0xFFDC143C)],
-      },
-      {
-        'title': 'Buy 1 Get 1 FREE',
-        'subtitle': 'On selected items',
-        'image': 'lib/assets/images/mov.png',
-        'colors': [const Color(0xFF32CD32), const Color(0xFF228B22)],
-      },
-      {
-        'title': '30% OFF on Fashion',
-        'subtitle': 'Use code: STYLE30',
-        'image': 'lib/assets/images/res.png',
-        'colors': [const Color(0xFFFF1493), const Color(0xFFDC143C)],
-      },
-      {
-        'title': '₹200 Cashback',
-        'subtitle': 'On orders above ₹1000',
-        'image': 'lib/assets/images/mov.png',
-        'colors': [const Color(0xFFFFD700), const Color(0xFFFFA500)],
-      },
-    ];
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.local_offer_outlined,
+            size: 80,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No vouchers available',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Check back later for new offers!',
+            style: TextStyle(
+              color: Colors.grey.shade500,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _initializeData,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Refresh'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.indigo,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-    final data = voucherData[index % voucherData.length];
+  Widget _buildVoucherCard(Voucher voucher) {
+    // Determine card colors based on voucher type or use defaults
+    List<Color> cardColors;
+    IconData categoryIcon;
+    
+    switch (voucher.category?.toLowerCase()) {
+      case 'movie':
+      case 'entertainment':
+        cardColors = [const Color(0xFF6A5ACD), const Color(0xFF483D8B)];
+        categoryIcon = Icons.movie;
+        break;
+      case 'restaurant':
+      case 'food':
+        cardColors = [const Color(0xFFFF6347), const Color(0xFFDC143C)];
+        categoryIcon = Icons.restaurant;
+        break;
+      case 'fashion':
+      case 'shopping':
+        cardColors = [const Color(0xFFFF1493), const Color(0xFFDC143C)];
+        categoryIcon = Icons.shopping_bag;
+        break;
+      case 'cashback':
+        cardColors = [const Color(0xFFFFD700), const Color(0xFFFFA500)];
+        categoryIcon = Icons.account_balance_wallet;
+        break;
+      default:
+        cardColors = [const Color(0xFF32CD32), const Color(0xFF228B22)];
+        categoryIcon = Icons.local_offer;
+    }
+
+    final canAfford = userPoints != null && userPoints!.totalPoints >= voucher.pointsCost;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -132,7 +474,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: data['colors'] as List<Color>,
+              colors: cardColors,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -181,6 +523,45 @@ class _VouchersScreenState extends State<VouchersScreen> {
                 ),
               ),
 
+              // Points cost badge
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.stars,
+                        size: 14,
+                        color: Colors.amber,
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${voucher.pointsCost}',
+                        style: TextStyle(
+                          color: cardColors[0],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
               // Content
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -201,21 +582,10 @@ class _VouchersScreenState extends State<VouchersScreen> {
                           ),
                         ],
                       ),
-                      child: ClipOval(
-                        child: Image.asset(
-                          data['image'] as String,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade200,
-                              child: Icon(
-                                Icons.local_offer,
-                                color: Colors.grey.shade600,
-                                size: 30,
-                              ),
-                            );
-                          },
-                        ),
+                      child: Icon(
+                        categoryIcon,
+                        color: cardColors[0],
+                        size: 30,
                       ),
                     ),
                     
@@ -228,7 +598,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            data['title'] as String,
+                            voucher.title,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -240,17 +610,19 @@ class _VouchersScreenState extends State<VouchersScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            data['subtitle'] as String,
+                            voucher.description,
                             style: TextStyle(
                               color: Colors.white.withOpacity(0.9),
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 16),
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: canAfford ? Colors.white : Colors.white.withOpacity(0.7),
                               borderRadius: BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
@@ -262,10 +634,8 @@ class _VouchersScreenState extends State<VouchersScreen> {
                             ),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: data['colors'] != null 
-                                    ? (data['colors'] as List<Color>)[0] 
-                                    : Colors.indigo,
+                                backgroundColor: canAfford ? Colors.white : Colors.white.withOpacity(0.7),
+                                foregroundColor: canAfford ? cardColors[0] : Colors.grey,
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 24, 
@@ -275,17 +645,10 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                   borderRadius: BorderRadius.circular(25),
                                 ),
                               ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ComingSoon(),
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                'Redeem Now',
-                                style: TextStyle(
+                              onPressed: canAfford ? () => _redeemVoucher(voucher) : null,
+                              child: Text(
+                                canAfford ? 'Redeem Now' : 'Not Enough Points',
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
