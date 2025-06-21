@@ -11,6 +11,8 @@ class NotificationModel {
   final DateTime timestamp;
   final bool isRead;
   final String? userId;
+  final bool isGlobal;
+  final Map<String, dynamic> readBy; // For tracking global notification read status
 
   NotificationModel({
     required this.id,
@@ -22,6 +24,8 @@ class NotificationModel {
     required this.timestamp,
     required this.isRead,
     this.userId,
+    this.isGlobal = false,
+    this.readBy = const {},
   });
 
   factory NotificationModel.fromFirestore(DocumentSnapshot doc) {
@@ -32,15 +36,17 @@ class NotificationModel {
       body: data['body'] ?? '',
       type: data['type'] ?? 'general',
       icon: data['icon'] ?? 'notifications',
-      data: Map<String, dynamic>.from(data['data'] ?? {}),
+      data: (data['data'] is Map<String, dynamic>) ? Map<String, dynamic>.from(data['data']) : {},
       timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
       isRead: data['isRead'] ?? false,
       userId: data['userId'],
+      isGlobal: data['isGlobal'] ?? false,
+      readBy: (data['readBy'] is Map<String, dynamic>) ? Map<String, dynamic>.from(data['readBy']) : {},
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {
+    final map = {
       'title': title,
       'body': body,
       'type': type,
@@ -48,8 +54,27 @@ class NotificationModel {
       'data': data,
       'timestamp': Timestamp.fromDate(timestamp),
       'isRead': isRead,
-      'userId': userId,
+      'isGlobal': isGlobal,
     };
+
+    if (!isGlobal && userId != null) {
+      map['userId'] = userId as Object;
+    }
+
+    if (isGlobal && readBy.isNotEmpty) {
+      map['readBy'] = readBy;
+    }
+
+    return map;
+  }
+
+  /// Check if this notification is read by a specific user
+  bool isReadByUser(String userId) {
+    if (isGlobal) {
+      return readBy[userId] == true;
+    } else {
+      return isRead;
+    }
   }
 
   String get timeAgo {
@@ -86,5 +111,13 @@ class NotificationModel {
       default:
         return Icons.notifications;
     }
+  }
+
+  /// Get display indicator for notification type
+  String get typeIndicator {
+    if (isGlobal) {
+      return '🌐 '; // Global indicator
+    }
+    return '';
   }
 }

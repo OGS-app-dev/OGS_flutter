@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ogs/constants.dart';
 import 'dart:math' as math; 
+import 'dart:async';
 import 'package:ogs/pages/comingsoon.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:ogs/pages/s_help_support.dart';
@@ -15,7 +17,6 @@ import 'package:ogs/pages/ads_view_all.dart';
 import 'package:ogs/pages/fnu_restaurants.dart';
 import 'package:ogs/pages/bus.dart';
 
-
 class NotificationPage extends StatefulWidget {
   @override
   State<NotificationPage> createState() => _NotificationPageState();
@@ -24,10 +25,21 @@ class NotificationPage extends StatefulWidget {
 class _NotificationPageState extends State<NotificationPage> {
   final TextEditingController _searchController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
+    final String? currentUserId = _auth.currentUser?.uid;
+    
+    if (currentUserId == null) {
+      return Scaffold(
+        body: Center(
+          child: Text('Please log in to view notifications'),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 255, 255, 255),
       body: Column(
@@ -99,7 +111,6 @@ class _NotificationPageState extends State<NotificationPage> {
           
           const SizedBox(height: 20),
           
-          // Notification Actions
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -114,7 +125,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   ),
                 ),
                 TextButton(
-                  onPressed: _markAllAsRead,
+                  onPressed: () => _markAllAsRead(currentUserId),
                   child: Text(
                     'Mark all as read',
                     style: TextStyle(
@@ -130,12 +141,8 @@ class _NotificationPageState extends State<NotificationPage> {
           const SizedBox(height: 10),
           
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore
-                  .collection('notifications')
-                  .orderBy('timestamp', descending: true)
-                  .limit(50)
-                  .snapshots(),
+            child: StreamBuilder<List<NotificationModel>>(
+              stream: _getCombinedNotificationsStream(currentUserId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
@@ -145,12 +152,11 @@ class _NotificationPageState extends State<NotificationPage> {
                   );
                 }
 
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return _buildEmptyState();
                 }
 
-                final notifications = snapshot.data!.docs
-                    .map((doc) => NotificationModel.fromFirestore(doc))
+                final notifications = snapshot.data!
                     .where((notification) {
                       if (_searchQuery.isEmpty) return true;
                       return notification.title.toLowerCase().contains(_searchQuery) ||
@@ -167,7 +173,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   itemCount: notifications.length,
                   itemBuilder: (context, index) {
                     final notification = notifications[index];
-                    return _buildNotificationCard(notification);
+                    return _buildNotificationCard(notification, currentUserId);
                   },
                 );
               },
@@ -178,14 +184,110 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
-  Widget _buildNotificationCard(NotificationModel notification) {
+  Stream<List<NotificationModel>> _getCombinedNotificationsStream(String currentUserId) {
+    final StreamController<List<NotificationModel>> controller = StreamController<List<NotificationModel>>.broadcast();
+    
+    QuerySnapshot? userSnapshot;
+    QuerySnapshot? globalSnapshot;
+    bool userLoaded = false;
+    bool globalLoaded = false;
+    
+    // Stream for user-specific notifications
+    final userNotificationsStream = _firestore
+        .collection('notifications')
+        .where('userId', isEqualTo: currentUserId)
+        .where('isGlobal', isEqualTo: false) // Explicitly exclude global ones
+        .orderBy('timestamp', descending: true)
+        .limit(25)
+        .snapshots();
+
+    // Stream for global notifications
+    final globalNotificationsStream = _firestore
+        .collection('notifications')
+        .where('isGlobal', isEqualTo: true)
+        .orderBy('timestamp', descending: true)
+        .limit(25)
+        .snapshots();
+
+    void combineAndEmit() {
+      if (userLoaded && globalLoaded) {
+        List<NotificationModel> allNotifications = [];
+
+        // Add user-specific notifications
+        if (userSnapshot != null) {
+          allNotifications.addAll(
+            userSnapshot!.docs.map((doc) => NotificationModel.fromFirestore(doc))
+          );
+        }
+
+        // Add global notifications
+        if (globalSnapshot != null) {
+          allNotifications.addAll(
+            globalSnapshot!.docs.map((doc) => NotificationModel.fromFirestore(doc))
+          );
+        }
+
+        // Sort all notifications by timestamp (most recent first)
+        allNotifications.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+        // Limit to 50 total notifications
+        if (allNotifications.length > 50) {
+          allNotifications = allNotifications.take(50).toList();
+        }
+
+        if (!controller.isClosed) {
+          controller.add(allNotifications);
+        }
+      }
+    }
+
+    // Listen to user notifications
+    final userSubscription = userNotificationsStream.listen(
+      (snapshot) {
+        userSnapshot = snapshot;
+        userLoaded = true;
+        combineAndEmit();
+      },
+      onError: (error) {
+        print('Error in user notifications stream: $error');
+        userLoaded = true;
+        combineAndEmit();
+      },
+    );
+
+    // Listen to global notifications
+    final globalSubscription = globalNotificationsStream.listen(
+      (snapshot) {
+        globalSnapshot = snapshot;
+        globalLoaded = true;
+        combineAndEmit();
+      },
+      onError: (error) {
+        print('Error in global notifications stream: $error');
+        globalLoaded = true;
+        combineAndEmit();
+      },
+    );
+
+    controller.onCancel = () {
+      userSubscription.cancel();
+      globalSubscription.cancel();
+    };
+
+    return controller.stream;
+  }
+
+  Widget _buildNotificationCard(NotificationModel notification, String currentUserId) {
+    // Check read status correctly for both global and user-specific notifications
+    final bool isNotificationRead = notification.isReadByUser(currentUserId);
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: notification.isRead ? Colors.white : Colors.blue[50],
+        color: isNotificationRead ? Colors.white : Colors.blue[50],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: notification.isRead ? Colors.grey[200]! : Colors.blue[200]!,
+          color: isNotificationRead ? Colors.grey[200]! : Colors.blue[200]!,
           width: 1,
         ),
         boxShadow: [
@@ -198,25 +300,73 @@ class _NotificationPageState extends State<NotificationPage> {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: _getColorForType(notification.type).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            notification.iconData,
-            color: _getColorForType(notification.type),
-            size: 24,
-          ),
+        leading: Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _getColorForType(notification.type).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                notification.iconData,
+                color: _getColorForType(notification.type),
+                size: 24,
+              ),
+            ),
+            // Add a small global indicator for global notifications
+            if (notification.isGlobal)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1),
+                  ),
+                  child: Icon(
+                    Icons.public,
+                    size: 8,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+          ],
         ),
-        title: Text(
-          notification.title,
-          style: TextStyle(
-            fontWeight: notification.isRead ? FontWeight.w500 : FontWeight.bold,
-            fontSize: 16,
-            color: Colors.black87,
-          ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                notification.title,
+                style: TextStyle(
+                  fontWeight: isNotificationRead ? FontWeight.w500 : FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            // Add a "Global" badge for global notifications
+            if (notification.isGlobal)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                ),
+                child: Text(
+                  'Global',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.orange[700],
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,7 +390,7 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
           ],
         ),
-        trailing: !notification.isRead
+        trailing: !isNotificationRead
             ? Container(
                 width: 8,
                 height: 8,
@@ -251,7 +401,7 @@ class _NotificationPageState extends State<NotificationPage> {
               )
             : null,
         onTap: () {
-          _handleNotificationTap(notification);
+          _handleNotificationTap(notification, currentUserId);
         },
       ),
     );
@@ -311,8 +461,9 @@ class _NotificationPageState extends State<NotificationPage> {
     }
   }
 
-  void _handleNotificationTap(NotificationModel notification) {
-    _markAsRead(notification.id);
+  void _handleNotificationTap(NotificationModel notification, String currentUserId) {
+    // Mark notification as read properly for both global and user-specific
+    _markAsRead(notification, currentUserId);
     
     _navigateBasedOnType(notification.type, notification.data);
   }
@@ -321,54 +472,83 @@ class _NotificationPageState extends State<NotificationPage> {
     Widget? page;
     
     switch (type) {
-        case 'bus':
-          page =const BusTrackPage(); 
-          break;
-        case 'event':
-          page =const  EventsViewAll();
-          break;
-        case 'movie':
-          page =const  MoviesPage(); 
-          break;
-        case 'hotel':
-          page =const  HotelPage(); 
-          break;
-        case 'restaurant':
-          page = const RestaurantsPage(); 
-          break;
-        case 'offer':
-          page =const  AdsViewAll(); 
-          break;
-        default:
-          return;
-      }
+      case 'bus':
+        page = const BusTrackPage(); 
+        break;
+      case 'event':
+        page = const EventsViewAll();
+        break;
+      case 'movie':
+        page = const MoviesPage(); 
+        break;
+      case 'hotel':
+        page = const HotelPage(); 
+        break;
+      case 'restaurant':
+        page = const RestaurantsPage(); 
+        break;
+      case 'offer':
+        page = const AdsViewAll(); 
+        break;
+      default:
+        return;
+    }
     
     if (page != null) {
       _navigateToPage(page);
     }
   }
 
-  Future<void> _markAsRead(String notificationId) async {
+  Future<void> _markAsRead(NotificationModel notification, String currentUserId) async {
     try {
-      await _firestore
-          .collection('notifications')
-          .doc(notificationId)
-          .update({'isRead': true});
+      if (notification.isGlobal) {
+        // For global notifications, mark as read for this user
+        await _firestore
+            .collection('notifications')
+            .doc(notification.id)
+            .update({'readBy.$currentUserId': true});
+      } else {
+        // For user-specific notifications, mark as read
+        await _firestore
+            .collection('notifications')
+            .doc(notification.id)
+            .update({'isRead': true});
+      }
     } catch (e) {
       print('Error marking notification as read: $e');
     }
   }
 
-  Future<void> _markAllAsRead() async {
+  Future<void> _markAllAsRead(String currentUserId) async {
     try {
       final batch = _firestore.batch();
-      final notifications = await _firestore
+      
+      // Get user-specific notifications
+      final userNotifications = await _firestore
           .collection('notifications')
+          .where('userId', isEqualTo: currentUserId)
+          .where('isGlobal', isEqualTo: false)
           .where('isRead', isEqualTo: false)
           .get();
       
-      for (var doc in notifications.docs) {
+      for (var doc in userNotifications.docs) {
         batch.update(doc.reference, {'isRead': true});
+      }
+      
+      // Get global notifications that haven't been read by this user
+      final globalNotifications = await _firestore
+          .collection('notifications')
+          .where('isGlobal', isEqualTo: true)
+          .get();
+      
+      for (var doc in globalNotifications.docs) {
+        final data = doc.data();
+        final readBy = Map<String, dynamic>.from(data['readBy'] ?? {});
+        
+        // Only update if this user hasn't read it yet
+        if (readBy[currentUserId] != true) {
+          batch.update(doc.reference, {'readBy.$currentUserId': true});
+        }
       }
       
       await batch.commit();

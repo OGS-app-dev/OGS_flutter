@@ -38,7 +38,19 @@ class PointsService {
         
         await userPointsRef.set(initialPoints.toMap());
         
-        // Show welcome notification
+        // Grant first-time sign-in voucher
+        await _grantSignupVoucher(userId);
+        
+        // Show welcome notification - FIXED: Added userId
+        await OGSNotificationService.saveNotificationToFirestore(
+          title: '🎉 Welcome Bonus!',
+          body: 'You earned 10 points for signing up!',
+          type: 'points',
+          data: {'points': 10, 'reason': 'signup_bonus'},
+          userId: userId, // FIXED: Added userId
+        );
+        
+        // Also send local notification
         await OGSNotificationService.sendLocalNotification(
           title: '🎉 Welcome Bonus!',
           body: 'You earned 10 points for signing up!',
@@ -74,20 +86,26 @@ class PointsService {
             timestamp: DateTime.now(),
           );
           
+          final oldPoints = currentData.totalPoints;
+          final newPoints = oldPoints + points;
+          
           final updatedPoints = UserPoints(
             userId: userId,
-            totalPoints: currentData.totalPoints + points,
+            totalPoints: newPoints,
             screenTimeMinutes: currentData.screenTimeMinutes,
             lastUpdated: DateTime.now(),
             transactions: [newTransaction, ...currentData.transactions],
           );
           
           transaction.set(userPointsRef, updatedPoints.toMap());
+          
+          // Check if user reached 100 points milestone after this addition
+          await _checkAndGrantMilestoneVoucher(userId, oldPoints, newPoints);
         }
       });
       
-      // Show points notification
-      await _showPointsNotification(points, description);
+      // Show points notification - FIXED: Added userId
+      await _showPointsNotification(userId, points, description);
       
     } catch (e) {
       print('Error adding points: $e');
@@ -118,9 +136,12 @@ class PointsService {
               timestamp: DateTime.now(),
             );
             
+            final oldPoints = currentData.totalPoints;
+            final newPoints = oldPoints + (pointsToAward * 2);
+            
             final updatedPoints = UserPoints(
               userId: userId,
-              totalPoints: currentData.totalPoints + (pointsToAward * 2),
+              totalPoints: newPoints,
               screenTimeMinutes: newScreenTime,
               lastUpdated: DateTime.now(),
               transactions: [newTransaction, ...currentData.transactions],
@@ -128,8 +149,12 @@ class PointsService {
             
             transaction.set(userPointsRef, updatedPoints.toMap());
             
-            // Show notification for screen time points
+            // Check if user reached 100 points milestone after screen time points
+            await _checkAndGrantMilestoneVoucher(userId, oldPoints, newPoints);
+            
+            // Show notification for screen time points - FIXED: Added userId
             await _showPointsNotification(
+              userId,
               pointsToAward * 2,
               'Great job! You earned points for using the app',
             );
@@ -150,6 +175,143 @@ class PointsService {
       
     } catch (e) {
       print('Error tracking screen time: $e');
+    }
+  }
+  
+  // Grant voucher for first-time signup
+  static Future<void> _grantSignupVoucher(String userId) async {
+    try {
+      // Get available vouchers for signup category
+      final availableVouchers = await _getAvailableVouchersByCategory('signup');
+      
+      if (availableVouchers.isNotEmpty) {
+        // Grant the first available signup voucher
+        final voucher = availableVouchers.first;
+        await _grantVoucherToUser(userId, voucher, 'signup_bonus');
+        
+        // Show voucher notification - FIXED: Added userId
+        await OGSNotificationService.saveNotificationToFirestore(
+          title: '🎁 Welcome Voucher!',
+          body: 'You received a special voucher: ${voucher.title}',
+          type: 'voucher',
+          data: {
+            'voucherId': voucher.id,
+            'reason': 'signup_bonus',
+          },
+          userId: userId, // FIXED: Added userId
+        );
+        
+        // Also send local notification
+        await OGSNotificationService.sendLocalNotification(
+          title: '🎁 Welcome Voucher!',
+          body: 'You received a special voucher: ${voucher.title}',
+          type: 'voucher',
+          data: {
+            'voucherId': voucher.id,
+            'reason': 'signup_bonus',
+          },
+        );
+      }
+    } catch (e) {
+      print('Error granting signup voucher: $e');
+    }
+  }
+  
+  // Check and grant milestone voucher when user reaches 100 points
+  static Future<void> _checkAndGrantMilestoneVoucher(String userId, int oldPoints, int newPoints) async {
+    try {
+      // Calculate how many times user crossed 100-point milestones
+      final oldMilestones = oldPoints ~/ 100;
+      final newMilestones = newPoints ~/ 100;
+      
+      if (newMilestones > oldMilestones) {
+        final vouchersToGrant = newMilestones - oldMilestones;
+        
+        // Get available vouchers for milestone category
+        final availableVouchers = await _getAvailableVouchersByCategory('milestone');
+        
+        if (availableVouchers.isNotEmpty) {
+          for (int i = 0; i < vouchersToGrant && i < availableVouchers.length; i++) {
+            final voucher = availableVouchers[i % availableVouchers.length]; // Cycle through vouchers if needed
+            await _grantVoucherToUser(userId, voucher, 'milestone_100');
+            
+            // Show voucher notification - FIXED: Added userId
+            await OGSNotificationService.saveNotificationToFirestore(
+              title: '🏆 Milestone Voucher!',
+              body: 'Congratulations! You earned a voucher for reaching ${(oldMilestones + i + 1) * 100} points: ${voucher.title}',
+              type: 'voucher',
+              data: {
+                'voucherId': voucher.id,
+                'reason': 'milestone_100',
+                'milestone': (oldMilestones + i + 1) * 100,
+              },
+              userId: userId, // FIXED: Added userId
+            );
+            
+            // Also send local notification
+            await OGSNotificationService.sendLocalNotification(
+              title: '🏆 Milestone Voucher!',
+              body: 'Congratulations! You earned a voucher for reaching ${(oldMilestones + i + 1) * 100} points: ${voucher.title}',
+              type: 'voucher',
+              data: {
+                'voucherId': voucher.id,
+                'reason': 'milestone_100',
+                'milestone': (oldMilestones + i + 1) * 100,
+              },
+            );
+          }
+        }
+      }
+    } catch (e) {
+      print('Error checking milestone voucher: $e');
+    }
+  }
+  
+  // Get available vouchers by category
+  static Future<List<Voucher>> _getAvailableVouchersByCategory(String category) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection(VOUCHERS_COLLECTION)
+          .where('isActive', isEqualTo: true)
+          .where('category', isEqualTo: category)
+          .where('expiryDate', isGreaterThan: Timestamp.now())
+          .get();
+      
+      return querySnapshot.docs
+          .map((doc) => Voucher.fromMap({...doc.data(), 'id': doc.id}))
+          .toList();
+    } catch (e) {
+      print('Error getting vouchers by category: $e');
+      return [];
+    }
+  }
+  
+  // Grant voucher to user
+  static Future<void> _grantVoucherToUser(String userId, Voucher voucher, String reason) async {
+    try {
+      final userVoucher = UserVoucher(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: userId,
+        voucherId: voucher.id,
+        redeemedAt: DateTime.now(),
+        expiryDate: DateTime.now().add(Duration(days: 30)), // 30 days validity
+        isUsed: false,
+        voucher: voucher,
+      );
+      
+      final userVoucherRef = _firestore.collection(USER_VOUCHERS_COLLECTION).doc();
+      await userVoucherRef.set(userVoucher.toMap());
+      
+      // Add a transaction record for the voucher grant
+      await addPoints(
+        userId: userId,
+        points: 0, // No points change, just for record keeping
+        type: 'voucher_granted',
+        description: 'Received voucher: ${voucher.title} (${reason})',
+      );
+      
+    } catch (e) {
+      print('Error granting voucher to user: $e');
     }
   }
   
@@ -185,7 +347,7 @@ class PointsService {
     }
   }
   
-  // Redeem voucher
+  // Redeem voucher (for manual redemption)
   static Future<bool> redeemVoucher(String userId, String voucherId) async {
     try {
       final userPointsRef = _firestore.collection(POINTS_COLLECTION).doc(userId);
@@ -265,11 +427,25 @@ class PointsService {
     }
   }
   
-  // Show points notification with animation
-  static Future<void> _showPointsNotification(int points, String description) async {
+  // Show points notification with animation - FIXED: Added userId parameter
+  static Future<void> _showPointsNotification(String userId, int points, String description) async {
     String emoji = points >= 10 ? '🎉' : '⭐';
     String title = points >= 10 ? 'Awesome! +$points Points!' : '+$points Points!';
     
+    // Save to Firestore with userId
+    await OGSNotificationService.saveNotificationToFirestore(
+      title: '$emoji $title',
+      body: description,
+      type: 'points',
+      data: {
+        'points': points,
+        'description': description,
+        'timestamp': DateTime.now().toIso8601String(),
+      },
+      userId: userId, // FIXED: Added userId
+    );
+    
+    // Also send local notification
     await OGSNotificationService.sendLocalNotification(
       title: '$emoji $title',
       body: description,
@@ -325,4 +501,3 @@ extension DateExtension on DateTime {
     return '${this.year}-${this.month.toString().padLeft(2, '0')}-${this.day.toString().padLeft(2, '0')}';
   }
 }
-

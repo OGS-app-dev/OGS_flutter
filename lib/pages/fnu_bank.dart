@@ -128,101 +128,180 @@ final PageController _imagePageController = PageController(
   }
 
   Widget _buildNotificationButton() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('notifications')
-          .where('isRead', isEqualTo: false)
-          .snapshots(),
-      builder: (context, snapshot) {
-        bool hasUnread = false;
-        
-        if (snapshot.hasData && snapshot.data != null) {
-          hasUnread = snapshot.data!.docs.isNotEmpty;
-        }
-
-        return Container(
-          width: 44.53,
-          height: 42.68,
-          decoration: ShapeDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment(0.52, -0.85),
-              end: Alignment(-0.52, 0.85),
-              colors: [Color(0xFFFFCC00), Color(0xFFFFCC00)],
+  // Get current user ID
+  final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+  
+  // If user is not logged in, show a simple notification button
+  if (currentUserId == null) {
+    return Container(
+      width: 44.53,
+      height: 42.68,
+      decoration: ShapeDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment(0.52, -0.85),
+          end: Alignment(-0.52, 0.85),
+          colors: [Color(0xFFFFCC00), Color(0xFFFFCC00)],
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(360),
+        ),
+        shadows: const [
+          BoxShadow(
+            color: Color(0xFFFFCC00),
+            blurRadius: 22,
+            offset: Offset(-4, 5),
+            spreadRadius: 0,
+          )
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(11),
+        child: GestureDetector(
+          onTap: () {
+            // Navigate to login or show login prompt
+            // You can add your login navigation logic here
+          },
+          child: Container(
+            width: 45,
+            height: 45,
+            decoration: const ShapeDecoration(
+              color: Color(0xFFFFCC00),
+              shape: CircleBorder(),
+              shadows: [
+                BoxShadow(
+                  color: Color(0xFFFFCC00),
+                  blurRadius: 0,
+                  offset: Offset(0, 4),
+                  spreadRadius: 0,
+                )
+              ],
             ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(360),
+            child: const Icon(
+              CupertinoIcons.bell,
+              size: 20,
             ),
-            shadows: const [
-              BoxShadow(
-                color: Color(0xFFFFCC00),
-                blurRadius: 22,
-                offset: Offset(-4, 5),
-                spreadRadius: 0,
-              )
-            ],
           ),
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(11),
-                child: GestureDetector(
-                  onTap: () {
-                    PersistentNavBarNavigator.pushNewScreen(
-                      context,
-                      screen: NotificationPage(),
-                      withNavBar: false,
-                      pageTransitionAnimation:
-                          PageTransitionAnimation.cupertino,
-                    );
-                  },
-                  child: Container(
-                    width: 45,
-                    height: 45,
-                    decoration: const ShapeDecoration(
-                      color: Color(0xFFFFCC00),
-                      shape: CircleBorder(),
-                      shadows: [
-                        BoxShadow(
-                          color: Color(0xFFFFCC00),
-                          blurRadius: 0,
-                          offset: Offset(0, 4),
-                          spreadRadius: 0,
-                        )
-                      ],
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.bell,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-              if (hasUnread)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.5),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-// Make sure you add smooth_page_indicator package:
-// smooth_page_indicator: ^1.1.0
+  return StreamBuilder<QuerySnapshot>(
+    // Get all notifications for the user (user-specific + global)
+    stream: FirebaseFirestore.instance
+        .collection('notifications')
+        .where(Filter.or(
+          Filter('userId', isEqualTo: currentUserId),
+          Filter('isGlobal', isEqualTo: true),
+        ))
+        .snapshots(),
+    builder: (context, snapshot) {
+      bool hasUnread = false;
+      
+      if (snapshot.hasData && snapshot.data != null) {
+        final docs = snapshot.data!.docs;
+        
+        // Check if there are any unread notifications
+        for (var doc in docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          final isGlobal = data['isGlobal'] == true;
+          final isRead = data['isRead'] == true;
+          final userId = data['userId'];
+          final readBy = data['readBy'] as Map<String, dynamic>? ?? {};
+          
+          if (isGlobal) {
+            // For global notifications, check if current user has read it
+            // If readBy doesn't contain the user ID or it's false, it's unread
+            if (readBy[currentUserId] != true) {
+              hasUnread = true;
+              break;
+            }
+          } else if (userId == currentUserId && !isRead) {
+            // User-specific unread notifications
+            hasUnread = true;
+            break;
+          }
+        }
+      }
 
-// Add this to initialize PageController with viewportFraction
-
+      return Container(
+        width: 44.53,
+        height: 42.68,
+        decoration: ShapeDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment(0.52, -0.85),
+            end: Alignment(-0.52, 0.85),
+            colors: [Color(0xFFFFCC00), Color(0xFFFFCC00)],
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(360),
+          ),
+          shadows: const [
+            BoxShadow(
+              color: Color(0xFFFFCC00),
+              blurRadius: 22,
+              offset: Offset(-4, 5),
+              spreadRadius: 0,
+            )
+          ],
+        ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(11),
+              child: GestureDetector(
+                onTap: () {
+                  PersistentNavBarNavigator.pushNewScreen(
+                    context,
+                    screen: NotificationPage(),
+                    withNavBar: false,
+                    pageTransitionAnimation:
+                        PageTransitionAnimation.cupertino,
+                  );
+                },
+                child: Container(
+                  width: 45,
+                  height: 45,
+                  decoration: const ShapeDecoration(
+                    color: Color(0xFFFFCC00),
+                    shape: CircleBorder(),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0xFFFFCC00),
+                        blurRadius: 0,
+                        offset: Offset(0, 4),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: const Icon(
+                    CupertinoIcons.bell,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+            // Red dot for unread notifications - only show if there are actual unread notifications
+            if (hasUnread)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    },
+  );
+}
 Widget _buildBankCards() {
   return StreamBuilder<QuerySnapshot>(
     stream: FirebaseFirestore.instance.collection('bank').limit(1).snapshots(),

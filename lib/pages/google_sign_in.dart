@@ -6,6 +6,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ogs/constants.dart';
 import 'package:ogs/pages/bottomnavpage.dart';
+import 'package:ogs/services/points_service.dart';
+
 
 class GoogleSignInPage extends StatefulWidget {
   const GoogleSignInPage({super.key});
@@ -62,7 +64,9 @@ class _GoogleSignInPageState extends State<GoogleSignInPage> {
             'role': "student"
             // Add more fields if needed
           });
+          await PointsService.initializeUserPoints(user.uid);
         }
+        
       }
       if (mounted) {
         Navigator.pop(context);

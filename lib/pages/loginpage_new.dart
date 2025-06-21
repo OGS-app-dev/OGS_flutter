@@ -224,6 +224,8 @@ class _LoginPageNewState extends State<LoginPageNew> {
             'role': "student",
             'createdAt': FieldValue.serverTimestamp(),
           });
+                    await PointsService.initializeUserPoints(user.uid);
+
         }
       }
 
@@ -445,25 +447,25 @@ class _LoginPageNewState extends State<LoginPageNew> {
                               fontSize: 20)),
                     ),
                     const SizedBox(height: 32.0),
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        apple();
-                      },
-                      style: OutlinedButton.styleFrom(
-                        fixedSize: const Size(250, 50),
-                        side: const BorderSide(
-                            color: Color.fromARGB(197, 11, 4, 66), width: 1.8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                      ),
-                      icon: const Icon(Icons.apple,
-                          color: Color.fromARGB(197, 11, 4, 66), size: 35),
-                      label: const Text('Apple',
-                          style: TextStyle(
-                              color: Color.fromARGB(120, 11, 4, 66),
-                              fontSize: 20)),
-                    ),
+                    // OutlinedButton.icon(
+                    //   onPressed: () {
+                    //     apple();
+                    //   },
+                    //   style: OutlinedButton.styleFrom(
+                    //     fixedSize: const Size(250, 50),
+                    //     side: const BorderSide(
+                    //         color: Color.fromARGB(197, 11, 4, 66), width: 1.8),
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.circular(12.0),
+                    //     ),
+                    //   ),
+                    //   icon: const Icon(Icons.apple,
+                    //       color: Color.fromARGB(197, 11, 4, 66), size: 35),
+                    //   label: const Text('Apple',
+                    //       style: TextStyle(
+                    //           color: Color.fromARGB(120, 11, 4, 66),
+                    //           fontSize: 20)),
+                    // ),
                   ],
                 ),
               ),

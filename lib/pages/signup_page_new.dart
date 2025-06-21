@@ -126,6 +126,8 @@ class _SignupPageNewState extends State<SignupPageNew> {
             'role': widget.role,
             'createdAt': FieldValue.serverTimestamp(),
           });
+                    await PointsService.initializeUserPoints(userCredential.user!.uid);
+
         }
 
         if (!mounted) return;
@@ -225,6 +227,8 @@ class _SignupPageNewState extends State<SignupPageNew> {
             'role': "student",
             'createdAt': FieldValue.serverTimestamp(),
           });
+                    await PointsService.initializeUserPoints(user.uid);
+
         }
       }
 
