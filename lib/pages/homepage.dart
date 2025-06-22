@@ -25,7 +25,8 @@ import 'package:ogs/pages/fnu_bank.dart';
 import 'package:ogs/widgets/urlscard.dart';
 import 'package:ogs/pages/urls_details.dart';
 import 'package:ogs/pages/urs_view_all.dart';
-
+import 'package:ogs/pages/s_profile_edit.dart';
+import 'package:ogs/pages/profile_page_new_2.dart';
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -97,17 +98,39 @@ class _HomePageState extends State<HomePage> {
 
     if (userData != null && userData['profileImage'] != null) {
       // If user has profile image in database
-      return CircleAvatar(
-        radius: 18,
-        backgroundImage: NetworkImage(userData['profileImage']),
-        backgroundColor: pricol,
+      return GestureDetector(
+        onTap: () {
+                  PersistentNavBarNavigator.pushNewScreen(
+                    context,
+                    screen:const  ProfileScreen(),
+                    withNavBar: true,
+                    pageTransitionAnimation:
+                        PageTransitionAnimation.cupertino,
+                  );
+                },
+        child: CircleAvatar(
+          radius: 18,
+          backgroundImage: NetworkImage(userData['profileImage']),
+          backgroundColor: pricol,
+        ),
       );
     } else if (user?.photoURL != null) {
       // If Google sign-in photo exists
-      return CircleAvatar(
-        radius: 18,
-        backgroundImage: NetworkImage(user!.photoURL!),
-        backgroundColor: pricol,
+      return GestureDetector(
+        onTap: () {
+                  PersistentNavBarNavigator.pushNewScreen(
+                    context,
+                    screen:const  ProfileScreen(),
+                    withNavBar: true,
+                    pageTransitionAnimation:
+                        PageTransitionAnimation.cupertino,
+                  );
+                },
+        child: CircleAvatar(
+          radius: 25,
+          backgroundImage: NetworkImage(user!.photoURL!),
+          backgroundColor: pricol,
+        ),
       );
     } else {
       // Default icon

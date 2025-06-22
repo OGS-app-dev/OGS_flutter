@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:ogs/pages/comingsoon.dart';
 import 'package:ogs/services/points_service.dart';
 import 'package:ogs/models/voucher.dart';
 import 'package:ogs/models/user_points.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-import 'package:ticket_widget/ticket_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class VouchersScreen extends StatefulWidget {
   const VouchersScreen({
@@ -13,11 +11,12 @@ class VouchersScreen extends StatefulWidget {
   });
 
   @override
+  
   State<VouchersScreen> createState() => _VouchersScreenState();
 }
 
 class _VouchersScreenState extends State<VouchersScreen> {
-  List<Voucher> availableVouchers = [];
+  List<VoucherWithStatus> vouchersWithStatus = [];
   UserPoints? userPoints;
   bool isLoading = true;
   String? currentUserId;
@@ -29,108 +28,205 @@ class _VouchersScreenState extends State<VouchersScreen> {
   }
 
   Future<void> _initializeData() async {
+  print('🔄 Starting _initializeData');
+
+  if (!mounted) return;
+
+  setState(() => isLoading = true);
+
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      print('❌ No user logged in');
+      return;
+    }
+
+    currentUserId = user.uid;
+    print('👤 User ID: $currentUserId');
+
+    // Fetch one by one (no Future.wait)
+    final userPointsData = await PointsService.getUserPoints(user.uid);
+    final vouchersData = await PointsService.getAvailableVouchersWithStatus(user.uid);
+
+    if (!mounted) return;
+
+    print('✅ Loaded userPoints: $userPointsData');
+    print('✅ Loaded vouchers: ${vouchersData.length} items');
+
     setState(() {
-      isLoading = true;
+      userPoints = userPointsData;
+      vouchersWithStatus = vouchersData;
     });
+  } catch (e, st) {
+    print('❌ Error loading data: $e');
+    print(st);
 
-    try {
-      // Get current user
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        currentUserId = user.uid;
-        
-        // Load user points and available vouchers simultaneously
-        final results = await Future.wait([
-          PointsService.getUserPoints(user.uid),
-          PointsService.getAvailableVouchers(),
-        ]);
-
-        setState(() {
-          userPoints = results[0] as UserPoints?;
-          availableVouchers = results[1] as List<Voucher>;
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading voucher data: $e');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not load data. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } finally {
+    if (mounted) {
       setState(() {
         isLoading = false;
       });
-      
-      // Show error message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load vouchers. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      print('✅ Finished _initializeData');
     }
   }
+}
 
-  Future<void> _redeemVoucher(Voucher voucher) async {
-    if (currentUserId == null) {
-      _showMessage('Please log in to redeem vouchers', isError: true);
-      return;
-    }
+  // In _redeemVoucher
+Future<void> _redeemVoucher(VoucherWithStatus voucherWithStatus) async {
+  // ... (previous code)
 
-    if (userPoints == null || userPoints!.totalPoints < voucher.pointsCost) {
-      _showMessage(
-        'Insufficient points! You need ${voucher.pointsCost} points but have ${userPoints?.totalPoints ?? 0}.',
-        isError: true,
-      );
-      return;
-    }
-
-    // Show confirmation dialog
-    final confirmed = await _showRedeemConfirmation(voucher);
-    if (!confirmed) return;
-
-    // Show loading
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
+  try {
+    final result = await PointsService.redeemVoucherWithCode(
+      currentUserId!,
+      voucherWithStatus.userVoucher!.id!,
+      voucherWithStatus.voucher.redeemCode!,
     );
 
-    try {
-      final success = await PointsService.redeemVoucher(currentUserId!, voucher.id);
-      Navigator.pop(context); // Close loading dialog
+    _closeLoadingDialog();
 
-      if (success) {
-        _showMessage('🎉 Voucher redeemed successfully!', isError: false);
+    if (result.success) {
+      // Pass isError: false for success
+      _showMessage('Success!',  isError: false, );
+      await _initializeData();
+    } else {
+      // Pass isError: true for failure
+      _showMessage('Redeem Failed',isError: true, );
+    }
+  } catch (e) {
+    _closeLoadingDialog();
+    // This looks like it was _showErrorSnackBar previously, ensure it's _showMessage now if you unified
+    _showMessage('Error', isError: true, );
+  }
+}
+
+// In _unlockVoucher
+Future<void> _unlockVoucher(VoucherWithStatus voucherWithStatus) async {
+  // ... (previous code)
+
+  try {
+    final result = await PointsService.unlockVoucherWithPoints(
+      currentUserId!,
+      voucherWithStatus.voucher.id!,
+    );
+
+    _closeLoadingDialog();
+
+    if (result.success) {
+      // Pass isError: false for success
+      _showMessage('Success!',  isError: false);
+      await _initializeData();
+    } else {
+      // Pass isError: true for failure
+      _showMessage('Unlock Failed', isError: true);
+    }
+  } catch (e) {
+    _closeLoadingDialog();
+    // This looks like it was _showErrorSnackBar previously, ensure it's _showMessage now if you unified
+    _showMessage('Error', isError: true,);
+  }
+}
+
+// And also ensure your _showErrorSnackBar uses isError: true if you still have it
+// or just replace _showErrorSnackBar calls with _showMessage directly.
+void _showErrorSnackBar(String message) {
+  _showMessage(message, isError: true,);
+}
+void _markVoucherAsUnlocked(String voucherId, UserVoucher userVoucher) {
+  final index = vouchersWithStatus.indexWhere((v) => v.voucher.id == voucherId);
+  if (index != -1) {
+    setState(() {
+      vouchersWithStatus[index] = vouchersWithStatus[index].copyWith(
+        isUnlocked: true,
+        userVoucher: userVoucher,
+      );
+      userPoints = userPoints?.copyWith(
+        totalPoints: userPoints!.totalPoints - vouchersWithStatus[index].voucher.pointsCost,
+      );
+    });
+  }
+}
+
+void _markVoucherAsUsed(String userVoucherId) {
+  final index = vouchersWithStatus.indexWhere(
+    (v) => v.userVoucher?.id == userVoucherId,
+  );
+  if (index != -1) {
+    setState(() {
+      vouchersWithStatus[index] = vouchersWithStatus[index].copyWith(
+        isUsed: true,
+      );
+    });
+  }
+}
+
+
+Future<void> _refreshVoucherData() async {
+  if (!mounted) return;
+
+  setState(() => isLoading = true);
+ // await _initializeData();
+}
+
+
+void _showLoadingDialog() {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => const Center(child: CircularProgressIndicator()),
+  );
+}
+
+
+void _closeLoadingDialog() {
+  if (Navigator.of(context).canPop()) {
+    Navigator.of(context).pop(); // Close loading
+  }
+}
+
+
+  Future<void> _redirectToWebsite(String url, Voucher voucher) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
         
-        // Refresh data to show updated points
-        await _initializeData();
-        
-        // Navigate to user vouchers or show success screen
-        _showRedemptionSuccess(voucher);
+        // Show message that they've been redirected
+        if (mounted) {
+          _showMessage('Redirected to ${voucher.title} website', isError: false);
+        }
       } else {
-        _showMessage('Failed to redeem voucher. Please try again.', isError: true);
+        if (mounted) {
+          _showMessage('Could not open website. Please try again later.', isError: true);
+        }
       }
     } catch (e) {
-      Navigator.pop(context); // Close loading dialog
-      _showMessage('An error occurred. Please try again.', isError: true);
+      if (mounted) {
+        _showMessage('Invalid website URL', isError: true);
+      }
     }
   }
 
-  Future<bool> _showRedeemConfirmation(Voucher voucher) async {
-    return await showDialog<bool>(
+  Future<bool> _showUnlockConfirmation(Voucher voucher) async {
+    if (!mounted) return false;
+    
+    final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Redemption'),
+        title: const Text('Unlock Voucher'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Are you sure you want to redeem this voucher?'),
+            Text('Are you sure you want to unlock this voucher?'),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
@@ -171,14 +267,139 @@ class _VouchersScreenState extends State<VouchersScreen> {
               backgroundColor: Colors.indigo,
               foregroundColor: Colors.white,
             ),
+            child: const Text('Unlock'),
+          ),
+        ],
+      ),
+    );
+    
+    return result ?? false;
+  }
+
+  Future<String?> _showRedeemCodeDialog(Voucher voucher) async {
+    if (!mounted) return null;
+    
+    final TextEditingController codeController = TextEditingController();
+    
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Enter Redemption Code'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Enter the redemption code for:'),
+            const SizedBox(height: 8),
+            Text(
+              voucher.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: codeController,
+              decoration: const InputDecoration(
+                labelText: 'Redemption Code',
+                hintText: 'Enter code here',
+                border: OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.characters,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, codeController.text.trim()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.indigo,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Redeem'),
           ),
         ],
       ),
-    ) ?? false;
+    );
+    
+    return result;
+  }
+
+  void _showUnlockSuccess(Voucher voucher) {
+    if (!mounted) return;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.lock_open, color: Colors.green, size: 28),
+            SizedBox(width: 8),
+            Text('Unlocked!'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('You have successfully unlocked:'),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.green.shade50, Colors.green.shade100],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    voucher.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    voucher.description,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey.shade700),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'You can now redeem this voucher using the redeem button!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Great!'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showRedemptionSuccess(Voucher voucher) {
+    if (!mounted) return;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -186,7 +407,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 28),
             SizedBox(width: 8),
-            Text('Success!'),
+            Text('Redeemed!'),
           ],
         ),
         content: Column(
@@ -226,7 +447,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Check "My Vouchers" section to view and use your redeemed vouchers.',
+              'Your voucher has been successfully redeemed!',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14),
             ),
@@ -239,7 +460,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Great!'),
+            child: const Text('Awesome!'),
           ),
         ],
       ),
@@ -368,7 +589,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                       ],
                     ),
                   )
-                : availableVouchers.isEmpty
+                : vouchersWithStatus.isEmpty
                     ? _buildEmptyState()
                     : RefreshIndicator(
                         onRefresh: _initializeData,
@@ -377,11 +598,11 @@ class _VouchersScreenState extends State<VouchersScreen> {
                             horizontal: 16,
                             vertical: 8,
                           ),
-                          itemCount: availableVouchers.length,
+                          itemCount: vouchersWithStatus.length,
                           itemBuilder: (context, index) {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 20),
-                              child: _buildVoucherCard(availableVouchers[index]),
+                              child: _buildVoucherCard(vouchersWithStatus[index]),
                             );
                           },
                         ),
@@ -434,7 +655,9 @@ class _VouchersScreenState extends State<VouchersScreen> {
     );
   }
 
-  Widget _buildVoucherCard(Voucher voucher) {
+  Widget _buildVoucherCard(VoucherWithStatus voucherWithStatus) {
+    final voucher = voucherWithStatus.voucher;
+    
     // Determine card colors based on voucher type or use defaults
     List<Color> cardColors;
     IconData categoryIcon;
@@ -465,6 +688,9 @@ class _VouchersScreenState extends State<VouchersScreen> {
     }
 
     final canAfford = userPoints != null && userPoints!.totalPoints >= voucher.pointsCost;
+    final canUnlock = voucherWithStatus.canUnlock && canAfford;
+    final canRedeem = voucherWithStatus.canRedeem;
+    final isUsed = voucherWithStatus.isUsed;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -474,7 +700,9 @@ class _VouchersScreenState extends State<VouchersScreen> {
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: cardColors,
+              colors: isUsed 
+                  ? [Colors.grey.shade400, Colors.grey.shade600] 
+                  : cardColors,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -523,14 +751,18 @@ class _VouchersScreenState extends State<VouchersScreen> {
                 ),
               ),
 
-              // Points cost badge
+              // Status badge
               Positioned(
                 top: 12,
                 right: 12,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isUsed 
+                        ? Colors.grey.shade300 
+                        : voucherWithStatus.isUnlocked 
+                            ? Colors.green.shade100 
+                            : Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -543,16 +775,25 @@ class _VouchersScreenState extends State<VouchersScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.stars,
-                        size: 14,
-                        color: Colors.amber,
-                      ),
+                      if (isUsed)
+                        const Icon(Icons.check_circle, size: 14, color: Colors.grey)
+                      else if (voucherWithStatus.isUnlocked)
+                        const Icon(Icons.lock_open, size: 14, color: Colors.green)
+                      else
+                        const Icon(Icons.stars, size: 14, color: Colors.amber),
                       const SizedBox(width: 2),
                       Text(
-                        '${voucher.pointsCost}',
+                        isUsed 
+                            ? 'Used' 
+                            : voucherWithStatus.isUnlocked 
+                                ? 'Unlocked' 
+                                : '${voucher.pointsCost}',
                         style: TextStyle(
-                          color: cardColors[0],
+                          color: isUsed 
+                              ? Colors.grey.shade600 
+                              : voucherWithStatus.isUnlocked 
+                                  ? Colors.green.shade700 
+                                  : cardColors[0],
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -584,7 +825,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                       ),
                       child: Icon(
                         categoryIcon,
-                        color: cardColors[0],
+                        color: isUsed ? Colors.grey.shade600 : cardColors[0],
                         size: 30,
                       ),
                     ),
@@ -599,11 +840,12 @@ class _VouchersScreenState extends State<VouchersScreen> {
                         children: [
                           Text(
                             voucher.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               height: 1.2,
+                              decoration: isUsed ? TextDecoration.lineThrough : null,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -622,7 +864,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                           const SizedBox(height: 16),
                           Container(
                             decoration: BoxDecoration(
-                              color: canAfford ? Colors.white : Colors.white.withOpacity(0.7),
+                              color: _getButtonColor(voucherWithStatus, canAfford),
                               borderRadius: BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
@@ -634,8 +876,8 @@ class _VouchersScreenState extends State<VouchersScreen> {
                             ),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: canAfford ? Colors.white : Colors.white.withOpacity(0.7),
-                                foregroundColor: canAfford ? cardColors[0] : Colors.grey,
+                                backgroundColor: _getButtonColor(voucherWithStatus, canAfford),
+                                foregroundColor: _getButtonTextColor(voucherWithStatus, canAfford, cardColors[0]),
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 24, 
@@ -645,9 +887,9 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                   borderRadius: BorderRadius.circular(25),
                                 ),
                               ),
-                              onPressed: canAfford ? () => _redeemVoucher(voucher) : null,
+                              onPressed: _getButtonAction(voucherWithStatus, canAfford),
                               child: Text(
-                                canAfford ? 'Redeem Now' : 'Not Enough Points',
+                                _getButtonText(voucherWithStatus, canAfford),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -666,6 +908,35 @@ class _VouchersScreenState extends State<VouchersScreen> {
         ),
       ),
     );
+  }
+
+  Color _getButtonColor(VoucherWithStatus voucherWithStatus, bool canAfford) {
+    if (voucherWithStatus.isUsed) return Colors.grey.shade300;
+    if (voucherWithStatus.canRedeem) return Colors.green.shade100;
+    if (voucherWithStatus.canUnlock && canAfford) return Colors.white;
+    return Colors.white.withOpacity(0.7);
+  }
+
+  Color _getButtonTextColor(VoucherWithStatus voucherWithStatus, bool canAfford, Color cardColor) {
+    if (voucherWithStatus.isUsed) return Colors.grey.shade600;
+    if (voucherWithStatus.canRedeem) return Colors.green.shade700;
+    if (voucherWithStatus.canUnlock && canAfford) return cardColor;
+    return Colors.grey;
+  }
+
+  String _getButtonText(VoucherWithStatus voucherWithStatus, bool canAfford) {
+    if (voucherWithStatus.isUsed) return 'Used';
+    if (voucherWithStatus.canRedeem) return 'Redeem Now';
+    if (voucherWithStatus.canUnlock && canAfford) return 'Unlock';
+    if (voucherWithStatus.canUnlock && !canAfford) return 'Not Enough Points';
+    return 'Unlocked';
+  }
+
+  VoidCallback? _getButtonAction(VoucherWithStatus voucherWithStatus, bool canAfford) {
+    if (voucherWithStatus.isUsed) return null;
+    if (voucherWithStatus.canRedeem) return () => _redeemVoucher(voucherWithStatus);
+    if (voucherWithStatus.canUnlock && canAfford) return () => _unlockVoucher(voucherWithStatus);
+    return null;
   }
 }
 

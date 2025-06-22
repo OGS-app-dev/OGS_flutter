@@ -56,6 +56,7 @@ class _PointsScreenState extends State<PointsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
+        color: Color.fromARGB(255, 255, 255, 255),
         onRefresh: _refreshPoints,
         child: Column(
           children: [

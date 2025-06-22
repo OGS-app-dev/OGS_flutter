@@ -15,6 +15,7 @@ class UserPoints {
     required this.lastUpdated,
     required this.transactions,
   });
+  
 
   factory UserPoints.fromMap(Map<String, dynamic> map) {
     return UserPoints(
@@ -37,6 +38,22 @@ class UserPoints {
       'transactions': transactions.map((t) => t.toMap()).toList(),
     };
   }
+  UserPoints copyWith({
+  String? userId,
+  int? totalPoints,
+  int? screenTimeMinutes,
+  DateTime? lastUpdated,
+  List<PointTransaction>? transactions,
+}) {
+  return UserPoints(
+    userId: userId ?? this.userId,
+    totalPoints: totalPoints ?? this.totalPoints,
+    screenTimeMinutes: screenTimeMinutes ?? this.screenTimeMinutes,
+    lastUpdated: lastUpdated ?? this.lastUpdated,
+    transactions: transactions ?? this.transactions,
+  );
+}
+
 }
 
 class PointTransaction {
@@ -73,5 +90,6 @@ class PointTransaction {
       'timestamp': Timestamp.fromDate(timestamp),
     };
   }
+  
 }
 

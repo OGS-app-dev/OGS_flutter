@@ -16,6 +16,8 @@ import 'package:ogs/pages/events_view_all.dart';
 import 'package:ogs/pages/ads_view_all.dart';
 import 'package:ogs/pages/fnu_restaurants.dart';
 import 'package:ogs/pages/bus.dart';
+import 'package:ogs/pages/s_vouchers.dart';
+import 'package:ogs/pages/s_points_page.dart';
 
 class NotificationPage extends StatefulWidget {
   @override
@@ -315,25 +317,25 @@ class _NotificationPageState extends State<NotificationPage> {
               ),
             ),
             // Add a small global indicator for global notifications
-            if (notification.isGlobal)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: Colors.orange,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1),
-                  ),
-                  child: Icon(
-                    Icons.public,
-                    size: 8,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+            // if (notification.isGlobal)
+            //   Positioned(
+            //     right: 0,
+            //     top: 0,
+            //     child: Container(
+            //       width: 12,
+            //       height: 12,
+            //       decoration: BoxDecoration(
+            //         color: Colors.orange,
+            //         shape: BoxShape.circle,
+            //         border: Border.all(color: Colors.white, width: 1),
+            //       ),
+            //       child: Icon(
+            //         Icons.public,
+            //         size: 8,
+            //         color: Colors.white,
+            //       ),
+            //     ),
+            //   ),
           ],
         ),
         title: Row(
@@ -349,23 +351,23 @@ class _NotificationPageState extends State<NotificationPage> {
               ),
             ),
             // Add a "Global" badge for global notifications
-            if (notification.isGlobal)
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                ),
-                child: Text(
-                  'Global',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.orange[700],
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+            // if (notification.isGlobal)
+            //   Container(
+            //     padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            //     decoration: BoxDecoration(
+            //       color: Colors.orange.withOpacity(0.1),
+            //       borderRadius: BorderRadius.circular(8),
+            //       border: Border.all(color: Colors.orange.withOpacity(0.3)),
+            //     ),
+            //     child: Text(
+            //       'Global',
+            //       style: TextStyle(
+            //         fontSize: 10,
+            //         color: Colors.orange[700],
+            //         fontWeight: FontWeight.w600,
+            //       ),
+            //     ),
+            //   ),
           ],
         ),
         subtitle: Column(
@@ -456,6 +458,8 @@ class _NotificationPageState extends State<NotificationPage> {
         return Colors.amber;
       case 'points':
         return Colors.teal;
+      case 'vouchers':
+        return const Color.fromARGB(255, 31, 135, 204);
       default:
         return pricol;
     }
@@ -489,6 +493,12 @@ class _NotificationPageState extends State<NotificationPage> {
         break;
       case 'offer':
         page = const AdsViewAll(); 
+        break;
+        case 'points':
+        page =  PointsScreen(); 
+        break;
+        case 'vouchers':
+        page = const VouchersScreen(); 
         break;
       default:
         return;

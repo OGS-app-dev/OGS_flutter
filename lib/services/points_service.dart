@@ -41,13 +41,13 @@ class PointsService {
         // Grant first-time sign-in voucher
         await _grantSignupVoucher(userId);
         
-        // Show welcome notification - FIXED: Added userId
+        // Show welcome notification
         await OGSNotificationService.saveNotificationToFirestore(
           title: '🎉 Welcome Bonus!',
           body: 'You earned 10 points for signing up!',
           type: 'points',
           data: {'points': 10, 'reason': 'signup_bonus'},
-          userId: userId, // FIXED: Added userId
+          userId: userId,
         );
         
         // Also send local notification
@@ -99,12 +99,12 @@ class PointsService {
           
           transaction.set(userPointsRef, updatedPoints.toMap());
           
-          // Check if user reached 100 points milestone after this addition
+          // Check if user reached milestone after this addition
           await _checkAndGrantMilestoneVoucher(userId, oldPoints, newPoints);
         }
       });
       
-      // Show points notification - FIXED: Added userId
+      // Show points notification
       await _showPointsNotification(userId, points, description);
       
     } catch (e) {
@@ -112,7 +112,7 @@ class PointsService {
     }
   }
   
-  // Track screen time and award points
+  // Track screen time and award points (5 points every 5 minutes)
   static Future<void> trackScreenTime(String userId, int minutes) async {
     try {
       final userPointsRef = _firestore.collection(POINTS_COLLECTION).doc(userId);
@@ -124,20 +124,20 @@ class PointsService {
           final currentData = UserPoints.fromMap(doc.data()!);
           final newScreenTime = currentData.screenTimeMinutes + minutes;
           
-          // Award points every 5 minutes
-          final pointsToAward = (newScreenTime ~/ 5) - (currentData.screenTimeMinutes ~/ 5);
+          // Award 5 points every 5 minutes
+          final pointsToAward = ((newScreenTime ~/ 5) - (currentData.screenTimeMinutes ~/ 5)) * 5;
           
           if (pointsToAward > 0) {
             final newTransaction = PointTransaction(
               id: DateTime.now().millisecondsSinceEpoch.toString(),
-              points: pointsToAward * 2, // 2 points per 5-minute interval
+              points: pointsToAward,
               type: 'screen_time',
-              description: 'Earned from ${pointsToAward * 5} minutes of app usage',
+              description: 'Earned from ${(pointsToAward ~/ 5) * 5} minutes of app usage',
               timestamp: DateTime.now(),
             );
             
             final oldPoints = currentData.totalPoints;
-            final newPoints = oldPoints + (pointsToAward * 2);
+            final newPoints = oldPoints + pointsToAward;
             
             final updatedPoints = UserPoints(
               userId: userId,
@@ -149,13 +149,13 @@ class PointsService {
             
             transaction.set(userPointsRef, updatedPoints.toMap());
             
-            // Check if user reached 100 points milestone after screen time points
+            // Check if user reached milestone after screen time points
             await _checkAndGrantMilestoneVoucher(userId, oldPoints, newPoints);
             
-            // Show notification for screen time points - FIXED: Added userId
+            // Show notification for screen time points
             await _showPointsNotification(
               userId,
-              pointsToAward * 2,
+              pointsToAward,
               'Great job! You earned points for using the app',
             );
           } else {
@@ -187,9 +187,9 @@ class PointsService {
       if (availableVouchers.isNotEmpty) {
         // Grant the first available signup voucher
         final voucher = availableVouchers.first;
-        await _grantVoucherToUser(userId, voucher, 'signup_bonus');
+        await _unlockVoucherForUser(userId, voucher, 'signup_bonus', 0);
         
-        // Show voucher notification - FIXED: Added userId
+        // Show voucher notification
         await OGSNotificationService.saveNotificationToFirestore(
           title: '🎁 Welcome Voucher!',
           body: 'You received a special voucher: ${voucher.title}',
@@ -198,7 +198,7 @@ class PointsService {
             'voucherId': voucher.id,
             'reason': 'signup_bonus',
           },
-          userId: userId, // FIXED: Added userId
+          userId: userId,
         );
         
         // Also send local notification
@@ -232,10 +232,10 @@ class PointsService {
         
         if (availableVouchers.isNotEmpty) {
           for (int i = 0; i < vouchersToGrant && i < availableVouchers.length; i++) {
-            final voucher = availableVouchers[i % availableVouchers.length]; // Cycle through vouchers if needed
-            await _grantVoucherToUser(userId, voucher, 'milestone_100');
+            final voucher = availableVouchers[i % availableVouchers.length];
+            await _unlockVoucherForUser(userId, voucher, 'milestone_100', 0);
             
-            // Show voucher notification - FIXED: Added userId
+            // Show voucher notification
             await OGSNotificationService.saveNotificationToFirestore(
               title: '🏆 Milestone Voucher!',
               body: 'Congratulations! You earned a voucher for reaching ${(oldMilestones + i + 1) * 100} points: ${voucher.title}',
@@ -245,7 +245,7 @@ class PointsService {
                 'reason': 'milestone_100',
                 'milestone': (oldMilestones + i + 1) * 100,
               },
-              userId: userId, // FIXED: Added userId
+              userId: userId,
             );
             
             // Also send local notification
@@ -271,7 +271,7 @@ class PointsService {
   static Future<List<Voucher>> _getAvailableVouchersByCategory(String category) async {
     try {
       final querySnapshot = await _firestore
-          .collection(VOUCHERS_COLLECTION)
+          .collection('vouchers')
           .where('isActive', isEqualTo: true)
           .where('category', isEqualTo: category)
           .where('expiryDate', isGreaterThan: Timestamp.now())
@@ -286,70 +286,43 @@ class PointsService {
     }
   }
   
-  // Grant voucher to user
-  static Future<void> _grantVoucherToUser(String userId, Voucher voucher, String reason) async {
+  // Unlock voucher for user (doesn't deduct points, just makes it available)
+  static Future<void> _unlockVoucherForUser(String userId, Voucher voucher, String reason, int pointsSpent) async {
     try {
       final userVoucher = UserVoucher(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: userId,
         voucherId: voucher.id,
-        redeemedAt: DateTime.now(),
+        unlockedAt: DateTime.now(),
         expiryDate: DateTime.now().add(Duration(days: 30)), // 30 days validity
         isUsed: false,
+        isUnlocked: true,
+        pointsSpent: pointsSpent,
+        unlockReason: reason,
         voucher: voucher,
       );
       
       final userVoucherRef = _firestore.collection(USER_VOUCHERS_COLLECTION).doc();
       await userVoucherRef.set(userVoucher.toMap());
       
-      // Add a transaction record for the voucher grant
-      await addPoints(
-        userId: userId,
-        points: 0, // No points change, just for record keeping
-        type: 'voucher_granted',
-        description: 'Received voucher: ${voucher.title} (${reason})',
-      );
-      
     } catch (e) {
-      print('Error granting voucher to user: $e');
+      print('Error unlocking voucher for user: $e');
     }
   }
   
-  // Get user points
-  static Future<UserPoints?> getUserPoints(String userId) async {
+  // Unlock voucher with points (user clicks unlock/redeem button)
+  static Future<VoucherUnlockResult> unlockVoucherWithPoints(String userId, String voucherId) async {
     try {
-      final doc = await _firestore.collection(POINTS_COLLECTION).doc(userId).get();
-      if (doc.exists) {
-        return UserPoints.fromMap(doc.data()!);
+      // Check if user already has this voucher
+      final existingVoucher = await _checkIfUserHasVoucher(userId, voucherId);
+      if (existingVoucher != null) {
+        return VoucherUnlockResult(
+          success: false,
+          message: 'You already have this voucher!',
+          errorCode: 'ALREADY_OWNED'
+        );
       }
-    } catch (e) {
-      print('Error getting user points: $e');
-    }
-    return null;
-  }
-  
-  // Get available vouchers
-  static Future<List<Voucher>> getAvailableVouchers() async {
-    try {
-      final querySnapshot = await _firestore
-          .collection(VOUCHERS_COLLECTION)
-          .where('isActive', isEqualTo: true)
-          .where('expiryDate', isGreaterThan: Timestamp.now())
-          .orderBy('expiryDate')
-          .get();
       
-      return querySnapshot.docs
-          .map((doc) => Voucher.fromMap({...doc.data(), 'id': doc.id}))
-          .toList();
-    } catch (e) {
-      print('Error getting vouchers: $e');
-      return [];
-    }
-  }
-  
-  // Redeem voucher (for manual redemption)
-  static Future<bool> redeemVoucher(String userId, String voucherId) async {
-    try {
       final userPointsRef = _firestore.collection(POINTS_COLLECTION).doc(userId);
       final voucherRef = _firestore.collection(VOUCHERS_COLLECTION).doc(voucherId);
       
@@ -358,22 +331,39 @@ class PointsService {
         final voucherDoc = await transaction.get(voucherRef);
         
         if (!userDoc.exists || !voucherDoc.exists) {
-          return false;
+          return VoucherUnlockResult(
+            success: false,
+            message: 'User or voucher not found',
+            errorCode: 'NOT_FOUND'
+          );
         }
         
         final userPoints = UserPoints.fromMap(userDoc.data()!);
         final voucher = Voucher.fromMap({...voucherDoc.data()!, 'id': voucherDoc.id});
         
+        // Check if voucher is active and not expired
+        if (!voucher.isActive || voucher.expiryDate.isBefore(DateTime.now())) {
+          return VoucherUnlockResult(
+            success: false,
+            message: 'This voucher is no longer available',
+            errorCode: 'EXPIRED'
+          );
+        }
+        
         if (userPoints.totalPoints < voucher.pointsCost) {
-          return false; // Not enough points
+          return VoucherUnlockResult(
+            success: false,
+            message: 'Not enough points! You need ${voucher.pointsCost} points.',
+            errorCode: 'INSUFFICIENT_POINTS'
+          );
         }
         
         // Deduct points
         final newTransaction = PointTransaction(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           points: -voucher.pointsCost,
-          type: 'voucher_redeemed',
-          description: 'Redeemed: ${voucher.title}',
+          type: 'voucher_unlocked',
+          description: 'Unlocked: ${voucher.title}',
           timestamp: DateTime.now(),
         );
         
@@ -392,30 +382,208 @@ class PointsService {
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           userId: userId,
           voucherId: voucherId,
-          redeemedAt: DateTime.now(),
+          unlockedAt: DateTime.now(),
           expiryDate: DateTime.now().add(Duration(days: 30)), // 30 days validity
           isUsed: false,
+          isUnlocked: true,
+          pointsSpent: voucher.pointsCost,
+          unlockReason: 'points_unlock',
           voucher: voucher,
         );
         
         final userVoucherRef = _firestore.collection(USER_VOUCHERS_COLLECTION).doc();
         transaction.set(userVoucherRef, userVoucher.toMap());
         
-        return true;
+        return VoucherUnlockResult(
+          success: true,
+          message: 'Voucher unlocked successfully!',
+          userVoucher: userVoucher
+        );
       });
     } catch (e) {
-      print('Error redeeming voucher: $e');
-      return false;
+      print('Error unlocking voucher: $e');
+      return VoucherUnlockResult(
+        success: false,
+        message: 'Error unlocking voucher: $e',
+        errorCode: 'ERROR'
+      );
     }
   }
   
-  // Get user's vouchers
+  // Check if user already has a specific voucher
+  static Future<UserVoucher?> _checkIfUserHasVoucher(String userId, String voucherId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection(USER_VOUCHERS_COLLECTION)
+          .where('userId', isEqualTo: userId)
+          .where('voucherId', isEqualTo: voucherId)
+          .limit(1)
+          .get();
+      
+      if (querySnapshot.docs.isNotEmpty) {
+        return UserVoucher.fromMap({...querySnapshot.docs.first.data(), 'id': querySnapshot.docs.first.id});
+      }
+      return null;
+    } catch (e) {
+      print('Error checking user voucher: $e');
+      return null;
+    }
+  }
+  
+  // Use/Redeem voucher with code
+  static Future<VoucherRedeemResult> redeemVoucherWithCode(String userId, String userVoucherId, String code) async {
+    try {
+      final userVoucherRef = _firestore.collection(USER_VOUCHERS_COLLECTION).doc(userVoucherId);
+      
+      return await _firestore.runTransaction((transaction) async {
+        final doc = await transaction.get(userVoucherRef);
+        
+        if (!doc.exists) {
+          return VoucherRedeemResult(
+            success: false,
+            message: 'Voucher not found',
+            errorCode: 'NOT_FOUND'
+          );
+        }
+        
+        final userVoucher = UserVoucher.fromMap({...doc.data()!, 'id': doc.id});
+        
+        // Check if this voucher belongs to the user
+        if (userVoucher.userId != userId) {
+          return VoucherRedeemResult(
+            success: false,
+            message: 'This voucher doesn\'t belong to you',
+            errorCode: 'UNAUTHORIZED'
+          );
+        }
+        
+        // Check if voucher is already used
+        if (userVoucher.isUsed) {
+          return VoucherRedeemResult(
+            success: false,
+            message: 'This voucher has already been used',
+            errorCode: 'ALREADY_USED'
+          );
+        }
+        
+        // Check if voucher is expired
+        if (userVoucher.expiryDate.isBefore(DateTime.now())) {
+          return VoucherRedeemResult(
+            success: false,
+            message: 'This voucher has expired',
+            errorCode: 'EXPIRED'
+          );
+        }
+        
+        // Verify the redemption code
+        if (userVoucher.voucher.redeemCode != code) {
+          return VoucherRedeemResult(
+            success: false,
+            message: 'Invalid redemption code',
+            errorCode: 'INVALID_CODE'
+          );
+        }
+        
+        // Mark voucher as used
+        final updatedUserVoucher = UserVoucher(
+          id: userVoucher.id,
+          userId: userVoucher.userId,
+          voucherId: userVoucher.voucherId,
+          unlockedAt: userVoucher.unlockedAt,
+          redeemedAt: DateTime.now(),
+          expiryDate: userVoucher.expiryDate,
+          isUsed: true,
+          isUnlocked: userVoucher.isUnlocked,
+          pointsSpent: userVoucher.pointsSpent,
+          unlockReason: userVoucher.unlockReason,
+          redeemCode: code,
+          voucher: userVoucher.voucher,
+        );
+        
+        transaction.set(userVoucherRef, updatedUserVoucher.toMap());
+        
+        return VoucherRedeemResult(
+          success: true,
+          message: 'Voucher redeemed successfully!',
+          userVoucher: updatedUserVoucher
+        );
+      });
+    } catch (e) {
+      print('Error redeeming voucher: $e');
+      return VoucherRedeemResult(
+        success: false,
+        message: 'Error redeeming voucher: $e',
+        errorCode: 'ERROR'
+      );
+    }
+  }
+  
+  // Get user points
+  static Future<UserPoints?> getUserPoints(String userId) async {
+    try {
+      final doc = await _firestore.collection(POINTS_COLLECTION).doc(userId).get();
+      if (doc.exists) {
+        return UserPoints.fromMap(doc.data()!);
+      }
+    } catch (e) {
+      print('Error getting user points: $e');
+    }
+    return null;
+  }
+  
+  // Get available vouchers with user's unlock status
+  static Future<List<VoucherWithStatus>> getAvailableVouchersWithStatus(String userId) async {
+    try {
+      // Get all available vouchers
+      final vouchersSnapshot = await _firestore
+          .collection('vouchers')
+          //.where('isActive', isEqualTo: true)
+         // .where('expiryDate', isGreaterThan: Timestamp.now())
+          .orderBy('expiryDate')
+          .get();
+      
+      // Get user's vouchers
+      final userVouchersSnapshot = await _firestore
+          .collection(USER_VOUCHERS_COLLECTION)
+          .where('userId', isEqualTo: userId)
+          .get();
+      
+      final userVoucherIds = userVouchersSnapshot.docs
+          .map((doc) => UserVoucher.fromMap({...doc.data(), 'id': doc.id}))
+          .map((uv) => uv.voucherId)
+          .toSet();
+      
+      final userVouchersMap = Map.fromEntries(
+        userVouchersSnapshot.docs
+            .map((doc) => UserVoucher.fromMap({...doc.data(), 'id': doc.id}))
+            .map((uv) => MapEntry(uv.voucherId, uv))
+      );
+      
+      return vouchersSnapshot.docs.map((doc) {
+        final voucher = Voucher.fromMap({...doc.data(), 'id': doc.id});
+        final isUnlocked = userVoucherIds.contains(voucher.id);
+        final userVoucher = userVouchersMap[voucher.id];
+        
+        return VoucherWithStatus(
+          voucher: voucher,
+          isUnlocked: isUnlocked,
+          isUsed: userVoucher?.isUsed ?? false,
+          userVoucher: userVoucher,
+        );
+      }).toList();
+    } catch (e) {
+      print('Error getting vouchers with status: $e');
+      return [];
+    }
+  }
+  
+  // Get user's vouchers (unlocked/redeemed)
   static Future<List<UserVoucher>> getUserVouchers(String userId) async {
     try {
       final querySnapshot = await _firestore
           .collection(USER_VOUCHERS_COLLECTION)
           .where('userId', isEqualTo: userId)
-          .orderBy('redeemedAt', descending: true)
+          .orderBy('unlockedAt', descending: true)
           .get();
       
       return querySnapshot.docs
@@ -427,7 +595,7 @@ class PointsService {
     }
   }
   
-  // Show points notification with animation - FIXED: Added userId parameter
+  // Show points notification with animation
   static Future<void> _showPointsNotification(String userId, int points, String description) async {
     String emoji = points >= 10 ? '🎉' : '⭐';
     String title = points >= 10 ? 'Awesome! +$points Points!' : '+$points Points!';
@@ -442,7 +610,7 @@ class PointsService {
         'description': description,
         'timestamp': DateTime.now().toIso8601String(),
       },
-      userId: userId, // FIXED: Added userId
+      userId: userId,
     );
     
     // Also send local notification
@@ -494,6 +662,74 @@ class PointsService {
     }
   }
 }
+
+// Result classes for voucher operations
+class VoucherUnlockResult {
+  final bool success;
+  final String message;
+  final String? errorCode;
+  final UserVoucher? userVoucher;
+  
+  VoucherUnlockResult({
+    required this.success,
+    required this.message,
+    this.errorCode,
+    this.userVoucher,
+  });
+}
+
+class VoucherRedeemResult {
+  final bool success;
+  final String message;
+  final String? errorCode;
+  final UserVoucher? userVoucher;
+  
+  VoucherRedeemResult({
+    required this.success,
+    required this.message,
+    this.errorCode,
+    this.userVoucher,
+  });
+}
+
+// Voucher with status for UI
+class VoucherWithStatus {
+  final Voucher voucher;
+  final bool isUnlocked;
+  final bool isUsed;
+  final UserVoucher? userVoucher;
+
+  VoucherWithStatus({
+    required this.voucher,
+    required this.isUnlocked,
+    required this.isUsed,
+    this.userVoucher,
+  });
+
+  bool get canUnlock => !isUnlocked && !isUsed;
+  bool get canRedeem => isUnlocked && !isUsed;
+
+  String get status {
+    if (isUsed) return 'Used';
+    if (isUnlocked) return 'Unlocked';
+    return 'Available';
+  }
+
+  // ✅ Add this inside the class
+  VoucherWithStatus copyWith({
+    bool? isUnlocked,
+    bool? isUsed,
+    UserVoucher? userVoucher,
+  }) {
+    return VoucherWithStatus(
+      voucher: this.voucher,
+      isUnlocked: isUnlocked ?? this.isUnlocked,
+      isUsed: isUsed ?? this.isUsed,
+      userVoucher: userVoucher ?? this.userVoucher,
+    );
+  }
+}
+
 
 // Extension for date formatting
 extension DateExtension on DateTime {

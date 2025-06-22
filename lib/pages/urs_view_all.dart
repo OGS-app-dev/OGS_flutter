@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ogs/models/event_model.dart';
-import 'package:ogs/pages/event_details.dart';
+import 'package:ogs/pages/urls_details.dart';
 
 class EventsViewAll extends StatelessWidget {
   const EventsViewAll({super.key});

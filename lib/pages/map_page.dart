@@ -33,25 +33,74 @@ class _CollegeMapScreenState extends State<CollegeMapScreen> {
   final double _initialZoom = 16.0;
 
   final Map<String, LatLng> _buildingCoordinates = {
-    "Main Gate": const LatLng(11.3199, 75.9322),
-    "Center Circle": const LatLng(11.321552, 75.934107),
-    "Chemical Gate": LatLng(11.323103, 75.936913),
-    "Mega Hostel": LatLng(11.317211, 75.937526),
-    "Central Library": LatLng(11.3225, 75.9361),
-    "Lecture Hall Complex (LH)": LatLng(11.3220, 75.9370),
-    "School of Management Studies (SOMS)": LatLng(11.3218, 75.9380),
-    "Auditorium": LatLng(11.3206, 75.9348),
-    "CSED": LatLng(11.32295, 75.93460),
-    "EEE Dept": LatLng(11.3223, 75.9350),
-    "Mechanical Workshop": LatLng(11.3210, 75.9358),
-    "Hostel D": LatLng(11.3189, 75.9354),
-    "Guest House": LatLng(11.3194, 75.9316),
-    "Admin Block": LatLng(11.3213, 75.9337),
-    "Architecture Dept": LatLng(11.3226, 75.9368),
-    "IC Engines Lab": LatLng(11.3204, 75.9356),
-    "Training & Placement": LatLng(11.3209, 75.9340),
-    "Physics Dept": LatLng(11.3222, 75.9364),
-  };
+  // Gates & Entry
+  "Main Gate": LatLng(11.31990, 75.93220), // verified
+  "Chemical Gate": LatLng(11.32310, 75.93691),
+  "Back Gate": LatLng(11.31800, 75.93900), // approximate
+
+  // Central
+  "Center Circle": LatLng(11.32155, 75.93411),
+  "Rajpath": LatLng(11.32160, 75.93450), // main walkway
+
+  // Academic Buildings & Departments
+  "Central Library": LatLng(11.32250, 75.93610),
+  "Admin Block": LatLng(11.32130, 75.93370),
+  "Auditorium": LatLng(11.32060, 75.93480),
+  "Lecture Hall Complex (LHC)": LatLng(11.32200, 75.93700),
+  "School of Management Studies (SOMS)": LatLng(11.32180, 75.93800),
+  "Computer Science & Engineering (CSED)": LatLng(11.32295, 75.93460),
+  "Electrical Engineering (EEE Dept)": LatLng(11.32230, 75.93500),
+  "Electronics & Communication (ECE)": LatLng(11.32270, 75.93480),
+  "Mechanical Engineering Dept": LatLng(11.32100, 75.93580),
+  "Civil Engineering Dept": LatLng(11.32220, 75.93600),
+  "Physics Dept": LatLng(11.32220, 75.93640),
+  "Architecture & Planning Dept": LatLng(11.32260, 75.93680),
+  "Chemical Engineering Dept": LatLng(11.32380, 75.93710),
+  "Chemistry Dept": LatLng(11.32240, 75.93620),
+  "Bioscience & Engineering": LatLng(11.32300, 75.93590),
+  "Mathematics Dept": LatLng(11.32210, 75.93630),
+  "Material Science & Engineering": LatLng(11.32310, 75.93600),
+
+  // Labs & Facilities
+  "Mechanical Workshop": LatLng(11.32100, 75.93580),
+  "IC Engines Lab": LatLng(11.32040, 75.93560),
+  "Central Computer Centre": LatLng(11.32240, 75.93470),
+
+  // Canteens & Coop Stores
+  "Main Canteen": LatLng(11.31950, 75.93160),
+  "Mini Canteen": LatLng(11.31900, 75.93200),
+  "Co-operative Store": LatLng(11.32280, 75.93450),
+
+  // Hostels
+  "Hostel A": LatLng(11.31880, 75.93400),
+  "Hostel B": LatLng(11.31860, 75.93350),
+  "Hostel C": LatLng(11.31850, 75.93450),
+  "Hostel D": LatLng(11.31890, 75.93540),
+  "Hostel E": LatLng(11.31920, 75.93560),
+  "Hostel F": LatLng(11.31940, 75.93600),
+  "Hostel G": LatLng(11.31960, 75.93580),
+  "Mega Hostel": LatLng(11.31721, 75.93753),
+  "Girls Hostels (LH Blocks)": LatLng(11.32210, 75.93670),
+
+  // Residential & Guest
+  "Guest House": LatLng(11.31940, 75.93160),
+  "Professor Apartments": LatLng(11.31800, 75.93700),
+
+  // Training & Placement / CDE
+  "Training & Placement": LatLng(11.32090, 75.93400),
+  "Career Development Centre": LatLng(11.32090, 75.93400),
+
+  // Sports & Recreation
+  "Sports Complex": LatLng(11.32000, 75.93350),
+  "Open Air Theatre": LatLng(11.32120, 75.93420),
+  "Swimming Pool": LatLng(11.32050, 75.93320),
+  "Gymnasium / Health Centre": LatLng(11.32060, 75.93300),
+
+  // Others
+  "Institute Guest House": LatLng(11.31940, 75.93160),
+  "Day Care Centre": LatLng(11.32250, 75.93350),
+};
+
 
   final _fireDb = FireDb();
   User? currentUser;
@@ -350,16 +399,18 @@ class _CollegeMapScreenState extends State<CollegeMapScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _searchResults.length,
-                  itemBuilder: (context, index) {
-                    final name = _searchResults[index];
-                    return ListTile(
-                      title: Text(name),
-                      onTap: () => _focusOnBuilding(name),
-                    );
-                  },
+                child: SingleChildScrollView(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _searchResults.length,
+                    itemBuilder: (context, index) {
+                      final name = _searchResults[index];
+                      return ListTile(
+                        title: Text(name),
+                        onTap: () => _focusOnBuilding(name),
+                      );
+                    },
+                  ),
                 ),
               ),
             const SizedBox(height: 10),
