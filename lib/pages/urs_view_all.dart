@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ogs/models/event_model.dart';
 import 'package:ogs/pages/urls_details.dart';
+import 'package:ogs/pages/event_details.dart';
+
 
 class EventsViewAll extends StatelessWidget {
   const EventsViewAll({super.key});
@@ -52,14 +54,24 @@ class EventsViewAll extends StatelessWidget {
                     document as DocumentSnapshot<Map<String, dynamic>>);
 
                 return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UrlDetailsPage(event: event),
-                      ),
-                    );
-                  },
+                 onTap: () {
+            if(event.category=='url'){
+              Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UrlDetailsPage(event: event),
+              ),
+            );
+            }else{
+              Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EventDetailPage(event: event),
+              ),
+            );
+            }
+            
+          },
                   child: Stack(
                     children: [
                       Container(

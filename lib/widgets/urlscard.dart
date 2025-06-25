@@ -52,15 +52,24 @@ return SingleChildScrollView(
       final event = Event.fromFirestore(
           document as DocumentSnapshot<Map<String, dynamic>>);
 
-      // Fixed conditional logic
         return GestureDetector(
           onTap: () {
-            Navigator.push(
+            if(event.category=='url'){
+              Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => UrlDetailsPage(event: event),
               ),
             );
+            }else{
+              Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EventDetailPage(event: event),
+              ),
+            );
+            }
+            
           },
           child: Stack(
             children: [
