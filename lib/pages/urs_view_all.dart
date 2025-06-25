@@ -56,7 +56,7 @@ class EventsViewAll extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => EventDetailPage(event: event),
+                        builder: (context) => UrlDetailsPage(event: event),
                       ),
                     );
                   },

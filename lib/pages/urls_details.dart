@@ -3,10 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogs/models/event_model.dart';
 import 'package:url_launcher/url_launcher.dart'; 
 
-class EventDetailPage extends StatelessWidget {
+class UrlDetailsPage extends StatelessWidget {
   final Event event; // The event object to display
 
-  const EventDetailPage({Key? key, required this.event}) : super(key: key);
+  const UrlDetailsPage({Key? key, required this.event}) : super(key: key);
   Future<void> _launchUrl(BuildContext context, String url) async {
     final Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {

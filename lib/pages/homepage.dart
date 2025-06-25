@@ -27,6 +27,7 @@ import 'package:ogs/pages/urls_details.dart';
 import 'package:ogs/pages/urs_view_all.dart';
 import 'package:ogs/pages/s_profile_edit.dart';
 import 'package:ogs/pages/profile_page_new_2.dart';
+import 'package:ogs/widgets/events_urls.dart';
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -134,13 +135,24 @@ class _HomePageState extends State<HomePage> {
       );
     } else {
       // Default icon
-      return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30), color: pricol),
-        child: const Icon(
-          CupertinoIcons.person_fill,
-          color: Colors.white,
+      return GestureDetector(
+        onTap: () {
+                  PersistentNavBarNavigator.pushNewScreen(
+                    context,
+                    screen:const  ProfileScreen(),
+                    withNavBar: true,
+                    pageTransitionAnimation:
+                        PageTransitionAnimation.cupertino,
+                  );
+                },
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30), color: pricol),
+          child: const Icon(
+            CupertinoIcons.person_fill,
+            color: Colors.white,
+          ),
         ),
       );
     }
@@ -221,7 +233,6 @@ class _HomePageState extends State<HomePage> {
         child: GestureDetector(
           onTap: () {
             // Navigate to login or show login prompt
-            // You can add your login navigation logic here
           },
           child: Container(
             width: 45,
