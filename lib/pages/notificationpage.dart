@@ -29,6 +29,9 @@ class _NotificationPageState extends State<NotificationPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String _searchQuery = '';
+  
+  // Add a set to track locally read notifications for immediate UI update
+  final Set<String> _locallyReadNotifications = <String>{};
 
   @override
   Widget build(BuildContext context) {
@@ -281,7 +284,9 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Widget _buildNotificationCard(NotificationModel notification, String currentUserId) {
     // Check read status correctly for both global and user-specific notifications
-    final bool isNotificationRead = notification.isReadByUser(currentUserId);
+    // Also check if it's been locally marked as read
+    final bool isNotificationRead = notification.isReadByUser(currentUserId) || 
+                                   _locallyReadNotifications.contains(notification.id);
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -316,26 +321,6 @@ class _NotificationPageState extends State<NotificationPage> {
                 size: 24,
               ),
             ),
-            // Add a small global indicator for global notifications
-            // if (notification.isGlobal)
-            //   Positioned(
-            //     right: 0,
-            //     top: 0,
-            //     child: Container(
-            //       width: 12,
-            //       height: 12,
-            //       decoration: BoxDecoration(
-            //         color: Colors.orange,
-            //         shape: BoxShape.circle,
-            //         border: Border.all(color: Colors.white, width: 1),
-            //       ),
-            //       child: Icon(
-            //         Icons.public,
-            //         size: 8,
-            //         color: Colors.white,
-            //       ),
-            //     ),
-            //   ),
           ],
         ),
         title: Row(
@@ -350,24 +335,6 @@ class _NotificationPageState extends State<NotificationPage> {
                 ),
               ),
             ),
-            // Add a "Global" badge for global notifications
-            // if (notification.isGlobal)
-            //   Container(
-            //     padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            //     decoration: BoxDecoration(
-            //       color: Colors.orange.withOpacity(0.1),
-            //       borderRadius: BorderRadius.circular(8),
-            //       border: Border.all(color: Colors.orange.withOpacity(0.3)),
-            //     ),
-            //     child: Text(
-            //       'Global',
-            //       style: TextStyle(
-            //         fontSize: 10,
-            //         color: Colors.orange[700],
-            //         fontWeight: FontWeight.w600,
-            //       ),
-            //     ),
-            //   ),
           ],
         ),
         subtitle: Column(
@@ -466,9 +433,17 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   void _handleNotificationTap(NotificationModel notification, String currentUserId) {
-    // Mark notification as read properly for both global and user-specific
+    // Mark notification as read locally first for immediate UI update
+    if (!notification.isReadByUser(currentUserId) && !_locallyReadNotifications.contains(notification.id)) {
+      setState(() {
+        _locallyReadNotifications.add(notification.id);
+      });
+    }
+    
+    // Mark notification as read in database
     _markAsRead(notification, currentUserId);
     
+    // Navigate to the appropriate page
     _navigateBasedOnType(notification.type, notification.data);
   }
 
@@ -526,6 +501,10 @@ class _NotificationPageState extends State<NotificationPage> {
       }
     } catch (e) {
       print('Error marking notification as read: $e');
+      // If database update fails, remove from local state
+      setState(() {
+        _locallyReadNotifications.remove(notification.id);
+      });
     }
   }
 
@@ -540,6 +519,13 @@ class _NotificationPageState extends State<NotificationPage> {
           .where('isGlobal', isEqualTo: false)
           .where('isRead', isEqualTo: false)
           .get();
+      
+      // Add all notification IDs to local state for immediate UI update
+      setState(() {
+        for (var doc in userNotifications.docs) {
+          _locallyReadNotifications.add(doc.id);
+        }
+      });
       
       for (var doc in userNotifications.docs) {
         batch.update(doc.reference, {'isRead': true});
@@ -557,6 +543,10 @@ class _NotificationPageState extends State<NotificationPage> {
         
         // Only update if this user hasn't read it yet
         if (readBy[currentUserId] != true) {
+          // Add to local state for immediate UI update
+          setState(() {
+            _locallyReadNotifications.add(doc.id);
+          });
           batch.update(doc.reference, {'readBy.$currentUserId': true});
         }
       }
@@ -571,6 +561,10 @@ class _NotificationPageState extends State<NotificationPage> {
       );
     } catch (e) {
       print('Error marking all notifications as read: $e');
+      // If batch update fails, clear the local state
+      setState(() {
+        _locallyReadNotifications.clear();
+      });
     }
   }
 

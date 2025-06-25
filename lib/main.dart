@@ -18,6 +18,7 @@ import 'package:ogs/pages/fnu_restaurants.dart';
 import 'package:ogs/pages/bus.dart';
 import 'package:ogs/pages/s_points_page.dart';
 import 'package:ogs/pages/s_vouchers.dart';
+import 'package:ogs/pages/rateus.dart';
 
 // Global navigator key
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -94,6 +95,9 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _initializeServices();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    RateUsManager.checkAndShowRateDialog(context);
+  });
   }
 
   Future<void> _initializeServices() async {
