@@ -518,35 +518,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           // Menu Items
                           Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                children: [
-                                  _buildMenuItem(
-                                    Icons.settings,
-                                    'Settings',
-                                    onTap: () =>
-                                        _navigateToPage(SettingsScreen()),
-                                  ),
-                                  _buildMenuItem(
-                                    Icons.feedback,
-                                    'Send Feedback',
-                                    onTap: () =>
-                                        _navigateToPage(const FeedbackScreen()),
-                                  ),
-                                  _buildMenuItem(
-                                    Icons.info,
-                                    'About us',
-                                    onTap: () =>
-                                        _navigateToPage(const AboutUsScreen()),
-                                  ),
-                                  _buildMenuItem(
-                                    Icons.logout,
-                                    'Log out',
-                                    onTap: () => _handleLogout(),
-                                  ),
-                                ],
+                            child: SingleChildScrollView(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                child: Column(
+                                  children: [
+                                    _buildMenuItem(
+                                      Icons.settings,
+                                      'Settings',
+                                      onTap: () =>
+                                          _navigateToPage(SettingsScreen()),
+                                    ),
+                                    _buildMenuItem(
+                                      Icons.feedback,
+                                      'Send Feedback',
+                                      onTap: () =>
+                                          _navigateToPage(const FeedbackScreen()),
+                                    ),
+                                    _buildMenuItem(
+                                      Icons.info,
+                                      'About us',
+                                      onTap: () =>
+                                          _navigateToPage(const AboutUsScreen()),
+                                    ),
+                                    _buildMenuItem(
+                                      Icons.logout,
+                                      'Log out',
+                                      onTap: () => _handleLogout(),
+                                    ),
+                                    const SizedBox(height: 100,)
+                                  ],
+                                ),
                               ),
                             ),
                           ),
