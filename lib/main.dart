@@ -19,6 +19,7 @@ import 'package:ogs/pages/bus.dart';
 import 'package:ogs/pages/s_points_page.dart';
 import 'package:ogs/pages/s_vouchers.dart';
 import 'package:ogs/pages/rateus.dart';
+import 'dart:async';
 
 // Global navigator key
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -89,49 +90,42 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final ScreenTimeTracker _screenTimeTracker = ScreenTimeTracker();
+  StreamSubscription<User?>? _authSubscription;
 
   @override
   void initState() {
     super.initState();
     _initializeServices();
+    
+    // Delay rate dialog to ensure context is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-    RateUsManager.checkAndShowRateDialog(context);
-  });
-  }
-
-  Future<void> _initializeServices() async {
-    // Listen to auth state changes
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user != null) {
-      _initializeUserServices(user.uid);
-      } else {
-        // User logged out, dispose screen time tracker
-        _screenTimeTracker.dispose();
-      }
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          RateUsManager.checkAndShowRateDialog(context);
+        }
+      });
     });
   }
 
-  Future<void> _initializeUserServices(String userId) async {
+  Future<void> _initializeServices() async {
     try {
-      // Initialize screen time tracking
-      _screenTimeTracker.initialize(userId);
-
-      // Initialize user points (this will grant signup voucher if first time)
-      //await PointsService.initializeUserPoints(userId);
-
-      // Award daily login points
-      await PointsService.awardDailyLoginPoints(userId);
-
-      print('User services initialized successfully for user: $userId');
+      // Listen to auth state changes
+      _authSubscription = FirebaseAuth.instance.authStateChanges().listen((User? user) {
+        if (user != null) {
+          AuthServiceManager.onUserLogin(user.uid);
+        } else {
+          AuthServiceManager.onUserLogout();
+        }
+      });
     } catch (e) {
-      print('Error initializing user services: $e');
+      print('Error initializing auth listener: $e');
     }
   }
 
   @override
   void dispose() {
-    _screenTimeTracker.dispose();
+    _authSubscription?.cancel();
+    AuthServiceManager.dispose();
     super.dispose();
   }
 
@@ -140,53 +134,93 @@ class _MyAppState extends State<MyApp> {
     return ChangeNotifierProvider<FormResponse>(
       create: (context) => FormResponse(),
       child: MaterialApp(
-          navigatorKey: navigatorKey, // Add the global navigator key
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            fontFamily: 'Helvetica',
-            primarySwatch: Colors.blue,
-          ),
-          home: AnimatedSplashScreen(
-            splash: "lib/assets/icons/ani.gif",
-            nextScreen: const Landing(),
-            duration: 3000,
-            backgroundColor: yel,
-            centered: true,
-            splashIconSize: 200,
-          )),
+        navigatorKey: navigatorKey,
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          fontFamily: 'Helvetica',
+          primarySwatch: Colors.blue,
+        ),
+        home: AnimatedSplashScreen(
+          splash: "lib/assets/icons/ani.gif",
+          nextScreen: const Landing(),
+          duration: 3000,
+          backgroundColor: yel,
+          centered: true,
+          splashIconSize: 200,
+        ),
+      ),
     );
   }
 }
 
-// Helper class to handle user authentication and services
+// Centralized service manager to handle user authentication and services
 class AuthServiceManager {
   static final ScreenTimeTracker _screenTimeTracker = ScreenTimeTracker();
   static String? _currentUserId;
+  static bool _isInitialized = false;
 
   static Future<void> onUserLogin(String userId) async {
     try {
-      if (_currentUserId != userId) {
-        // Dispose previous user's tracker if different user
-        if (_currentUserId != null) {
-          _screenTimeTracker.dispose();
-        }
-
-        _currentUserId = userId;
-
-        // Initialize services for new user
-        _screenTimeTracker.initialize(userId);
-        //await PointsService.initializeUserPoints(userId);
-
-        print('Services initialized for user: $userId');
+      // Prevent duplicate initialization for same user
+      if (_currentUserId == userId && _isInitialized) {
+        return;
       }
+
+      // Dispose previous user's services if different user
+      if (_currentUserId != null && _currentUserId != userId) {
+        _dispose();
+      }
+
+      _currentUserId = userId;
+
+      // Initialize services for user
+      await _initializeUserServices(userId);
+      _isInitialized = true;
+
+      print('Services initialized for user: $userId');
     } catch (e) {
       print('Error in onUserLogin: $e');
     }
   }
 
+  static Future<void> _initializeUserServices(String userId) async {
+    try {
+      // Initialize screen time tracking
+      _screenTimeTracker.initialize(userId);
+
+      // Initialize user points (uncomment when ready)
+      // await PointsService.initializeUserPoints(userId);
+
+      // Award daily login points
+      await PointsService.awardDailyLoginPoints(userId);
+
+      print('User services initialized successfully for user: $userId');
+    } catch (e) {
+      print('Error initializing user services: $e');
+      rethrow;
+    }
+  }
+
   static void onUserLogout() {
-    _screenTimeTracker.dispose();
+    _dispose();
     _currentUserId = null;
+    _isInitialized = false;
     print('User services disposed');
   }
+
+  static void _dispose() {
+    try {
+      _screenTimeTracker.dispose();
+    } catch (e) {
+      print('Error disposing screen time tracker: $e');
+    }
+  }
+
+  static void dispose() {
+    _dispose();
+  }
+
+  // Getter for current user ID (useful for debugging)
+  static String? get currentUserId => _currentUserId;
+  static bool get isInitialized => _isInitialized;
 }

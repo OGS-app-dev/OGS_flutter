@@ -9,7 +9,7 @@ import 'package:ogs/pages/notificationpage.dart';
 import 'package:ogs/pages/s_about_us.dart';
 import 'package:ogs/pages/s_privacy_settings.dart';
 import 'package:ogs/pages/s_account.dart';
-
+import 'package:ogs/pages/admin_hsptl.dart';
 
 
 
@@ -54,11 +54,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: 'About',
       keywords: ['about', 'info', 'version', 'app info'],
     ),
-    // MenuItem(
-    //   icon: Icons.person_add,
-    //   title: 'Invite your Friends',
-    //   keywords: ['invite', 'friends', 'share', 'referral'],
-    // ),
+    MenuItem(
+      icon: Icons.person,
+      title: 'Admin',
+      keywords: ['admin', 'add', 'login', 'create'],
+    ),
   ];
 
   @override
@@ -289,6 +289,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return const AccountScreen();
       case 'About':
         return const AboutUsScreen();
+        case 'Admin':
+        return const HospitalAdminDashboard();
       default:
         return const ComingSoon();
     }

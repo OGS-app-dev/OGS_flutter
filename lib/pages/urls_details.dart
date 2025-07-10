@@ -48,39 +48,57 @@ class UrlDetailsPage extends StatelessWidget {
             // Event Image
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
+                Container(
+                  width: double.infinity,
+                  height: 250, // Fixed height
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 0, 0, 0), 
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
                   ),
-                  child: event.imageUrl.startsWith('http')
-                      ? Image.network(
-                          event.imageUrl,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.broken_image,
-                                  size: 50, color: Colors.grey),
-                        )
-                      : Image.asset(
-                          event
-                              .imageUrl, // This will be "assets/images/ragam_logo.png"
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.error,
-                                  size: 50, color: Colors.red), // Asset errors
-                        ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                    child: event.imageUrl.startsWith('http')
+                        ? Image.network(
+                            event.imageUrl,
+                            width: double.infinity,
+                            height: 250,
+                            fit: BoxFit.contain, // Shows full image, fills empty space with background
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                                  child: Icon(Icons.broken_image,
+                                      size: 50, color: Colors.grey),
+                                ),
+                          )
+                        : Image.asset(
+                            event.imageUrl, // This will be "assets/images/ragam_logo.png"
+                            width: double.infinity,
+                            height: 250,
+                            fit: BoxFit.contain, // Shows full image, fills empty space with background
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                                  child: Icon(Icons.error,
+                                      size: 50, color: Colors.red), // Asset errors
+                                ),
+                          ),
+                  ),
                 ),
                 if (event.isLive)
                   Positioned(

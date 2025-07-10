@@ -447,124 +447,133 @@ class _HomePageState extends State<HomePage> {
         //here location
       ),
       drawer: Drawer(
-        backgroundColor: Color.fromARGB(255, 255, 255, 255),
-        child: Column(
+  backgroundColor: Color.fromARGB(255, 255, 255, 255),
+  child: Column(
+    children: [
+      DrawerHeader(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              yel, // Your existing yellow color
+              Colors.white, // White
+            ],
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: yel),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  // Profile image that works for both regular and Google sign-in users
-                  FutureBuilder(
-                    future: _fireDb.getUserDetails(currentUser!.uid),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              color: pricol),
-                          child: const Icon(
-                            CupertinoIcons.person_fill,
-                            color: Colors.white,
-                          ),
-                        );
-                      }
-
-                      var docSnapshot = snapshot.data;
-                      return getProfileImage(docSnapshot, currentUser);
-                    },
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  // User name that works for both regular and Google sign-in users
-                  Flexible(
-                    child: FutureBuilder(
-                      future: _fireDb.getUserDetails(currentUser!.uid),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const SpinKitThreeBounce(
-                            size: 10,
-                            color: pricol,
-                          );
-                        }
-
-                        var docSnapshot = snapshot.data;
-                        String firstName =
-                            getFirstName(docSnapshot, currentUser);
-
-                        return Text(
-                          firstName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.outfit(
-                            color: Color.fromARGB(255, 16, 34, 112),
-                            fontSize: 20,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            const SizedBox(
+              width: 10,
             ),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  ListTile(
-                    leading: Icon(Icons.home),
-                    title: Text("Home"),
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ListTile(
-                      leading: const Icon(Icons.person),
-                      title: const Text("Account"),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const AccountScreen()),
-                        );
-                      }),
-                  ListTile(
-                    leading: const Icon(Icons.info),
-                    title:const  Text("About"),
-                    onTap: () {
-                     Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>const   AboutUsScreen()),
-                        );
-                    },
-                  ),
-              const    Divider(),
-                  ListTile(
-                    leading: const Icon(Icons.settings),
-                    title: const Text("Settings"),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>  SettingsScreen()),
-                        );
-                    },
-                  ),
-                ],
+            // Profile image that works for both regular and Google sign-in users
+            FutureBuilder(
+              future: _fireDb.getUserDetails(currentUser!.uid),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        color: pricol),
+                    child: const Icon(
+                      CupertinoIcons.person_fill,
+                      color: Colors.white,
+                    ),
+                  );
+                }
+
+                var docSnapshot = snapshot.data;
+                return getProfileImage(docSnapshot, currentUser);
+              },
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            // User name that works for both regular and Google sign-in users
+            Flexible(
+              child: FutureBuilder(
+                future: _fireDb.getUserDetails(currentUser!.uid),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const SpinKitThreeBounce(
+                      size: 10,
+                      color: pricol,
+                    );
+                  }
+
+                  var docSnapshot = snapshot.data;
+                  String firstName =
+                      getFirstName(docSnapshot, currentUser);
+
+                  return Text(
+                    firstName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      color: Color.fromARGB(255, 16, 34, 112),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
+      Expanded(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text("Home"),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text("Account"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AccountScreen()),
+                  );
+                }),
+            ListTile(
+              leading: const Icon(Icons.info),
+              title: const Text("About"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AboutUsScreen()),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text("Settings"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SettingsScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(

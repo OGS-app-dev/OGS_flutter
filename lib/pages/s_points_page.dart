@@ -727,7 +727,7 @@ class PentagonBadgePainter extends CustomPainter {
     textPainterNumber.paint(canvas, Offset((width - textPainterNumber.width) / 2, height * 0.25));
 
     // --- Draw Yellow Decorative Wings ---
-    _drawYellowWings(canvas, width, height);
+   // _drawYellowWings(canvas, width, height);
 
     // --- Draw Points Text ---
     final textPainterPoints = TextPainter(
