@@ -10,6 +10,7 @@ import 'package:ogs/pages/s_about_us.dart';
 import 'package:ogs/pages/s_privacy_settings.dart';
 import 'package:ogs/pages/s_account.dart';
 import 'package:ogs/pages/admin_hsptl.dart';
+import 'package:ogs/pages/admin_hotel.dart';
 
 
 
@@ -290,7 +291,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case 'About':
         return const AboutUsScreen();
         case 'Admin':
-        return const HospitalAdminDashboard();
+        return const HotelAdminDashboard();
       default:
         return const ComingSoon();
     }
