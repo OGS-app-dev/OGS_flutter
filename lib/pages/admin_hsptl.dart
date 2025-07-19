@@ -219,7 +219,7 @@ class _HospitalAdminDashboardState extends State<HospitalAdminDashboard> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          'Hospital Admin Dashboard',
+          'Add Hospital',
           style: GoogleFonts.outfit(
             fontSize: 20,
             fontWeight: FontWeight.bold,

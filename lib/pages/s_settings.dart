@@ -11,6 +11,7 @@ import 'package:ogs/pages/s_privacy_settings.dart';
 import 'package:ogs/pages/s_account.dart';
 import 'package:ogs/pages/admin_hsptl.dart';
 import 'package:ogs/pages/admin_hotel.dart';
+import 'package:ogs/pages/admin_dashboard.dart';
 
 
 
@@ -56,7 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       keywords: ['about', 'info', 'version', 'app info'],
     ),
     MenuItem(
-      icon: Icons.person,
+      icon: Icons.admin_panel_settings,
       title: 'Admin',
       keywords: ['admin', 'add', 'login', 'create'],
     ),
@@ -291,7 +292,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case 'About':
         return const AboutUsScreen();
         case 'Admin':
-        return const HotelAdminDashboard();
+        return const AdminDashboard();
       default:
         return const ComingSoon();
     }

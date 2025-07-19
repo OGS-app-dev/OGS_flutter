@@ -189,7 +189,7 @@ class AuthServiceManager {
       _screenTimeTracker.initialize(userId);
 
       // Initialize user points (uncomment when ready)
-      // await PointsService.initializeUserPoints(userId);
+       await PointsService.initializeUserPoints(userId);
 
       // Award daily login points
       await PointsService.awardDailyLoginPoints(userId);
